@@ -1,4 +1,7 @@
 sudo: false
 language: node_js
 node_js: 10
+install:
+  - npm i -g codecov
+  - npm i
 script: npm run build
