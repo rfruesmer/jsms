@@ -4,8 +4,9 @@
   "description": "Yet Another Message Service",
   "main": "index.js",
   "scripts": {
-    "test": "jest --collect-coverage",
-    "build": "tsc",
+    "test": "jest",
+    "build": "npm run compile && npm run lint && npm run test",
+    "compile": "tsc",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
     "lint": "tslint -p tsconfig.json",
     "prepare" : "npm run build",
