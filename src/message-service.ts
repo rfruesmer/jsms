@@ -8,7 +8,7 @@ import { Deferred } from "./deferred";
 export class MessageService {
     private queues = new Map<string, MessageQueue>();
 
-    public send(queueName: string, messageBody: object = {}): Deferred<Message, Error> {
+    public send(queueName: string, messageBody: object = {}): Promise<Message> {
         const queue = this.getQueue(queueName);
         return queue.send(this.createMessage(queueName, messageBody));
     }

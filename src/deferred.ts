@@ -76,4 +76,8 @@ export class Deferred<D, F> {
     public reject(arg: F): void {
         this.rejectCallback(arg);
     }
+
+    public getPromise(): Promise<D> {
+        return this.promise;
+    }
 }

@@ -9,6 +9,8 @@ beforeEach(() => {
     messageService = new MessageService();
 });
   
+// --------------------------------------------------------------------------------------------------------------------
+
 test("a queue delivers a message immediately when the receiver is already registered", done => {
     const queueName = "/some/queue";
     const expectedMessageBody = {test: "foo"};
@@ -22,6 +24,8 @@ test("a queue delivers a message immediately when the receiver is already regist
     messageService.send(queueName, expectedMessageBody);
 });
 
+// --------------------------------------------------------------------------------------------------------------------
+
 test("a receiver can fetch a pending message after registration", done => {
     const queueName = "/some/queue";
     const expectedMessageBody = {test: "foo"};
@@ -34,6 +38,8 @@ test("a receiver can fetch a pending message after registration", done => {
         return {};
     });
 });
+
+// --------------------------------------------------------------------------------------------------------------------
 
 test("a queue delivers pending messages in the order they were sent", done => {
     const queueName = "/some/queue";
@@ -69,7 +75,9 @@ test("a queue delivers pending messages in the order they were sent", done => {
     });
 });
 
-test("a queue receiver can send a response when the message is sent after registration of the receiver", done => {
+// --------------------------------------------------------------------------------------------------------------------
+
+test("a queue receiver can send a response when the message is sent after registration of the receiver", async () => {
     const queueName = "/some/queue";
     const messageBody = {test: "foo"};
     const expectedResponseBody = {response: "payload"};
@@ -78,36 +86,25 @@ test("a queue receiver can send a response when the message is sent after regist
         return expectedResponseBody;
     });
 
-    messageService.send(queueName, messageBody)
-        .done((actualResponse: Message) => {
-            try {
-                expect(actualResponse.body).toEqual(expectedResponseBody);
-                done();
-            }
-            catch (ex) {
-                return done.fail(ex);
-            }
-        })
+    const response = await messageService.send(queueName, messageBody);
+    expect(response.body).toEqual(expectedResponseBody);
 });
 
-test("a queue receiver can send a response when the message is sent before registration of the receiver", done => {
+// --------------------------------------------------------------------------------------------------------------------
+
+test("a queue receiver can send a response when the message is sent before registration of the receiver", async () => {
     const queueName = "/some/queue";
     const messageBody = {test: "foo"};
     const expectedResponseBody = {response: "payload"};
 
-    messageService.send(queueName, messageBody)
-        .done((actualResponse: Message) => {
-            try {
-                expect(actualResponse.body).toEqual(expectedResponseBody);
-                done();
-            }
-            catch (ex) {
-                return done.fail(ex);
-            }
-        })
+    const promise = messageService.send(queueName, messageBody);
 
-        messageService.receive(queueName, (actualMessage: Message) => {
-            return expectedResponseBody;
-        });
+    messageService.receive(queueName, (actualMessage: Message) => {
+        return expectedResponseBody;
+    });
+
+    const response = await promise;
+    expect(response.body).toEqual(expectedResponseBody);
 });
 
+// --------------------------------------------------------------------------------------------------------------------

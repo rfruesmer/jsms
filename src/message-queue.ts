@@ -82,11 +82,11 @@ export class MessageQueue {
     //     }
     // }
 
-    public send(message: Message): Deferred<Message, Error> {
+    public send(message: Message): Promise<Message> {
         const deferred = this.push(message);
         this.sendPendingMessages(); 
 
-        return deferred;
+        return deferred.getPromise();
     }
 
     private push(message: Message): Deferred<Message, Error> {
