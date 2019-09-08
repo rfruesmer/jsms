@@ -5,7 +5,12 @@
     ],
     "jsRules": {},
     "rules": {
-        "no-console": false
+        "indent": [true, "spaces", 4],
+        "max-classes-per-file": false,
+        "member-ordering": false,
+        "no-console": false,
+        "ordered-imports": false,
+        "typedef": [true, "call-signature"]
     },
     "rulesDirectory": []
 }
