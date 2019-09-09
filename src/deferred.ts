@@ -4,42 +4,42 @@ type ThenCallback<D, R, E> = (value: D, resolve: ResolveFunction<R>, reject: Rej
 type ChainedCallback = () => void;
 
 export class Deferred<D, R, E> {
-  private thenCallback!: ThenCallback<D, R, E>;
-  private _promise!: Promise<D>;
-  private resolveFunction!: any;
-  private rejectFunction!: any;
-  private chainedCallback: ChainedCallback;
+    private thenCallback!: ThenCallback<D, R, E>;
+    private _promise!: Promise<D>;
+    private resolveFunction!: any;
+    private rejectFunction!: any;
+    private chainedCallback: ChainedCallback;
 
-  // tslint:disable-next-line: no-empty
-  constructor(chainedCallback: ChainedCallback = () => {}) {
-    this.chainedCallback = chainedCallback;
+    // tslint:disable-next-line: no-empty
+    constructor(chainedCallback: ChainedCallback = () => {}) {
+        this.chainedCallback = chainedCallback;
 
-    this._promise = new Promise<D>((resolve, reject) => {
-      this.resolveFunction = resolve;
-      this.rejectFunction = reject;
-    });
-  }
-
-  get promise(): Promise<D> {
-    this.chainedCallback();
-    return this._promise;
-  }
-
-  public then(callback: ThenCallback<D, R, E>): Promise<D> {
-    this.thenCallback = callback;
-    this.chainedCallback();
-    return this._promise;
-  }
-
-  public resolve(value: D): void {
-    if (this.thenCallback) {
-      this.thenCallback(value, this.resolveFunction, this.rejectFunction);
-    } else {
-      this.resolveFunction(value);
+        this._promise = new Promise<D>((resolve, reject) => {
+            this.resolveFunction = resolve;
+            this.rejectFunction = reject;
+        });
     }
-  }
 
-  public reject(reason: E): void {
-    this.rejectFunction(reason);
-  }
+    get promise(): Promise<D> {
+        this.chainedCallback();
+        return this._promise;
+    }
+
+    public then(callback: ThenCallback<D, R, E>): Promise<D> {
+        this.thenCallback = callback;
+        this.chainedCallback();
+        return this._promise;
+    }
+
+    public resolve(value: D): void {
+        if (this.thenCallback) {
+            this.thenCallback(value, this.resolveFunction, this.rejectFunction);
+        } else {
+            this.resolveFunction(value);
+        }
+    }
+
+    public reject(reason: E): void {
+        this.rejectFunction(reason);
+    }
 }

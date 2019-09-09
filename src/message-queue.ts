@@ -3,7 +3,7 @@ import { checkState } from "./preconditions";
 import { Deferred } from "./deferred";
 
 class MessageQueueEntry {
-  constructor(public message: Message, public producer: Deferred<Message, void, void>) {}
+    constructor(public message: Message, public producer: Deferred<Message, void, void>) {}
 }
 
 /**
@@ -25,76 +25,76 @@ class MessageQueueEntry {
  *
  */
 export class MessageQueue {
-  private consumer!: Deferred<Message, object, Error> | null;
-  private queue: MessageQueueEntry[] = [];
-  private currentEntry!: MessageQueueEntry;
-  private maintenanceInterval: any;
+    private consumer!: Deferred<Message, object, Error> | null;
+    private queue: MessageQueueEntry[] = [];
+    private currentEntry!: MessageQueueEntry;
+    private maintenanceInterval: any;
 
-  constructor(private name: string) {
-    this.maintenanceInterval = setInterval(this.removeExpiredMessages, 1000);
-  }
-
-  private removeExpiredMessages = () => {
-    const currentTime = new Date().getTime();
-
-    this.queue
-      .filter(
-        (entry: MessageQueueEntry) =>
-          entry.message.header.expiration > 0 && currentTime > entry.message.header.expiration
-      )
-      .map((entry: MessageQueueEntry) => this.queue.indexOf(entry))
-      .forEach((index: number) => this.queue.splice(index, 1));
-  };
-
-  public receive(): Deferred<Message, object, Error> {
-    checkState(!this.consumer, "Queue already has a receiver."); // Check that there's only one receiver for now
-
-    const consumer = new Deferred<Message, object, Error>(() => {
-      this.sendNextMessage();
-    });
-    consumer.promise.then((response: Message) => {
-      this.currentEntry.producer.resolve(response);
-    });
-
-    this.consumer = consumer;
-
-    return consumer;
-  }
-
-  private sendNextMessage(): boolean {
-    this.removeExpiredMessages();
-
-    if (!this.consumer || this.queue.length === 0) {
-      return false;
+    constructor(private name: string) {
+        this.maintenanceInterval = setInterval(this.removeExpiredMessages, 1000);
     }
 
-    try {
-      this.currentEntry = this.queue[0];
-      this.consumer.resolve(this.currentEntry.message);
-    } catch (error) {
-      this.currentEntry.producer.reject(error);
-      return false;
-    } finally {
-      this.consumer = null;
-      this.queue.shift();
+    private removeExpiredMessages = () => {
+        const currentTime = new Date().getTime();
+
+        this.queue
+            .filter(
+                (entry: MessageQueueEntry) =>
+                    entry.message.header.expiration > 0 && currentTime > entry.message.header.expiration
+            )
+            .map((entry: MessageQueueEntry) => this.queue.indexOf(entry))
+            .forEach((index: number) => this.queue.splice(index, 1));
+    };
+
+    public receive(): Deferred<Message, object, Error> {
+        checkState(!this.consumer, "Queue already has a receiver."); // Check that there's only one receiver for now
+
+        const consumer = new Deferred<Message, object, Error>(() => {
+            this.sendNextMessage();
+        });
+        consumer.promise.then((response: Message) => {
+            this.currentEntry.producer.resolve(response);
+        });
+
+        this.consumer = consumer;
+
+        return consumer;
     }
 
-    return true;
-  }
+    private sendNextMessage(): boolean {
+        this.removeExpiredMessages();
 
-  public send(message: Message): Promise<Message> {
-    const producer = new Deferred<Message, void, void>();
+        if (!this.consumer || this.queue.length === 0) {
+            return false;
+        }
 
-    this.queue.push(new MessageQueueEntry(message, producer));
+        try {
+            this.currentEntry = this.queue[0];
+            this.consumer.resolve(this.currentEntry.message);
+        } catch (error) {
+            this.currentEntry.producer.reject(error);
+            return false;
+        } finally {
+            this.consumer = null;
+            this.queue.shift();
+        }
 
-    if (this.consumer) {
-      this.sendNextMessage();
+        return true;
     }
 
-    return producer.promise;
-  }
+    public send(message: Message): Promise<Message> {
+        const producer = new Deferred<Message, void, void>();
 
-  public close(): void {
-    clearInterval(this.maintenanceInterval);
-  }
+        this.queue.push(new MessageQueueEntry(message, producer));
+
+        if (this.consumer) {
+            this.sendNextMessage();
+        }
+
+        return producer.promise;
+    }
+
+    public close(): void {
+        clearInterval(this.maintenanceInterval);
+    }
 }

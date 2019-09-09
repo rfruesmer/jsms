@@ -20,17 +20,17 @@ export type SubscriberCallback = (message: Message) => void;
  *
  */
 export class MessageTopic {
-  private subscribers = new Array<SubscriberCallback>();
+    private subscribers = new Array<SubscriberCallback>();
 
-  constructor(private name: string) {}
+    constructor(private name: string) {}
 
-  public subscribe(subscriber: SubscriberCallback): void {
-    if (this.subscribers.indexOf(subscriber) === -1) {
-      this.subscribers.push(subscriber);
+    public subscribe(subscriber: SubscriberCallback): void {
+        if (this.subscribers.indexOf(subscriber) === -1) {
+            this.subscribers.push(subscriber);
+        }
     }
-  }
 
-  public publish(message: Message): void {
-    this.subscribers.forEach(subscriber => subscriber(message));
-  }
+    public publish(message: Message): void {
+        this.subscribers.forEach(subscriber => subscriber(message));
+    }
 }
