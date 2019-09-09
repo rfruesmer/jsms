@@ -45,7 +45,7 @@ test("a queue delivers a message immediately when the receiver is already regist
 
 // --------------------------------------------------------------------------------------------------------------------
 
-test("message service creates a default body if none was specified", async () => {
+test("message service creates a default body to queue messages if none was specified", async () => {
     const queueName = "/some/queue";
     const expectedMessageBody = {};
 
@@ -169,7 +169,7 @@ test("a message queue catches exceptions thrown by consumers and rejects the pro
 
 // --------------------------------------------------------------------------------------------------------------------
 
-test("a message is deleted after successful delivery", async () => {
+test("a queued message is deleted after successful delivery", async () => {
     const queueName = "/some/queue";
     const messageBody = { test: "foo" };
     const expectedResponseBody = { response: "payload" };
@@ -196,15 +196,21 @@ test("a message is deleted after successful delivery", async () => {
 
 // --------------------------------------------------------------------------------------------------------------------
 
-test("a message is published to all subscribers", () => {
+test("a topic message is published to all subscribers", () => {
     const topic = "/some/topic";
-    const messageBody = { test: "foo" };
+    const expectedMessageBody = { test: "foo" };
     let receivedCount = 0;
 
-    messageService.subscribe(topic, (message: Message) => { receivedCount++; });
-    messageService.subscribe(topic, (message: Message) => { receivedCount++; });
+    messageService.subscribe(topic, (actualMessage: Message) => { 
+        expect(actualMessage.body).toEqual(expectedMessageBody);
+        receivedCount++; 
+    });
+    messageService.subscribe(topic, (actualMessage: Message) => { 
+        expect(actualMessage.body).toEqual(expectedMessageBody);
+        receivedCount++; 
+    });
 
-    messageService.publish(topic, messageBody);
+    messageService.publish(topic, expectedMessageBody);
 
     expect(receivedCount).toBe(2);
 });
@@ -227,7 +233,7 @@ test("a subscriber is only called once", () => {
 
 // --------------------------------------------------------------------------------------------------------------------
 
-test("a message is only published to topic subscribers", () => {
+test("a message is only published to it's topic subscribers", () => {
     let received = false;
 
     messageService.subscribe("/interesting/topic", (message: Message) => { received = true });
@@ -238,3 +244,17 @@ test("a message is only published to topic subscribers", () => {
    
 // --------------------------------------------------------------------------------------------------------------------
 
+test("message service creates default body to topic messages if none was specified", async () => {
+    const topicName = "/some/topic";
+    const expectedMessageBody = {};
+    let actualMessageBody = null;
+
+    messageService.subscribe(topicName, (message: Message) => { 
+        actualMessageBody = message.body;
+    });
+    messageService.publish(topicName);
+
+    expect(actualMessageBody).toEqual(expectedMessageBody);
+});
+
+// --------------------------------------------------------------------------------------------------------------------

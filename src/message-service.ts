@@ -52,7 +52,7 @@ export class MessageService {
         return topic;
     }
 
-    public publish(topicName: string, messageBody: object): void {
+    public publish(topicName: string, messageBody: object = {}): void {
         const topic = this.topics.get(topicName);
         if (topic) {
             topic.publish(this.createMessage(topicName, messageBody));
