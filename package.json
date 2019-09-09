@@ -8,7 +8,7 @@
     "clean": "rimraf dist/**/*",
     "compile": "tsc",
     "prepare-dist": "rimraf dist/test && npm run generate-dts",
-    "generate-dts": "dts-generator --project . --out ./dist/index.d.ts",
+    "generate-dts": "dts-generator --project . --out ./dist/index.d.ts && rimraf dist/src/*.d.ts",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
     "lint": "tslint -p tsconfig.json",
     "prepare": "npm run build",
