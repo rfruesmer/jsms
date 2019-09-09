@@ -5,13 +5,12 @@
   "scripts": {
     "test": "jest --collect-coverage",
     "build": "npm run clean && npm run compile && npm run lint && npm run test && npm run prepare-dist",
-    "clean": "rimraf dist/**/*",
+    "clean": "rimraf ./dist/**/* && rimraf ./index.d.ts",
     "compile": "tsc",
-    "prepare-dist": "rimraf dist/test && npm run generate-dts",
-    "generate-dts": "dts-generator --project . --out ./dist/index.d.ts && rimraf dist/src/*.d.ts",
+    "prepare-dist": "npm run generate-dt && rimraf ./dist/src/*.d.ts && mvmv ./dist/src/* ./dist/* && rimraf ./dist/src && rimraf ./dist/test",
+    "generate-dt": "ncat ./dist/src/**/*.d.ts -o ./index.d.ts",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
     "lint": "tslint -p tsconfig.json",
-    "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run lint",
     "preversion": "npm run lint",
     "version": "npm run format && git add -A src",
@@ -39,8 +38,9 @@
   "devDependencies": {
     "@types/jest": "^24.0.18",
     "@types/uuid": "^3.4.5",
-    "dts-generator": "^3.0.0",
     "jest": "^24.9.0",
+    "mvmv": "^0.9.8",
+    "ncat": "^2.0.7",
     "prettier": "^1.18.2",
     "rimraf": "^3.0.0",
     "ts-jest": "^24.0.2",
@@ -52,7 +52,8 @@
     "uuid": "^3.3.3"
   },
   "files": [
-    "dist/**/*"
+    "dist/**/*",
+    "index.d.ts"
   ],
   "types": "dist/index.d.ts"
 }

@@ -2,6 +2,7 @@
 /.vscode
 /coverage
 /dist
-/node_modules
 /lib
+/node_modules
 *.iml
+index.d.ts
