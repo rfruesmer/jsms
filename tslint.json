@@ -10,7 +10,13 @@
         "member-ordering": false,
         "no-console": false,
         "ordered-imports": false,
-        "typedef": [true, "call-signature"]
+        "typedef": [true, "call-signature"],
+        "variable-name": {
+            "options": [
+                "allow-leading-underscore",
+                "check-format"
+            ]
+        }
     },
     "rulesDirectory": []
 }

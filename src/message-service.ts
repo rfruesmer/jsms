@@ -8,9 +8,9 @@ import { Deferred } from "./deferred";
 export class MessageService {
     private queues = new Map<string, MessageQueue>();
 
-    public send(queueName: string, messageBody: object = {}): Promise<Message> {
+    public send(queueName: string, messageBody: object = {}, timeToLive: number = 0): Promise<Message> {
         const queue = this.getQueue(queueName);
-        return queue.send(this.createMessage(queueName, messageBody));
+        return queue.send(this.createMessage(queueName, messageBody, timeToLive));
     }
 
     private getQueue(queueName: string): MessageQueue {
@@ -27,8 +27,12 @@ export class MessageService {
         return new Message(new MessageHeader(channel, v4(), timeToLive), body);
     }
 
-    public receive(queueName: string, callback: MessageQueueReceiverCallback): void {
+    public receive(queueName: string): Deferred<Message, object, Error> {
         const queue = this.getQueue(queueName);
-        return queue.setReceiver(queueName, callback);
+        return queue.receive();
+    }
+
+    public close(): void {
+        this.queues.forEach((queue: MessageQueue) => queue.close());
     }
 }

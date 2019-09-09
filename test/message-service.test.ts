@@ -1,110 +1,141 @@
 import { Message } from "@/message";
 import { MessageHeader } from "@/message-header";
 import { MessageService } from "@/message-service";
+import { Deferred, ResolveFunction } from "@/deferred";
+import { promises } from "dns";
 
 
 let messageService: MessageService;
 
+// --------------------------------------------------------------------------------------------------------------------
+
 beforeEach(() => {
     messageService = new MessageService();
 });
-  
+
 // --------------------------------------------------------------------------------------------------------------------
 
-test("a queue delivers a message immediately when the receiver is already registered", done => {
-    const queueName = "/some/queue";
-    const expectedMessageBody = {test: "foo"};
-
-    messageService.receive(queueName, (actualMessage: Message) => {
-        expect(actualMessage.body).toEqual(expectedMessageBody);
-        done();
-        return {};
-    });
-    
-    messageService.send(queueName, expectedMessageBody);
+afterEach(() => {
+    messageService.close();
 });
 
 // --------------------------------------------------------------------------------------------------------------------
 
-test("a receiver can fetch a pending message after registration", done => {
+test("a queue allows only one receiver at a given time", () => {
     const queueName = "/some/queue";
-    const expectedMessageBody = {test: "foo"};
 
-    messageService.send(queueName, expectedMessageBody);
-
-    messageService.receive(queueName, (actualMessage: Message) => {
-        expect(actualMessage.body).toEqual(expectedMessageBody);
-        done();
-        return {};
-    });
+    messageService.receive(queueName);
+    expect(() => {
+        messageService.receive(queueName)
+    }).toThrow(Error);
 });
 
 // --------------------------------------------------------------------------------------------------------------------
 
-test("a queue delivers pending messages in the order they were sent", done => {
+test("a queue delivers a message immediately when the receiver is already registered", async () => {
     const queueName = "/some/queue";
-    const firstExpectedMessageBody = {test: "1"};
-    const secondExpectedMessageBody = {test: "2"};
-    const thirdExpectedMessageBody = {test: "3"};
+    const expectedMessageBody = { test: "foo" };
+
+    const promise = messageService.receive(queueName).promise;
+    messageService.send(queueName, expectedMessageBody);
+
+    const actualMessage = await promise;
+    expect(actualMessage.body).toEqual(expectedMessageBody);
+});
+
+// --------------------------------------------------------------------------------------------------------------------
+
+test("a queue receiver can fetch a pending message after registration", async () => {
+    const queueName = "/some/queue";
+    const expectedMessageBody = { test: "foo" };
+
+    messageService.send(queueName, expectedMessageBody);
+
+    const actualMessage = await messageService.receive(queueName).promise;
+    expect(actualMessage.body).toEqual(expectedMessageBody);
+});
+
+// --------------------------------------------------------------------------------------------------------------------
+
+test("a queue delivers pending messages in the order they were sent", async () => {
+    const queueName = "/some/queue";
+    const firstExpectedMessageBody = { test: "1" };
+    const secondExpectedMessageBody = { test: "2" };
+    const thirdExpectedMessageBody = { test: "3" };
 
     messageService.send(queueName, firstExpectedMessageBody);
     messageService.send(queueName, secondExpectedMessageBody);
     messageService.send(queueName, thirdExpectedMessageBody);
 
-    let messageCount = 0;
+    let actualMessage = await messageService.receive(queueName).promise;
+    expect(actualMessage.body).toEqual(firstExpectedMessageBody);
 
-    messageService.receive(queueName, (actualMessage: Message) => {
-        messageCount++;
+    actualMessage = await messageService.receive(queueName).promise;
+    expect(actualMessage.body).toEqual(secondExpectedMessageBody);
 
-        switch (messageCount) {
-        case 1:
-            expect(actualMessage.body).toEqual(firstExpectedMessageBody);
-            break;
-
-        case 2:
-            expect(actualMessage.body).toEqual(secondExpectedMessageBody);
-            break;
-
-        case 3:
-            expect(actualMessage.body).toEqual(thirdExpectedMessageBody);
-            done();
-            break;
-        }
-
-        return {};
-    });
+    actualMessage = await messageService.receive(queueName).promise;
+    expect(actualMessage.body).toEqual(thirdExpectedMessageBody);
 });
 
 // --------------------------------------------------------------------------------------------------------------------
 
 test("a queue receiver can send a response when the message is sent after registration of the receiver", async () => {
     const queueName = "/some/queue";
-    const messageBody = {test: "foo"};
-    const expectedResponseBody = {response: "payload"};
+    const messageBody = { test: "foo" };
+    const expectedResponseBody = { response: "payload" };
 
-    messageService.receive(queueName, (actualMessage: Message) => {
-        return expectedResponseBody;
-    });
+    messageService.receive(queueName)
+        .then((message: Message, resolve: ResolveFunction<object>) => {
+            resolve(expectedResponseBody);
+        });
 
     const response = await messageService.send(queueName, messageBody);
-    expect(response.body).toEqual(expectedResponseBody);
+    expect(response).toEqual(expectedResponseBody);
 });
 
 // --------------------------------------------------------------------------------------------------------------------
 
 test("a queue receiver can send a response when the message is sent before registration of the receiver", async () => {
     const queueName = "/some/queue";
-    const messageBody = {test: "foo"};
-    const expectedResponseBody = {response: "payload"};
+    const messageBody = { test: "foo" };
+    const expectedResponseBody = { response: "payload" };
 
     const promise = messageService.send(queueName, messageBody);
 
-    messageService.receive(queueName, (actualMessage: Message) => {
-        return expectedResponseBody;
-    });
+    messageService.receive(queueName)
+        .then((message: Message, resolve: ResolveFunction<object>) => {
+            resolve(expectedResponseBody);
+        });
 
     const response = await promise;
-    expect(response.body).toEqual(expectedResponseBody);
+    expect(response).toEqual(expectedResponseBody);
+});
+
+// --------------------------------------------------------------------------------------------------------------------
+
+test("a queue removes expired messages", async (done) => {
+    const queueName = "/some/queue";
+    const messageBody = { test: "foo" };
+
+    messageService.send(queueName, messageBody, 1000);
+
+    const expiration = new Promise((resolve, reject) => {
+        setTimeout(() => {resolve()}, 1001);
+    });
+
+    await expiration;
+    
+    let received = false;
+
+    messageService.receive(queueName)
+        .then((message: Message, resolve: ResolveFunction<object>) => {
+            received = true;
+        });
+    
+    setTimeout(() => {
+        expect(received).toBeFalsy();
+        done();
+    }, 1);
 });
 
 // --------------------------------------------------------------------------------------------------------------------

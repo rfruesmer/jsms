@@ -1,11 +1,12 @@
 {
-  "name": "yams",
+  "name": "jsms",
   "version": "1.0.0",
-  "description": "Yet Another Message Service",
+  "description": "JavaScript Message Service",
   "main": "index.js",
   "scripts": {
     "test": "jest --collect-coverage",
-    "build": "npm run compile && npm run lint && npm run test",
+    "build": "npm run clean && npm run compile && npm run lint && npm run test",
+    "clean": "rimraf dist/**/*",
     "compile": "tsc",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
     "lint": "tslint -p tsconfig.json",
@@ -23,8 +24,10 @@
     "url": "git+https://github.com/rfruesmer/yams.git"
   },
   "keywords": [
-    "message",
-    "service"
+    "messaging",
+    "message service",
+    "event bus",
+    "mediator"
   ],
   "author": "Reinhold Früsmer",
   "license": "MIT",
@@ -37,6 +40,7 @@
     "@types/uuid": "^3.4.5",
     "jest": "^24.9.0",
     "prettier": "^1.18.2",
+    "rimraf": "^3.0.0",
     "ts-jest": "^24.0.2",
     "tslint": "^5.19.0",
     "tslint-config-prettier": "^1.18.0",

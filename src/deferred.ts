@@ -1,83 +1,51 @@
-import {checkState} from '@/preconditions';
 
+export type ResolveFunction<R> = (value: R) => void;
+export type RejectFunction<E> = (reason: E) => void;
+type ThenCallback<D, R, E> = (value: D, resolve: ResolveFunction<R>, reject: RejectFunction<E>) => void;
+type ChainedCallback = () => void;
 
-export class Deferred<D, F> {
-    private promise!: Promise<D>;
-    private resolveCallback: any;
-    private rejectCallback: any;
-    private doneCallback!: (arg: D) => void;
-    private failCallback!: (arg: F) => void;
-    private catchCallback!: (arg: Error) => void;
-    private finallyCallback!: () => void;
+export class Deferred<D, R, E> {
+    private thenCallback!: ThenCallback<D, R, E>;
+    private _promise!: Promise<D>;
+    private resolveFunction!: any;
+    private rejectFunction!: any;
+    private chainedCallback: ChainedCallback | undefined;
 
-    constructor() {
-        this.promise = new Promise<D>((resolve, reject) => {
-            this.resolveCallback = resolve;
-            this.rejectCallback = reject;
-        });
+    constructor(chainedCallback?: ChainedCallback) {
+        this.chainedCallback = chainedCallback;
 
-        this.promise.then((arg: D) => {
-            if (this.doneCallback) {
-                this.doneCallback(arg);
-            }
-            if (this.finallyCallback) {
-                this.finallyCallback();
-            }
-        }, (arg: F) => {
-            if (this.failCallback) {
-                this.failCallback(arg);
-            }
-            if (this.finallyCallback) {
-                this.finallyCallback();
-            }
-        })
-        .catch((reason) => {
-            if (this.catchCallback) {
-                try {
-                    this.catchCallback(reason);
-                }
-                catch (error) {
-                    console.error(error);
-                }
-            }
-            if (this.finallyCallback) {
-                this.finallyCallback();
-            }
+        this._promise = new Promise<D>((resolve, reject) => {
+            this.resolveFunction = resolve;
+            this.rejectFunction = reject;
         });
     }
-
-    public done(doneCallback: (arg: D) => void): Deferred<D, F> {
-        checkState(!this.doneCallback, 'done already set');
-        this.doneCallback = doneCallback;
-        return this;
+    
+    get promise(): Promise<D> {
+        if (this.chainedCallback) {
+            this.chainedCallback();
+        }
+        return this._promise;
     }
 
-    public fail(failCallback: (arg: F) => void): Deferred<D, F> {
-        checkState(!this.failCallback, 'fail already set');
-        this.failCallback = failCallback;
-        return this;
+    public then(callback: ThenCallback<D, R, E>): Promise<D> {
+        this.thenCallback = callback;
+        if (this.chainedCallback) {
+            this.chainedCallback();
+        }
+        return this._promise;
     }
 
-    public catch(catchCallback: (arg: Error) => void): Deferred<D, F> {
-        checkState(!this.catchCallback, 'catch already set');
-        this.catchCallback = catchCallback;
-        return this;
-    }
-
-    public finally(finallyCallback: () => void): void {
-        checkState(!this.finallyCallback, 'finally already set');
-        this.finallyCallback = finallyCallback;
-    }
-
-    public resolve(arg: D): void {
-        this.resolveCallback(arg);
-    }
-
-    public reject(arg: F): void {
-        this.rejectCallback(arg);
-    }
-
-    public getPromise(): Promise<D> {
-        return this.promise;
+    public resolve(value: D): void {
+        try {
+            if (this.thenCallback) {
+                this.thenCallback(value, this.resolveFunction, this.rejectFunction);
+            }
+            else {
+                this.resolveFunction(value);
+            }
+        }
+        catch (error) {
+            console.error(error);
+        }
     }
 }
