@@ -2,8 +2,6 @@ import { Message } from "./message";
 import { checkState } from "./preconditions";
 import { Deferred } from "./deferred";
 
-export type MessageQueueReceiverCallback = (message: Message) => object;
-
 class MessageQueueEntry {
     constructor(public message: Message, 
                 public producer: Deferred<Message, void, void>) {}
@@ -12,7 +10,7 @@ class MessageQueueEntry {
 /**
  *  Implements point-to-point (PTP) messaging:
  * 
- *  - Each message has only one consumer
+ *  - Each queue/message has only one consumer
  * 
  *  - A sender and a receiver of a message have no timing dependencies.
  *    The receiver can fetch the message whether or not it was running 
@@ -62,22 +60,25 @@ export class MessageQueue {
     }
 
     private sendNextMessage(): boolean {
+
+        this.removeExpiredMessages();
+
+        if (!this.consumer 
+                || this.queue.length === 0) {
+            return false;
+        }
+
         try {
-            this.removeExpiredMessages();
-
-            if (!this.consumer 
-                    || this.queue.length === 0) {
-                return false;
-            }
-
             this.currentEntry = this.queue[0];
             this.consumer.resolve(this.currentEntry.message);
-            this.queue.shift();
-            this.consumer = null;
         }
         catch (error) {
-            console.error(error);
+            this.currentEntry.producer.reject(error);
             return false;
+        }
+        finally {
+            this.consumer = null;
+            this.queue.shift();
         }
 
         return true;

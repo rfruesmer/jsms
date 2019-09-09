@@ -5,7 +5,7 @@ export class MessageHeader {
 
     constructor(channel: string, correlationID: string, expiration: number) {
         this.channel = channel;
-        this.correlationID = correlationID ? correlationID : "";
+        this.correlationID = correlationID;
         this.expiration = expiration > 0 ? new Date().getTime() + expiration : 0;
     }
 }
