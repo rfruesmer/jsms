@@ -31,8 +31,8 @@ test("is open for extension via custom message consumers", async () => {
     const connection = new FakeConnection();
     const queue = connection.createQueue(queueName);
     const messageConsumer = connection.getConsumer(queue) as FakeMessageConsumer;
-
     const promise = messageConsumer.receive().promise;
+
     messageConsumer.emit(MessageService.createMessage(queueName, expectedMessageBody));
 
     const actualMessage = await promise;
@@ -49,8 +49,8 @@ test("the message service provides a facade for custom message consumers", async
     const connection = new FakeConnection();
     const queue = messageService.createQueue(connection, queueName);
     const messageConsumer = connection.getConsumer(queue) as FakeMessageConsumer;
-
     const promise = messageService.receive(queueName).promise;
+
     messageConsumer.emit(MessageService.createMessage(queueName, expectedMessageBody));
 
     const actualMessage = await promise;
@@ -85,7 +85,6 @@ test("a queue delivers a message immediately if a receiver is already registered
     const expectedMessageBody = { test: "foo" };
     const connection = new JsConnection();
     const queue = messageService.createQueue(connection, queueName);
-
     const promise = messageService.receive(queueName).promise;
 
     messageService.send(queueName, expectedMessageBody);
@@ -117,7 +116,6 @@ test("that a queue delivers any number of messages immediately if one or more re
     const thirdExpectedMessageBody = { test: "3" };
     const connection = new JsConnection();
     const queue = messageService.createQueue(connection, queueName);
-
     const firstMessagePromise = messageService.receive(queueName).promise;
     const secondMessagePromise = messageService.receive(queueName).promise;
     const thirdMessagePromise = messageService.receive(queueName).promise;
@@ -128,10 +126,8 @@ test("that a queue delivers any number of messages immediately if one or more re
 
     const firstMessage = await firstMessagePromise;
     expect(firstMessage.body).toEqual(firstExpectedMessageBody);
-
     const secondMessage = await secondMessagePromise;
     expect(secondMessage.body).toEqual(secondExpectedMessageBody);
-
     const thirdMessage = await thirdMessagePromise;
     expect(thirdMessage.body).toEqual(thirdExpectedMessageBody);
  });
@@ -152,10 +148,8 @@ test("a queue delivers pending messages in the order they were sent", async () =
 
     let actualMessage = await messageService.receive(queueName).promise;
     expect(actualMessage.body).toEqual(firstExpectedMessageBody);
-
     actualMessage = await messageService.receive(queueName).promise;
     expect(actualMessage.body).toEqual(secondExpectedMessageBody);
-
     actualMessage = await messageService.receive(queueName).promise;
     expect(actualMessage.body).toEqual(thirdExpectedMessageBody);
 });
@@ -171,20 +165,15 @@ test("that a queue any messages in correct order if one or more receivers are al
 
     const firstMessagePromise = messageService.receive(queueName).promise;
     const secondMessagePromise = messageService.receive(queueName).promise;
-
     messageService.send(queueName, firstExpectedMessageBody);
-
     const thirdMessagePromise = messageService.receive(queueName).promise;
-
     messageService.send(queueName, secondExpectedMessageBody);
     messageService.send(queueName, thirdExpectedMessageBody);
 
     const thirdMessage = await thirdMessagePromise;
     expect(thirdMessage.body).toEqual(thirdExpectedMessageBody);
-
     const secondMessage = await secondMessagePromise;
     expect(secondMessage.body).toEqual(secondExpectedMessageBody);
-
     const firstMessage = await firstMessagePromise;
     expect(firstMessage.body).toEqual(firstExpectedMessageBody);
 });
