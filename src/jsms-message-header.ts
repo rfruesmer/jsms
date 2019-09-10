@@ -1,4 +1,4 @@
-export class MessageHeader {
+export class JsmsMessageHeader {
     public readonly channel: string;
     public readonly correlationID: string;
     public readonly expiration: number;

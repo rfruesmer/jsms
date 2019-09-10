@@ -1,20 +1,20 @@
 import { FakeMessageProducer } from "./fake-message-producer";
 import { FakeMessageConsumer } from "./fake-message-consumer";
 import { FakeConnection } from "./fake-connection";
-import { MessageService } from "@/message-service";
+import { JsmsMessageService } from "@/jsms-message-service";
 import { JsConnection } from "@/js-connection";
-import { Message } from "@/message";
-import { ResolveFunction } from "@/deferred";
+import { JsmsMessage } from "@/jsms-message";
+import { ResolveFunction } from "@/jsms-deferred";
 
 // TODO: convert to BDD tests - encapsulate setups/execution/verification in given/when/then where possible
 // TODO: split up into separate tests for PTP/pub-sub, message service and components
 
-let messageService: MessageService;
+let messageService: JsmsMessageService;
 
 // --------------------------------------------------------------------------------------------------------------------
 
 beforeEach(() => {
-    messageService = new MessageService();
+    messageService = new JsmsMessageService();
 });
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -33,7 +33,7 @@ test("is open for extension via custom message consumers", async () => {
     const messageConsumer = connection.getConsumer(queue) as FakeMessageConsumer;
     const promise = messageConsumer.receive().promise;
 
-    messageConsumer.emit(MessageService.createMessage(queueName, expectedMessageBody));
+    messageConsumer.emit(JsmsMessageService.createMessage(queueName, expectedMessageBody));
 
     const actualMessage = await promise;
     expect(actualMessage.body).toEqual(expectedMessageBody);
@@ -51,7 +51,7 @@ test("the message service provides a facade for custom message consumers", async
     const messageConsumer = connection.getConsumer(queue) as FakeMessageConsumer;
     const promise = messageService.receive(queueName).promise;
 
-    messageConsumer.emit(MessageService.createMessage(queueName, expectedMessageBody));
+    messageConsumer.emit(JsmsMessageService.createMessage(queueName, expectedMessageBody));
 
     const actualMessage = await promise;
     expect(actualMessage.body).toEqual(expectedMessageBody);
@@ -203,7 +203,7 @@ test("a queue receiver can send a response when the message is sent after regist
     const queue = messageService.createQueue(connection, queueName);
 
     messageService.receive(queueName)
-        .then((message: Message, resolve: ResolveFunction<object>) => {
+        .then((message: JsmsMessage, resolve: ResolveFunction<object>) => {
             resolve(expectedResponseBody);
         });
 
@@ -223,7 +223,7 @@ test("a queue receiver can send a response when the message is sent before regis
     const promise = messageService.send(queueName, messageBody);
 
     messageService.receive(queueName)
-        .then((message: Message, resolve: ResolveFunction<object>) => {
+        .then((message: JsmsMessage, resolve: ResolveFunction<object>) => {
             resolve(expectedResponseBody);
         });
 
@@ -248,7 +248,7 @@ test("a queue removes expired messages", async (done) => {
     await expiration;
     
     messageService.receive(queueName)
-        .then((message: Message, resolve: ResolveFunction<object>) => {
+        .then((message: JsmsMessage, resolve: ResolveFunction<object>) => {
             receivedExpiredMessage = true;
         });
     
@@ -269,7 +269,7 @@ test("a message queue catches exceptions thrown by consumers and then rejects th
     const promise = messageService.send(queueName, messageBody);
 
     messageService.receive(queueName)
-        .then((message: Message, resolve: ResolveFunction<object>) => {
+        .then((message: JsmsMessage, resolve: ResolveFunction<object>) => {
             throw new Error("which should be caught and reject the sender promise");
         });
 

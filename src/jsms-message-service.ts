@@ -1,21 +1,21 @@
 import { v4 } from "uuid";
-import { Connection } from "./connection";
-import { Deferred } from "./deferred";
-import { Message } from "./message";
-import { MessageHeader } from "./message-header";
-import { MessageQueue } from "./message-queue";
+import { JsmsConnection } from "./jsms-connection";
+import { JsmsDeferred } from "./jsms-deferred";
+import { JsmsMessage } from "./jsms-message";
+import { JsmsMessageHeader } from "./jsms-message-header";
+import { JsmsMessageQueue } from "./jsms-message-queue";
 import { checkState, checkArgument } from "./preconditions";
 
-export class MessageService {
-    private queueConnections = new Map<MessageQueue, Connection>();
-    private queues = new Map<string, MessageQueue>();
+export class JsmsMessageService {
+    private queueConnections = new Map<JsmsMessageQueue, JsmsConnection>();
+    private queues = new Map<string, JsmsMessageQueue>();
 
     // TODO: move to message producer (???)
-    public static createMessage(channel: string, body: object, timeToLive: number = 0, correlationID: string = v4()): Message {
-        return new Message(new MessageHeader(channel, correlationID, timeToLive), body);
+    public static createMessage(channel: string, body: object, timeToLive: number = 0, correlationID: string = v4()): JsmsMessage {
+        return new JsmsMessage(new JsmsMessageHeader(channel, correlationID, timeToLive), body);
     }
 
-    public createQueue(connection: Connection, queueName: string): MessageQueue {
+    public createQueue(connection: JsmsConnection, queueName: string): JsmsMessageQueue {
         checkState(!this.queues.has(queueName));
 
         const queue = connection.createQueue(queueName);
@@ -25,16 +25,16 @@ export class MessageService {
         return queue;
     }
 
-    public send(queueName: string, messageBody: object = {}, timeToLive: number = 0): Promise<Message> {
+    public send(queueName: string, messageBody: object = {}, timeToLive: number = 0): Promise<JsmsMessage> {
         checkArgument(this.queues.has(queueName));
         const queue = this.queues.get(queueName);
         // @ts-ignore: check for valid queue already done before via checkArgument
         const connection = this.queueConnections.get(queue);
         // @ts-ignore: connection is guaranteed to be valid at this point
-        return connection.getProducer(queue).send(MessageService.createMessage(queueName, messageBody, timeToLive));
+        return connection.getProducer(queue).send(JsmsMessageService.createMessage(queueName, messageBody, timeToLive));
     }
 
-    public receive(queueName: string): Deferred<Message, object, Error> {
+    public receive(queueName: string): JsmsDeferred<JsmsMessage, object, Error> {
         checkArgument(this.queues.has(queueName));
         const queue = this.queues.get(queueName);
         // @ts-ignore: check for valid queue already done before via checkArgument
@@ -44,7 +44,7 @@ export class MessageService {
     }
 
     public close(): void {
-        this.queues.forEach((queue: MessageQueue) => queue.close());
+        this.queues.forEach((queue: JsmsMessageQueue) => queue.close());
     }
 
 //     public subscribe(topicName: string, subscriber: SubscriberCallback): void {

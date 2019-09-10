@@ -1,10 +1,10 @@
-import { Deferred } from "./deferred";
-import { Destination } from "./destination";
-import { Message } from "./message";
-import { MessageService } from "./message-service";
+import { JsmsDeferred } from "./jsms-deferred";
+import { JsmsDestination } from "./jsms-destination";
+import { JsmsMessage } from "./jsms-message";
+import { JsmsMessageService } from "./jsms-message-service";
 
 class MessageQueueEntry {
-    constructor(public message: Message, public producerDeferred: Deferred<Message, object, Error>) { }
+    constructor(public message: JsmsMessage, public producerDeferred: JsmsDeferred<JsmsMessage, object, Error>) { }
 }
 
 /**
@@ -25,13 +25,13 @@ class MessageQueueEntry {
  *  successfully by one consumer.
  *
  */
-export class MessageQueue implements Destination {
+export class JsmsMessageQueue implements JsmsDestination {
     private name: string;
     private entries: MessageQueueEntry[] = [];
     private maintenanceInterval: any;
 
     // TODO: consider renaming to receiver-/consumer-deferreds
-    private deferredDequeues = new Array<Deferred<Message, object, Error>>();
+    private deferredDequeues = new Array<JsmsDeferred<JsmsMessage, object, Error>>();
 
     constructor(name: string) {
         this.name = name;
@@ -42,16 +42,16 @@ export class MessageQueue implements Destination {
         return this.name;
     }
 
-    public receive(): Deferred<Message, object, Error> {
+    public receive(): JsmsDeferred<JsmsMessage, object, Error> {
         return this.dequeue();
     }
     
-    private dequeue(): Deferred<Message, object, Error> {
+    private dequeue(): JsmsDeferred<JsmsMessage, object, Error> {
 
         this.removeExpiredMessages();
 
         // TODO: consider moving creation of the deferred object to receive()
-        const deferredDequeue = new Deferred<Message, object, Error>(() => {
+        const deferredDequeue = new JsmsDeferred<JsmsMessage, object, Error>(() => {
             if (this.entries.length === 0) {
                 return;
             }
@@ -61,7 +61,7 @@ export class MessageQueue implements Destination {
 
             deferredDequeue.promise.then((responseBody: object) => {
                 const request = currentEntry.message;
-                const response = MessageService.createMessage(request.header.channel, responseBody, 0, request.header.correlationID);
+                const response = JsmsMessageService.createMessage(request.header.channel, responseBody, 0, request.header.correlationID);
                 currentEntry.producerDeferred.resolve(response);
             });
 
@@ -80,14 +80,14 @@ export class MessageQueue implements Destination {
         return deferredDequeue;
     }
 
-    public send(message: Message): Promise<Message> {
-        const deferred = new Deferred<Message, object, Error>();
+    public send(message: JsmsMessage): Promise<JsmsMessage> {
+        const deferred = new JsmsDeferred<JsmsMessage, object, Error>();
 
         if (this.deferredDequeues.length > 0) {
             const deferredDequeue = this.deferredDequeues[0];
             this.deferredDequeues.shift();
             deferredDequeue.resolve(message);
-            deferredDequeue.promise.then((response: Message) => deferred.resolve(response));
+            deferredDequeue.promise.then((response: JsmsMessage) => deferred.resolve(response));
         }
         else {
             this.enqueue(message, deferred);
@@ -96,7 +96,7 @@ export class MessageQueue implements Destination {
         return deferred.promise;
     }
     
-    private enqueue(message: Message, producerDeferred: Deferred<Message, object, Error>): void {
+    private enqueue(message: JsmsMessage, producerDeferred: JsmsDeferred<JsmsMessage, object, Error>): void {
         this.entries.push(new MessageQueueEntry(message, producerDeferred));
     }
 

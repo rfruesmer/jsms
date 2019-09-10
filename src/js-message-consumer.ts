@@ -1,20 +1,20 @@
-import { Message } from "@/message";
-import { MessageConsumer } from "@/message-consumer";
-import { Deferred } from "@/deferred";
-import { Connection } from "./connection";
-import { Destination } from "./destination";
+import { JsmsMessage } from "@/jsms-message";
+import { JsmsMessageConsumer } from "@/jsms-message-consumer";
+import { JsmsDeferred } from "@/jsms-deferred";
+import { JsmsConnection } from "./jsms-connection";
+import { JsmsDestination } from "./jsms-destination";
 
 
-export class JsMessageConsumer implements MessageConsumer {
-    private connection: Connection;
-    private destination: Destination;
+export class JsMessageConsumer implements JsmsMessageConsumer {
+    private connection: JsmsConnection;
+    private destination: JsmsDestination;
 
-    constructor(connection: Connection, destination: Destination) {
+    constructor(connection: JsmsConnection, destination: JsmsDestination) {
         this.connection = connection;
         this.destination = destination;
     }
 
-    public receive(): Deferred<Message, object, Error> {
+    public receive(): JsmsDeferred<JsmsMessage, object, Error> {
         return this.destination.receive();
     }
 }

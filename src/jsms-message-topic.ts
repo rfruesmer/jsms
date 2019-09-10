@@ -1,6 +1,6 @@
-import { Message } from "./message";
+import { JsmsMessage } from "./jsms-message";
 
-export type SubscriberCallback = (message: Message) => void;
+export type SubscriberCallback = (message: JsmsMessage) => void;
 
 /**
  *  Implements publish/subscribe messaging.
@@ -19,7 +19,7 @@ export type SubscriberCallback = (message: Message) => void;
  *    must continue to be active in order for it to consume messages.
  *
  */
-export class MessageTopic {
+export class JsmsMessageTopic {
     private subscribers = new Array<SubscriberCallback>();
 
     constructor(private name: string) {}
@@ -30,7 +30,7 @@ export class MessageTopic {
         }
     }
 
-    public publish(message: Message): void {
+    public publish(message: JsmsMessage): void {
         this.subscribers.forEach(subscriber => subscriber(message));
     }
 }

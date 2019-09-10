@@ -1,29 +1,29 @@
-import { MessageProducer } from "@/message-producer";
-import { Message } from "@/message";
-import { Connection } from "@/connection";
-import { Destination } from "@/destination";
+import { JsmsMessageProducer } from "@/jsms-message-producer";
+import { JsmsMessage } from "@/jsms-message";
+import { JsmsConnection } from "@/jsms-connection";
+import { JsmsDestination } from "@/jsms-destination";
 
 
-export class FakeMessageProducer implements MessageProducer {
-    private connection: Connection;
+export class FakeMessageProducer implements JsmsMessageProducer {
+    private connection: JsmsConnection;
     private destination: any;
-    private lastMessage!: Message;
+    private lastMessage!: JsmsMessage;
     
-    constructor(connection: Connection, destination: Destination) {
+    constructor(connection: JsmsConnection, destination: JsmsDestination) {
         this.connection = connection;
         this.destination = destination;
     }
     
-    public send(message: Message): Promise<Message> {
+    public send(message: JsmsMessage): Promise<JsmsMessage> {
         this.lastMessage = message;
-        const promise = new Promise<Message>((resolve, reject) => {
+        const promise = new Promise<JsmsMessage>((resolve, reject) => {
             resolve();
         });
 
         return promise;
     }
 
-    public getLastMessage(): Message {
+    public getLastMessage(): JsmsMessage {
         return this.lastMessage;
     }
 }

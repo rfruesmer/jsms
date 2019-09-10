@@ -1,27 +1,27 @@
-import { Message } from "@/message";
-import { MessageConsumer } from "@/message-consumer";
-import { Deferred } from "@/deferred";
-import { Connection } from "@/connection";
-import { Destination } from "@/destination";
+import { JsmsMessage } from "@/jsms-message";
+import { JsmsMessageConsumer } from "@/jsms-message-consumer";
+import { JsmsDeferred } from "@/jsms-deferred";
+import { JsmsConnection } from "@/jsms-connection";
+import { JsmsDestination } from "@/jsms-destination";
 
 
-export class FakeMessageConsumer implements MessageConsumer {
-    private connection: Connection;
+export class FakeMessageConsumer implements JsmsMessageConsumer {
+    private connection: JsmsConnection;
     private destination: any;
-    private deferred!: Deferred<Message, object, Error>;
+    private deferred!: JsmsDeferred<JsmsMessage, object, Error>;
     
-    constructor(connection: Connection, destination: Destination) {
+    constructor(connection: JsmsConnection, destination: JsmsDestination) {
         this.connection = connection;
         this.destination = destination;
     }
 
-    public receive(): Deferred<Message, object, Error> {
-        this.deferred = new Deferred<Message, object, Error>();
+    public receive(): JsmsDeferred<JsmsMessage, object, Error> {
+        this.deferred = new JsmsDeferred<JsmsMessage, object, Error>();
         
         return this.deferred;
     }
 
-    public emit(message: Message): void {
+    public emit(message: JsmsMessage): void {
         this.deferred.resolve(message);
     }
 }
