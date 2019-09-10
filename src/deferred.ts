@@ -8,11 +8,12 @@ export class Deferred<D, R, E> {
     private _promise!: Promise<D>;
     private resolveFunction!: any;
     private rejectFunction!: any;
-    private chainedCallback: ChainedCallback;
+    private chained = false;
+    private onChained: ChainedCallback;
 
     // tslint:disable-next-line: no-empty
-    constructor(chainedCallback: ChainedCallback = () => {}) {
-        this.chainedCallback = chainedCallback;
+    constructor(onChained: ChainedCallback = () => {}) {
+        this.onChained = onChained;
 
         this._promise = new Promise<D>((resolve, reject) => {
             this.resolveFunction = resolve;
@@ -21,20 +22,28 @@ export class Deferred<D, R, E> {
     }
 
     get promise(): Promise<D> {
-        this.chainedCallback();
+        this.notifyChained();
         return this._promise;
+    }
+
+    private notifyChained(): void {
+        if (!this.chained) {
+            this.chained = true;
+            this.onChained();
+        }
     }
 
     public then(callback: ThenCallback<D, R, E>): Promise<D> {
         this.thenCallback = callback;
-        this.chainedCallback();
+        this.notifyChained();
         return this._promise;
     }
 
     public resolve(value: D): void {
         if (this.thenCallback) {
             this.thenCallback(value, this.resolveFunction, this.rejectFunction);
-        } else {
+        } 
+        else {
             this.resolveFunction(value);
         }
     }

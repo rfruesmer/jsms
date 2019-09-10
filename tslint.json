@@ -6,9 +6,12 @@
     "jsRules": {},
     "rules": {
         "indent": [true, "spaces", 4],
+        "interface-name": false,
         "max-classes-per-file": false,
         "member-ordering": false,
         "no-console": false,
+        "no-empty-interface": false,
+        "one-line": [true, "check-open-brace", "check-whitespace"],
         "ordered-imports": false,
         "typedef": [true, "call-signature"],
         "variable-name": {

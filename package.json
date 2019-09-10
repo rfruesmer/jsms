@@ -7,6 +7,7 @@
     "build": "npm run clean && npm run compile && npm run lint && npm run test && npm run prepare-dist",
     "clean": "rimraf ./dist/**/*",
     "compile": "tsc",
+    "doc": "rimraf ./doc && typedoc --exclude \"+(node_modules|test|index.d.ts)\" --excludeNotExported --excludePrivate --excludeProtected --module commonjs --target ES6  --out ./doc .",
     "prepare-dist": "mvmv ./dist/src/* ./dist/* && rimraf ./dist/src && rimraf ./dist/test",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
     "lint": "tslint -p tsconfig.json",
