@@ -6,13 +6,20 @@ import { JsmsMessage } from "./jsms-message";
  *  A client uses a MessageProducer object to send messages to a destination.
  */
 export abstract class JsmsMessageProducer {
-    // TODO: check if we can make members private by providing getters
-    protected connection: JsmsConnection;
-    protected destination: JsmsDestination;
+    private connection: JsmsConnection;
+    private destination: JsmsDestination;
 
     constructor(connection: JsmsConnection, destination: JsmsDestination) {
         this.connection = connection;
         this.destination = destination;
+    }
+
+    protected getConnection(): JsmsConnection {
+        return this.connection;
+    }
+
+    protected getDestination(): JsmsDestination {
+        return this.destination;
     }
 
     /**

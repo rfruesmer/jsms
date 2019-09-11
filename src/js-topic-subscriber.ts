@@ -16,7 +16,7 @@ export class JsTopicSubscriber extends JsmsMessageConsumer {
 
     private receiveTopicMessage(): JsmsDeferred<JsmsMessage, object, Error> {
         const receiver = new JsmsDeferred<JsmsMessage, object, Error>();
-        const topic = this.destination as JsmsTopic;
+        const topic = this.getDestination() as JsmsTopic;
         topic.subscribe((message: JsmsMessage) => {
             receiver.resolve(message);
         });
@@ -30,7 +30,7 @@ export class JsTopicSubscriber extends JsmsMessageConsumer {
 
     private sendToTopic(message: JsmsMessage): boolean {
         let result = true;
-        const topic = this.destination as JsmsTopic;
+        const topic = this.getDestination() as JsmsTopic;
         topic.getSubscribers().forEach(subscriber => {
             try {
                 subscriber(message)

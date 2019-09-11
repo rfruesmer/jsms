@@ -518,8 +518,6 @@ test("errors thrown by topic subsciber listeners are caught", async () => {
 
 // TODO: test replyTo/responses
 
-// TODO: resolve all todos (everywhere)
-
 // TODO: support for message listener
 
 // TODO: support for multiple queues

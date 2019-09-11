@@ -7,15 +7,17 @@ import { JsmsMessageListener } from "./jsms-message-listener";
 /**
  * A client uses a MessageConsumer object to receive messages from a destination.
  */
-// TODO: check if it's necessary to extend the message listener here
 export abstract class JsmsMessageConsumer implements JsmsMessageListener {
-    // TODO: check if we can make members private by providing getters
-    protected connection: JsmsConnection;
-    protected destination: JsmsDestination;
+    private connection: JsmsConnection;
+    private destination: JsmsDestination;
 
     constructor(connection: JsmsConnection, destination: JsmsDestination) {
         this.connection = connection;
         this.destination = destination;
+    }
+
+    protected getDestination(): JsmsDestination {
+        return this.destination;
     }
 
     /**

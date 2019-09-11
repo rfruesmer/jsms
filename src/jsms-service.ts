@@ -13,8 +13,6 @@ import { checkState } from "./preconditions";
 export class JsmsService {
     private defaultConnection = new JsConnection();
     private connections = new Map<JsmsDestination, JsmsConnection>();
-
-    // TODO: remove queues/topics - they are already present in the connections
     private queues = new Map<string, JsmsQueue>();
     private topics = new Map<string, JsmsTopic>();
 

@@ -19,7 +19,7 @@ export class JsTopicPublisher extends JsmsMessageProducer {
     }
 
     private sendToTopic(message: JsmsMessage, deferred: JsmsDeferred<JsmsMessage, object, Error>): void {
-        const topic = this.destination as JsmsTopic;
+        const topic = this.getDestination() as JsmsTopic;
         topic.getSubscribers().forEach(subscriber => {
             try {
                 subscriber(message);

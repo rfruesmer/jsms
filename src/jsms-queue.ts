@@ -52,7 +52,6 @@ export class JsmsQueue extends JsmsDestination {
                 (message: JsmsMessage) => message.header.expiration > 0 && currentTimeMillis > message.header.expiration
             )
             .map((message: JsmsMessage) => this.entries.indexOf(message))
-            // TODO: consider moving the message to a dead letter queue
             .forEach((index: number) => this.entries.splice(index, 1));
     };
 

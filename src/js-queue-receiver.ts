@@ -14,7 +14,7 @@ export class JsQueueReceiver extends JsmsMessageConsumer {
     }
 
     public receive(): JsmsDeferred<JsmsMessage, object, Error> {
-        const queue = this.destination as JsmsQueue;
+        const queue = this.getDestination() as JsmsQueue;
         const message = queue.dequeue();
         const receiver = this.createReceiver(message);
         if (!message) {
