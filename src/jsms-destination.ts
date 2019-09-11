@@ -15,7 +15,7 @@ export abstract class JsmsDestination {
         // tslint:disable-next-line: no-empty
         return new JsmsDeferred<JsmsMessage, object, Error>(() => {});
     }
-    
+
     public abstract close(): void;
 
     constructor(name: string) {

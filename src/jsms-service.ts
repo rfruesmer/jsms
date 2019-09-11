@@ -23,7 +23,7 @@ export class JsmsService {
         const connection = this.getConnection(queue);
         const producer = connection.getProducer(queue);
         const message = JsmsMessage.create(queueName, messageBody, timeToLive);
-        
+
         return producer.send(message);
     }
 
@@ -93,7 +93,7 @@ export class JsmsService {
         const connection = this.getConnection(topic);
         const producer = connection.getProducer(topic);
         const message = JsmsMessage.create(topicName, messageBody);
-        
+
         producer.send(message);
     }
 }

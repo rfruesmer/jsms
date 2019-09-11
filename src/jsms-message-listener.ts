@@ -7,7 +7,7 @@ import { JsmsDeferred } from "./jsms-deferred";
 export interface JsmsMessageListener {
     /**
      * Passes a message to the listener.
-     * 
+     *
      * @param message the message passed to the listener
      */
     onMessage(message: JsmsMessage, responseDeferred: JsmsDeferred<JsmsMessage, object, Error>): boolean;

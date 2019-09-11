@@ -4,7 +4,7 @@ import { JsmsMessage } from "./jsms-message";
 import { JsmsService } from "./jsms-service";
 
 class MessageQueueEntry {
-    constructor(public message: JsmsMessage, public producerDeferred: JsmsDeferred<JsmsMessage, object, Error>) { }
+    constructor(public message: JsmsMessage, public producerDeferred: JsmsDeferred<JsmsMessage, object, Error>) {}
 }
 
 /**
@@ -54,13 +54,16 @@ export class JsmsQueue extends JsmsDestination {
 
     private removeExpiredMessages = () => {
         const currentTimeMillis = new Date().getTime();
-        this.entries.filter((message: JsmsMessage) => message.header.expiration > 0 && currentTimeMillis > message.header.expiration)
+        this.entries
+            .filter(
+                (message: JsmsMessage) => message.header.expiration > 0 && currentTimeMillis > message.header.expiration
+            )
             .map((message: JsmsMessage) => this.entries.indexOf(message))
             // TODO: consider moving the message to a dead letter queue
             .forEach((index: number) => this.entries.splice(index, 1));
     };
-    
+
     public close(): void {
         clearInterval(this.maintenanceInterval);
-    }  
+    }
 }

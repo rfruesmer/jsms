@@ -13,7 +13,7 @@ export class JsMessageConsumer extends JsmsMessageConsumer {
     constructor(connection: JsmsConnection, destination: JsmsDestination) {
         super(connection, destination);
     }
-    
+
     public receive(): JsmsDeferred<JsmsMessage, object, Error> {
         if (this.destination instanceof JsmsTopic) {
             // TODO: check if a deferred is really necessary/useful here
@@ -24,19 +24,18 @@ export class JsMessageConsumer extends JsmsMessageConsumer {
             });
 
             return receiveDeferred;
-        }
-        else {
+        } else {
             const queue = this.destination as JsmsQueue;
             const message = queue.dequeue();
             const receiveDeferred = this.createReceiveDeferred(message);
             if (!message) {
                 this.receiveDeferreds.push(receiveDeferred);
             }
-            
+
             return receiveDeferred;
         }
     }
-    
+
     private createReceiveDeferred(message: JsmsMessage | undefined): JsmsDeferred<JsmsMessage, object, Error> {
         const receiveDeferred = new JsmsDeferred<JsmsMessage, object, Error>(() => {
             if (!message) {
@@ -47,7 +46,12 @@ export class JsMessageConsumer extends JsmsMessageConsumer {
 
             receiveDeferred.promise.then((responseBody: object) => {
                 const request = message;
-                const response = JsmsMessage.create(request.header.channel, responseBody, 0, request.header.correlationID);
+                const response = JsmsMessage.create(
+                    request.header.channel,
+                    responseBody,
+                    0,
+                    request.header.correlationID
+                );
                 if (responseDeferred) {
                     responseDeferred.resolve(response);
                 }
@@ -55,8 +59,7 @@ export class JsMessageConsumer extends JsmsMessageConsumer {
 
             try {
                 receiveDeferred.resolve(message);
-            }
-            catch (error) {
+            } catch (error) {
                 if (responseDeferred) {
                     responseDeferred.reject(error);
                 }
@@ -70,8 +73,7 @@ export class JsMessageConsumer extends JsmsMessageConsumer {
         if (this.destination instanceof JsmsTopic) {
             const topic = this.destination as JsmsTopic;
             topic.getSubscribers().forEach(subscriber => subscriber(message));
-        }
-        else {
+        } else {
             if (this.receiveDeferreds.length === 0) {
                 this.responseDeferreds.set(message.header.id, responseDeferred);
                 return false;
@@ -79,7 +81,12 @@ export class JsMessageConsumer extends JsmsMessageConsumer {
 
             const receiveDeferred = this.receiveDeferreds[0];
             receiveDeferred.promise.then((responseBody: object) => {
-                const response = JsmsMessage.create(message.header.channel, responseBody, 0, message.header.correlationID);
+                const response = JsmsMessage.create(
+                    message.header.channel,
+                    responseBody,
+                    0,
+                    message.header.correlationID
+                );
                 responseDeferred.resolve(response);
             });
             this.receiveDeferreds.shift();

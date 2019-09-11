@@ -34,7 +34,7 @@ export class JsmsTopic extends JsmsDestination {
     }
 
     public getSubscribers(): MessageListenerCallback[] {
-        return [... this.subscribers];
+        return [...this.subscribers];
     }
 
     public close(): void {

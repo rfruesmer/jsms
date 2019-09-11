@@ -5,7 +5,6 @@ import { JsmsQueue } from "./jsms-queue";
 import { checkArgument, checkState } from "./preconditions";
 import { JsmsTopic } from "./jsms-topic";
 
-
 export abstract class JsmsConnection {
     protected queues = new Map<string, JsmsQueue>();
     protected topics = new Map<string, JsmsTopic>();
@@ -34,7 +33,7 @@ export abstract class JsmsConnection {
     }
 
     protected getDestinationFor(channel: string): JsmsDestination | undefined {
-        const  destination = this.queues.get(channel);
+        const destination = this.queues.get(channel);
         return destination ? destination : this.topics.get(channel);
     }
 

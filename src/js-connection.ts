@@ -8,14 +8,13 @@ import { JsmsMessageProducer } from "./jsms-message-producer";
 import { JsmsMessageConsumer } from "./jsms-message-consumer";
 
 export class JsConnection extends JsmsConnection {
-
     public createQueue(queueName: string): JsmsQueue {
         const queue = new JsmsQueue(queueName);
         super.addQueue(queue, this.createProducer(queue), this.createConsumer(queue));
 
         return queue;
     }
-    
+
     protected createProducer(destination: JsmsDestination): JsmsMessageProducer {
         return new JsMessageProducer(this, destination);
     }

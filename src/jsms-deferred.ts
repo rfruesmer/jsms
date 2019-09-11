@@ -43,8 +43,7 @@ export class JsmsDeferred<D, R, E> {
     public resolve(value: D): void {
         if (this.thenCallback) {
             this.thenCallback(value, this.resolveFunction, this.rejectFunction);
-        } 
-        else {
+        } else {
             this.resolveFunction(value);
         }
     }
