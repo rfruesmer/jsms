@@ -10,8 +10,4 @@ A lightweight implementation of a messaging client framework for JavaScript/Type
 
 The purpose of this module is to act as an extensible platform for adding providers for different protocols into an integrated solution - it's not intended to be a complete, full-fledged message service implementation (!)
 
-It can be used right out of the box in terms of an in-process mediator/event bus, but for using protocols/transports like for example STOMP over WebSocket, you usually will have to integrate other (3rd party) communication implementations by creating a custom connection class.
-
-
-
-
+It can be used right out of the box in terms of an in-process mediator/event bus, but for using protocols/transports like for example STOMP over WebSocket, you usually will have to integrate your own or other (3rd party) communication implementations by creating a custom connection class.
