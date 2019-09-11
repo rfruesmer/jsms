@@ -51,7 +51,7 @@ test("a queue receiver can fetch a pending message after registration", async ()
 
 // --------------------------------------------------------------------------------------------------------------------
 
-test("that a queue delivers any number of messages immediately if one or more receivers are already registered", async () => {
+test("a queue delivers any number of messages immediately if one or more receivers are already registered", async () => {
     const queueName = "/some/queue";
     const firstExpectedMessageBody = { test: "1" };
     const secondExpectedMessageBody = { test: "2" };
@@ -94,7 +94,7 @@ test("a queue delivers pending messages in the order they were sent", async () =
 });
 
 // --------------------------------------------------------------------------------------------------------------------
-test("that a queue any messages in correct order if one or more receivers are already registered", async () => {
+test("a queue delivers any messages in correct order if one or more receivers are already registered", async () => {
     const queueName = "/some/queue";
     const firstExpectedMessageBody = { test: "1" };
     const secondExpectedMessageBody = { test: "2" };
@@ -102,8 +102,11 @@ test("that a queue any messages in correct order if one or more receivers are al
 
     const firstMessagePromise = messageService.receive(queueName).promise;
     const secondMessagePromise = messageService.receive(queueName).promise;
+
     messageService.send(queueName, firstExpectedMessageBody);
+
     const thirdMessagePromise = messageService.receive(queueName).promise;
+
     messageService.send(queueName, secondExpectedMessageBody);
     messageService.send(queueName, thirdExpectedMessageBody);
 

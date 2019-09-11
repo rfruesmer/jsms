@@ -10,6 +10,7 @@ export abstract class JsmsConnection {
     protected producers = new Map<JsmsMessageQueue, JsmsMessageProducer>();
     protected consumers = new Map<JsmsMessageQueue, JsmsMessageConsumer>();
 
+    // TODO: consider moving creation of queues
     public abstract createQueue(queueName: string): JsmsMessageQueue;
 
     protected addQueue(queue: JsmsMessageQueue, producer: JsmsMessageProducer, consumer: JsmsMessageConsumer): void {

@@ -3,12 +3,13 @@ import { JsmsMessage } from "./jsms-message";
 import { JsmsDeferred } from "./jsms-deferred";
 
 /**
- *  A message consumer is responsible for implementing a specific transport 
- *  mechanism like HTTP, Web Socket etc.
+ * A client uses a MessageConsumer object to receive messages from a destination. 
  */
 export interface JsmsMessageConsumer {
     /**
-     *  Receives the next message produced for this message consumer.
+     * Receives the next message produced for this message consumer.
+     * 
+     * This call is run asynchronuos and therefore doesn't block.
      */
     receive(): JsmsDeferred<JsmsMessage, object, Error>;
 }

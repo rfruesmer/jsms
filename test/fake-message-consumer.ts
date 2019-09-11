@@ -3,9 +3,10 @@ import { JsmsMessageConsumer } from "@/jsms-message-consumer";
 import { JsmsDeferred } from "@/jsms-deferred";
 import { JsmsConnection } from "@/jsms-connection";
 import { JsmsDestination } from "@/jsms-destination";
+import { JsmsMessageListener } from "@/jsms-message-listener";
 
 
-export class FakeMessageConsumer implements JsmsMessageConsumer {
+export class FakeMessageConsumer implements JsmsMessageConsumer, JsmsMessageListener {
     private connection: JsmsConnection;
     private destination: any;
     private deferred!: JsmsDeferred<JsmsMessage, object, Error>;
@@ -21,7 +22,7 @@ export class FakeMessageConsumer implements JsmsMessageConsumer {
         return this.deferred;
     }
 
-    public emit(message: JsmsMessage): void {
-        this.deferred.resolve(message);
+    public onMessage(message: JsmsMessage): void {
+        throw new Error("Method not implemented.");
     }
 }
