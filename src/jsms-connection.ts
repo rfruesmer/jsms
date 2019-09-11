@@ -13,8 +13,6 @@ export abstract class JsmsConnection {
 
     public abstract createQueue(queueName: string): JsmsQueue;
     public abstract createTopic(topicName: string): JsmsTopic;
-    protected abstract createProducer(destination: JsmsDestination): JsmsMessageProducer;
-    protected abstract createConsumer(destination: JsmsDestination): JsmsMessageConsumer;
 
     protected addQueue(queue: JsmsQueue, producer: JsmsMessageProducer, consumer: JsmsMessageConsumer): void {
         checkState(!this.queues.has(queue.getName()), "A queue with the same name is already registered");

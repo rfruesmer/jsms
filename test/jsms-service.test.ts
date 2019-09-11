@@ -3,8 +3,10 @@ import { JsmsMessage } from "@/jsms-message";
 import { JsmsService } from "@/jsms-service";
 import { FakeConnection } from "./fake-connection";
 import { FakeCustomMessage } from "./fake-custom-message";
-import { FakeMessageConsumer } from "./fake-message-consumer";
-import { FakeMessageProducer } from "./fake-message-producer";
+import { FakeQueueSender } from "./fake-queue-sender";
+import { FakeTopicPublisher } from "./fake-topic-publisher";
+import { JsQueueReceiver } from "@/js-queue-receiver";
+import { JsTopicSubscriber } from "@/js-topic-subscriber";
 
 
 let messageService: JsmsService;
@@ -284,7 +286,7 @@ test("queue is open for extension via custom queue receiver", async () => {
     // given custom queue receiver for a given queue name
     const connection = new FakeConnection();
     const queue = connection.createQueue(queueName);
-    const customQueueReceiver = connection.getConsumer(queue) as FakeMessageConsumer;
+    const customQueueReceiver = connection.getConsumer(queue) as JsQueueReceiver;
     const promise = customQueueReceiver.receive().promise;
 
     // when receiving a custom message
@@ -327,7 +329,7 @@ test("message service integrates with custom queue sender", async () => {
     // given custom queue sender for a given queue name
     const connection = new FakeConnection();
     const queue = messageService.createQueue(queueName, connection);
-    const customQueueSender = connection.getProducer(queue) as FakeMessageProducer;
+    const customQueueSender = connection.getProducer(queue) as FakeQueueSender;
     expect(customQueueSender.getLastMessage()).toBeUndefined();
     
     messageService.send(queueName, expectedMessageBody);
@@ -348,7 +350,7 @@ test("topic subscription is open for extension via custom topic subscriber", asy
     // given custom message consumer for a given topic name
     const connection = new FakeConnection();
     const topic = messageService.createTopic(topicName, connection);
-    const customTopicSubscriber = connection.getConsumer(topic) as FakeMessageConsumer;
+    const customTopicSubscriber = connection.getConsumer(topic) as JsTopicSubscriber;
     const promise = customTopicSubscriber.receive().promise;
 
     // when receiving a custom message
@@ -370,7 +372,7 @@ test("errors thrown by custom topic subscribers are caught by JsMessageConsumer"
     // given custom message consumer for a given topic name
     const connection = new FakeConnection();
     const topic = messageService.createTopic(topicName, connection);
-    const customTopicSubscriber = connection.getConsumer(topic) as FakeMessageConsumer;
+    const customTopicSubscriber = connection.getConsumer(topic) as JsTopicSubscriber;
     customTopicSubscriber.receive().then((message: JsmsMessage) => {
         throw new Error("which should be caught");
     });
@@ -418,14 +420,14 @@ test("message service integrates with custom topic publisher", async () => {
     // given custom message producer for a given topic name
     const connection = new FakeConnection();
     const topic = messageService.createTopic(topicName, connection);
-    const messageProducer = connection.getProducer(topic) as FakeMessageProducer;
-    expect(messageProducer.getLastMessage()).toBeUndefined();
+    const customTopicPublisher = connection.getProducer(topic) as FakeTopicPublisher;
+    expect(customTopicPublisher.getLastMessage()).toBeUndefined();
 
     // when publishing a message to topic
     messageService.publish(topicName, expectedMessageBody);
 
     // then the custom message producer should have received the message
-    const lastMessage = messageProducer.getLastMessage();
+    const lastMessage = customTopicPublisher.getLastMessage();
     expect(lastMessage).toBeDefined();
     expect(lastMessage.body).toEqual(expectedMessageBody);
 
@@ -513,10 +515,6 @@ test("errors thrown by topic subsciber listeners are caught", async () => {
 });
 
 // --------------------------------------------------------------------------------------------------------------------
-
-// TODO: remove any redundant code from fake-* classes
-
-// TODO: introduce subclasses MessageConsumer > QueueReceiver, TopicSubscriber / MessageProducer > QueueSender, TopicPublisher (???)
 
 // TODO: test replyTo/responses
 

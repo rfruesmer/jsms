@@ -1,31 +1,22 @@
-import { JsMessageConsumer } from "./js-message-consumer";
-import { JsMessageProducer } from "./js-message-producer";
+import { JsQueueReceiver } from "./js-queue-receiver";
+import { JsQueueSender } from "./js-queue-sender";
+import { JsTopicPublisher } from "./js-topic-publisher";
+import { JsTopicSubscriber } from "./js-topic-subscriber";
 import { JsmsConnection } from "./jsms-connection";
-import { JsmsDestination } from "./jsms-destination";
-import { JsmsMessageConsumer } from "./jsms-message-consumer";
-import { JsmsMessageProducer } from "./jsms-message-producer";
 import { JsmsQueue } from "./jsms-queue";
 import { JsmsTopic } from "./jsms-topic";
 
 export class JsConnection extends JsmsConnection {
     public createQueue(queueName: string): JsmsQueue {
         const queue = new JsmsQueue(queueName);
-        super.addQueue(queue, this.createProducer(queue), this.createConsumer(queue));
+        super.addQueue(queue, new JsQueueSender(this, queue), new JsQueueReceiver(this, queue));
 
         return queue;
     }
 
-    protected createProducer(destination: JsmsDestination): JsmsMessageProducer {
-        return new JsMessageProducer(this, destination);
-    }
-
-    protected createConsumer(destination: JsmsDestination): JsmsMessageConsumer {
-        return new JsMessageConsumer(this, destination);
-    }
-
     public createTopic(topicName: string): JsmsTopic {
         const topic = new JsmsTopic(topicName);
-        super.addTopic(topic, this.createProducer(topic), this.createConsumer(topic));
+        super.addTopic(topic, new JsTopicPublisher(this, topic), new JsTopicSubscriber(this, topic));
 
         return topic;
     }

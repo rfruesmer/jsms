@@ -1,12 +1,11 @@
-import { JsmsDeferred } from "@/jsms-deferred";
-import { JsmsMessage } from "@/jsms-message";
-import { JsmsMessageConsumer } from "@/jsms-message-consumer";
 import { JsmsConnection } from "./jsms-connection";
+import { JsmsDeferred } from "./jsms-deferred";
 import { JsmsDestination } from "./jsms-destination";
+import { JsmsMessage } from "./jsms-message";
+import { JsmsMessageConsumer } from "./jsms-message-consumer";
 import { JsmsQueue } from "./jsms-queue";
-import { JsmsTopic } from "./jsms-topic";
 
-export class JsMessageConsumer extends JsmsMessageConsumer {
+export class JsQueueReceiver extends JsmsMessageConsumer {
     protected receivers = new Array<JsmsDeferred<JsmsMessage, object, Error>>();
     protected senders = new Map<string, JsmsDeferred<JsmsMessage, object, Error>>();
 
@@ -15,25 +14,6 @@ export class JsMessageConsumer extends JsmsMessageConsumer {
     }
 
     public receive(): JsmsDeferred<JsmsMessage, object, Error> {
-        if (this.destination instanceof JsmsTopic) {
-            return this.receiveTopicMessage();
-        } 
-        else {
-            return this.receiveQueueMessage();
-        }
-    }
-
-    private receiveTopicMessage(): JsmsDeferred<JsmsMessage, object, Error> {
-        const receiver = new JsmsDeferred<JsmsMessage, object, Error>();
-        const topic = this.destination as JsmsTopic;
-        topic.subscribe((message: JsmsMessage) => {
-            receiver.resolve(message);
-        });
-
-        return receiver;
-    }
-
-    private receiveQueueMessage(): JsmsDeferred<JsmsMessage, object, Error> {
         const queue = this.destination as JsmsQueue;
         const message = queue.dequeue();
         const receiver = this.createReceiver(message);
@@ -81,28 +61,8 @@ export class JsMessageConsumer extends JsmsMessageConsumer {
             return false;
         }
 
-        if (this.destination instanceof JsmsTopic) {
-            return this.sendToTopic(message);
-        } 
-        else {
-            return this.sendToQueue(message, sender);
-        }
-    }
-
-    private sendToTopic(message: JsmsMessage): boolean {
-        let result = true;
-        const topic = this.destination as JsmsTopic;
-        topic.getSubscribers().forEach(subscriber => {
-            try {
-                subscriber(message)
-            }
-            catch (e) {
-                console.error(e);
-                result = false;
-            }
-        });
-
-        return result;
+        // since this an in-process receiver, it can directly dispatch to the queue
+        return this.sendToQueue(message, sender);
     }
 
     private sendToQueue(message: JsmsMessage, sender: JsmsDeferred<JsmsMessage, object, Error>): boolean {
