@@ -16,6 +16,12 @@ export class JsmsService {
     private queues = new Map<string, JsmsQueue>();
     private topics = new Map<string, JsmsTopic>();
 
+    /**
+     *  Sends a message to the specified queue.
+     * 
+     *  Note: if the queue doesn't exist yet, a new queue using the default 
+     *  connection will be generated automatically, .
+     */
     public send(queueName: string, messageBody: object = {}, timeToLive: number = 0): Promise<JsmsMessage> {
         const queue = this.getQueue(queueName);
         const connection = this.getConnection(queue);
@@ -40,6 +46,9 @@ export class JsmsService {
         return connection;
     }
 
+    /**
+     *  Creates a new queue for the given connection.
+     */
     public createQueue(queueName: string, connection: JsmsConnection = this.defaultConnection): JsmsQueue {
         checkState(!this.queues.has(queueName));
 
@@ -50,6 +59,9 @@ export class JsmsService {
         return queue;
     }
 
+    /**
+     *  Receives the next message from the given queue.
+     */
     public receive(queueName: string): JsmsDeferred<JsmsMessage, object, Error> {
         const queue = this.getQueue(queueName);
         const connection = this.getConnection(queue);
@@ -58,10 +70,12 @@ export class JsmsService {
         return consumer.receive();
     }
 
-    public close(): void {
-        this.queues.forEach((queue: JsmsQueue) => queue.close());
-    }
-
+    /**
+     *  Registers a callback function on the given topic.
+     * 
+     *  Note: if the topic doesn't exist yet, a new topic using the default 
+     *  connection will be generated automatically.
+     */
     public subscribe(topicName: string, subscriber: MessageListenerCallback): void {
         const topic = this.getTopic(topicName);
         topic.subscribe(subscriber);
@@ -76,6 +90,9 @@ export class JsmsService {
         return topic;
     }
 
+    /**
+     *  Creates a new topic for the given connection.
+     */
     public createTopic(topicName: string, connection: JsmsConnection = this.defaultConnection): JsmsTopic {
         checkState(!this.topics.has(topicName));
 
@@ -86,6 +103,12 @@ export class JsmsService {
         return topic;
     }
 
+    /**
+     * Publishes a message to the given topic.
+     * 
+     *  Note: if the topic doesn't exist yet, a new topic using the default 
+     *  connection will be generated automatically.
+     */
     public publish(topicName: string, messageBody: object = {}): void {
         const topic = this.getTopic(topicName);
         const connection = this.getConnection(topic);
@@ -93,5 +116,12 @@ export class JsmsService {
         const message = JsmsMessage.create(topicName, messageBody);
 
         producer.send(message);
+    }
+
+    /**
+     *  Releases all resources allocated by this service.
+     */
+    public close(): void {
+        this.queues.forEach((queue: JsmsQueue) => queue.close());
     }
 }

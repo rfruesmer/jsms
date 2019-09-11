@@ -5,13 +5,23 @@ import { JsmsQueue } from "./jsms-queue";
 import { JsmsTopic } from "./jsms-topic";
 import { checkArgument, checkState } from "./preconditions";
 
+/**
+ *  A Connection object is a client's active connection to its JSMS provider
+ */
 export abstract class JsmsConnection {
     protected queues = new Map<string, JsmsQueue>();
     protected topics = new Map<string, JsmsTopic>();
     protected producers = new Map<JsmsDestination, JsmsMessageProducer>();
     protected consumers = new Map<JsmsDestination, JsmsMessageConsumer>();
 
+    /**
+     * Creates a queue with the given name.
+     */
     public abstract createQueue(queueName: string): JsmsQueue;
+
+    /**
+     * Creates a topic with the given name.
+     */
     public abstract createTopic(topicName: string): JsmsTopic;
 
     protected addQueue(queue: JsmsQueue, producer: JsmsMessageProducer, consumer: JsmsMessageConsumer): void {
@@ -40,12 +50,18 @@ export abstract class JsmsConnection {
         return destination;
     }
 
+    /**
+     * Returns the message consumer of the specified destination.
+     */
     public getConsumer(destination: JsmsDestination): JsmsMessageConsumer {
         checkArgument(this.consumers.has(destination));
         // @ts-ignore: check for undefined already done before via checkArgument
         return this.consumers.get(destination);
     }
 
+    /**
+     * Returns the message producer of the specified destination.
+     */
     public getProducer(destination: JsmsDestination): JsmsMessageProducer {
         checkArgument(this.producers.has(destination));
         // @ts-ignore: check for undefined already done before via checkArgument

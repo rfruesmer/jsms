@@ -3,6 +3,9 @@ export type RejectFunction<E> = (reason: E) => void;
 type ThenCallback<D, R, E> = (value: D, resolve: ResolveFunction<R>, reject: RejectFunction<E>) => void;
 type ChainedCallback = () => void;
 
+/**
+ * Utility class for handling ECMAScript 2015 promises.
+ */
 export class JsmsDeferred<D, R, E> {
     private thenCallback!: ThenCallback<D, R, E>;
     private _promise!: Promise<D>;

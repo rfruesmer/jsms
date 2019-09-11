@@ -15,8 +15,6 @@ import { JsmsMessage } from "./jsms-message";
  *  - Queues retain all messages sent to them until the messages are
  *    consumed or until the message expires.
  *
- *  - The receiver acknowledges the successful processing of a message.
- *
  *  Use PTP messaging when every message you send must be processed
  *  successfully by one consumer.
  *

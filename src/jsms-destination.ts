@@ -1,4 +1,7 @@
 
+/**
+ * Common abstraction for queues and topics.
+ */
 export abstract class JsmsDestination {
     private name: string;
 
@@ -8,6 +11,9 @@ export abstract class JsmsDestination {
         this.name = name;
     }
 
+    /**
+     * Gets the name of this queue.
+     */
     public getName(): string {
         return this.name;
     }

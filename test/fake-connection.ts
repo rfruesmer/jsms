@@ -10,7 +10,8 @@ import { FakeQueueSender } from "./fake-queue-sender";
 import { FakeTopicPublisher } from "./fake-topic-publisher";
 
 export class FakeConnection extends JsmsConnection {
-        
+    private lastSentMessage!: JsmsMessage;
+
     public createQueue(queueName: string): JsmsQueue {
         const queue = new JsmsQueue(queueName);
         super.addQueue(queue, new FakeQueueSender(this, queue), new JsQueueReceiver(this, queue));
@@ -32,5 +33,13 @@ export class FakeConnection extends JsmsConnection {
         const responseDeferred = new JsmsDeferred<JsmsMessage, object, Error>();
 
         return consumer.onMessage(message, responseDeferred);
+    }
+
+    public send(message: JsmsMessage): void {
+        this.lastSentMessage = message;
+    }
+
+    public getLastSentMessage(): JsmsMessage {
+        return this.lastSentMessage;
     }
 }

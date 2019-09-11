@@ -1,19 +1,20 @@
 import { JsQueueSender } from "@/js-queue-sender";
 import { JsmsMessage } from "@/jsms-message";
+import { FakeConnection } from "./fake-connection";
 
 export class FakeQueueSender extends JsQueueSender {
-    private lastMessage!: JsmsMessage;
 
     public send(message: JsmsMessage): Promise<JsmsMessage> {
-        this.lastMessage = message;
 
         // NOTE: a custom message producer isn't limited to calling super, 
         // but can do custom things with the message now
 
-        return super.send(message);
-    }
+        const promise = new Promise<JsmsMessage>((resolve, reject) => {
+            const connection = this.getConnection() as FakeConnection;
+            connection.send(message);
+            resolve();
+        });
 
-    public getLastMessage(): JsmsMessage {
-        return this.lastMessage;
+        return promise;
     }
 }

@@ -26,7 +26,7 @@ class HandshakeServer {
             this.receiveCount++;
             console.log("[HandshakeServer] received: #" + this.receiveCount + "\n" + JSON.stringify(message));
 
-            // delay reachability by replying only on the third message
+            // simulate delayed reachability by replying only on the third message
             if (this.receiveCount === 3) {
                 console.log("[HandshakeServer] sending response")
                 resolve({reply: "PONG"});

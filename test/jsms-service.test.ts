@@ -330,11 +330,11 @@ test("message service integrates with custom queue sender", async () => {
     const connection = new FakeConnection();
     const queue = messageService.createQueue(queueName, connection);
     const customQueueSender = connection.getProducer(queue) as FakeQueueSender;
-    expect(customQueueSender.getLastMessage()).toBeUndefined();
+    expect(connection.getLastSentMessage()).toBeUndefined();
     
     messageService.send(queueName, expectedMessageBody);
 
-    const lastMessage = customQueueSender.getLastMessage();
+    const lastMessage = connection.getLastSentMessage();
     expect(lastMessage).toBeDefined();
     expect(lastMessage.body).toEqual(expectedMessageBody);
 
@@ -515,19 +515,3 @@ test("errors thrown by topic subsciber listeners are caught", async () => {
 });
 
 // --------------------------------------------------------------------------------------------------------------------
-
-// TODO: support for message listener
-
-// TODO: support for multiple queues
-
-// TODO: support for multiple topics
-
-// TODO: remove commented code
-
-// TODO: add jsdoc
-
-// TODO: receiveSync() (?)
-
-// TODO: convert to BDD tests - encapsulate setups/execution/verification in given/when/then where possible
-
-// TODO: split up into separate tests for PTP/pub-sub, message service and components
