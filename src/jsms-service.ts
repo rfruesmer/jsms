@@ -3,13 +3,13 @@ import { JsmsConnection } from "./jsms-connection";
 import { JsmsDeferred } from "./jsms-deferred";
 import { JsmsMessage } from "./jsms-message";
 import { JsmsMessageHeader } from "./jsms-message-header";
-import { JsmsMessageQueue } from "./jsms-message-queue";
+import { JsmsQueue } from "./jsms-queue";
 import { checkState, checkArgument } from "./preconditions";
 import { JsConnection } from "./js-connection";
 
-export class JsmsMessageService {
-    private queueConnections = new Map<JsmsMessageQueue, JsmsConnection>();
-    private queues = new Map<string, JsmsMessageQueue>();
+export class JsmsService {
+    private queueConnections = new Map<JsmsQueue, JsmsConnection>();
+    private queues = new Map<string, JsmsQueue>();
 
     // TODO: move to message producer (???)
     public static createMessage(channel: string, body: object, timeToLive: number = 0, correlationID: string = v4()): JsmsMessage {
@@ -21,12 +21,12 @@ export class JsmsMessageService {
         const connection = this.queueConnections.get(queue);
         // @ts-ignore: connection is guaranteed to be valid at this point
         const producer = connection.getProducer(queue);
-        const message = JsmsMessageService.createMessage(queueName, messageBody, timeToLive);
+        const message = JsmsService.createMessage(queueName, messageBody, timeToLive);
         
         return producer.send(message);
     }
 
-    private getQueue(queueName: string): JsmsMessageQueue {
+    private getQueue(queueName: string): JsmsQueue {
         let queue = this.queues.get(queueName);
         if (!queue) {
             queue = this.createQueue(queueName);
@@ -36,7 +36,7 @@ export class JsmsMessageService {
         return queue;
     }
 
-    public createQueue(queueName: string, connection: JsmsConnection = new JsConnection()): JsmsMessageQueue {
+    public createQueue(queueName: string, connection: JsmsConnection = new JsConnection()): JsmsQueue {
         checkState(!this.queues.has(queueName));
 
         const queue = connection.createQueue(queueName);
@@ -56,7 +56,7 @@ export class JsmsMessageService {
     }
 
     public close(): void {
-        this.queues.forEach((queue: JsmsMessageQueue) => queue.close());
+        this.queues.forEach((queue: JsmsQueue) => queue.close());
     }
 
 //     public subscribe(topicName: string, subscriber: SubscriberCallback): void {

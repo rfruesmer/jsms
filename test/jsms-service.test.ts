@@ -1,7 +1,7 @@
 import { FakeMessageProducer } from "./fake-message-producer";
 import { FakeMessageConsumer } from "./fake-message-consumer";
 import { FakeConnection } from "./fake-connection";
-import { JsmsMessageService } from "@/jsms-message-service";
+import { JsmsService } from "@/jsms-service";
 import { JsConnection } from "@/js-connection";
 import { JsmsMessage } from "@/jsms-message";
 import { ResolveFunction } from "@/jsms-deferred";
@@ -9,12 +9,12 @@ import { ResolveFunction } from "@/jsms-deferred";
 // TODO: convert to BDD tests - encapsulate setups/execution/verification in given/when/then where possible
 // TODO: split up into separate tests for PTP/pub-sub, message service and components
 
-let messageService: JsmsMessageService;
+let messageService: JsmsService;
 
 // --------------------------------------------------------------------------------------------------------------------
 
 beforeEach(() => {
-    messageService = new JsmsMessageService();
+    messageService = new JsmsService();
 });
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -242,7 +242,7 @@ test("is open for extension via custom connection / message consumers", async ()
     const messageConsumer = connection.getConsumer(queue) as FakeMessageConsumer;
     const promise = messageConsumer.receive().promise;
 
-    messageConsumer.emit(JsmsMessageService.createMessage(queueName, expectedMessageBody));
+    messageConsumer.emit(JsmsService.createMessage(queueName, expectedMessageBody));
 
     const actualMessage = await promise;
     expect(actualMessage.body).toEqual(expectedMessageBody);
@@ -260,7 +260,7 @@ test("the message service provides a facade for custom message consumers", async
     const messageConsumer = connection.getConsumer(queue) as FakeMessageConsumer;
     const promise = messageService.receive(queueName).promise;
 
-    messageConsumer.emit(JsmsMessageService.createMessage(queueName, expectedMessageBody));
+    messageConsumer.emit(JsmsService.createMessage(queueName, expectedMessageBody));
 
     const actualMessage = await promise;
     expect(actualMessage.body).toEqual(expectedMessageBody);

@@ -1,7 +1,7 @@
 import { JsmsDeferred } from "./jsms-deferred";
 import { JsmsDestination } from "./jsms-destination";
 import { JsmsMessage } from "./jsms-message";
-import { JsmsMessageService } from "./jsms-message-service";
+import { JsmsService } from "./jsms-service";
 
 class MessageQueueEntry {
     constructor(public message: JsmsMessage, public producerDeferred: JsmsDeferred<JsmsMessage, object, Error>) { }
@@ -25,7 +25,7 @@ class MessageQueueEntry {
  *  successfully by one consumer.
  *
  */
-export class JsmsMessageQueue implements JsmsDestination {
+export class JsmsQueue implements JsmsDestination {
     private name: string;
     private entries: MessageQueueEntry[] = [];
     private maintenanceInterval: any;
@@ -61,7 +61,7 @@ export class JsmsMessageQueue implements JsmsDestination {
 
             deferredDequeue.promise.then((responseBody: object) => {
                 const request = currentEntry.message;
-                const response = JsmsMessageService.createMessage(request.header.channel, responseBody, 0, request.header.correlationID);
+                const response = JsmsService.createMessage(request.header.channel, responseBody, 0, request.header.correlationID);
                 currentEntry.producerDeferred.resolve(response);
             });
 

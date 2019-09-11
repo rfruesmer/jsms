@@ -1,4 +1,4 @@
-import { JsmsMessageQueue } from "./jsms-message-queue";
+import { JsmsQueue } from "./jsms-queue";
 import { JsmsMessage } from "./jsms-message";
 
 /**

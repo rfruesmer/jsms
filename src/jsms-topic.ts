@@ -19,7 +19,7 @@ export type SubscriberCallback = (message: JsmsMessage) => void;
  *    must continue to be active in order for it to consume messages.
  *
  */
-export class JsmsMessageTopic {
+export class JsmsTopic {
     private subscribers = new Array<SubscriberCallback>();
 
     constructor(private name: string) {}
