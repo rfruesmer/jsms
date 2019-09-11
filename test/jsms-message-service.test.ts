@@ -25,61 +25,6 @@ afterEach(() => {
 
 // --------------------------------------------------------------------------------------------------------------------
 
-test("is open for extension via custom connection / message consumers", async () => {
-    const queueName = "/some/queue";
-    const expectedMessageBody = { test: "foo" };
-    const connection = new FakeConnection();
-    const queue = connection.createQueue(queueName);
-    const messageConsumer = connection.getConsumer(queue) as FakeMessageConsumer;
-    const promise = messageConsumer.receive().promise;
-
-    messageConsumer.emit(JsmsMessageService.createMessage(queueName, expectedMessageBody));
-
-    const actualMessage = await promise;
-    expect(actualMessage.body).toEqual(expectedMessageBody);
-
-    queue.close();
-});
-
-// --------------------------------------------------------------------------------------------------------------------
-
-test("the message service provides a facade for custom message consumers", async () => {
-    const queueName = "/some/queue";
-    const expectedMessageBody = { test: "foo" };
-    const connection = new FakeConnection();
-    const queue = messageService.createQueue(queueName, connection);
-    const messageConsumer = connection.getConsumer(queue) as FakeMessageConsumer;
-    const promise = messageService.receive(queueName).promise;
-
-    messageConsumer.emit(JsmsMessageService.createMessage(queueName, expectedMessageBody));
-
-    const actualMessage = await promise;
-    expect(actualMessage.body).toEqual(expectedMessageBody);
-
-    queue.close();
-});
-
-// --------------------------------------------------------------------------------------------------------------------
-
-test("is open for extension via custom connection / message producers", async () => {
-    const queueName = "/some/queue";
-    const expectedMessageBody = { test: "foo" };
-    const connection = new FakeConnection();
-    const queue = messageService.createQueue(queueName, connection);
-    const messageProducer = connection.getProducer(queue) as FakeMessageProducer;
-    expect(messageProducer.getLastMessage()).toBeUndefined();
-    
-    messageService.send(queueName, expectedMessageBody);
-
-    const lastMessage = messageProducer.getLastMessage();
-    expect(lastMessage).toBeDefined();
-    expect(lastMessage.body).toEqual(expectedMessageBody);
-
-    queue.close();
-});
-
-// --------------------------------------------------------------------------------------------------------------------
-
 test("a queue delivers a message immediately if a receiver is already registered", async () => {
     const queueName = "/some/queue";
     const expectedMessageBody = { test: "foo" };
@@ -284,7 +229,62 @@ test("a queued message is deleted after successful delivery", async () => {
     expect(secondDelivery).toBeFalsy();
 });
 
-// // --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
+
+test("is open for extension via custom connection / message consumers", async () => {
+    const queueName = "/some/queue";
+    const expectedMessageBody = { test: "foo" };
+    const connection = new FakeConnection();
+    const queue = connection.createQueue(queueName);
+    const messageConsumer = connection.getConsumer(queue) as FakeMessageConsumer;
+    const promise = messageConsumer.receive().promise;
+
+    messageConsumer.emit(JsmsMessageService.createMessage(queueName, expectedMessageBody));
+
+    const actualMessage = await promise;
+    expect(actualMessage.body).toEqual(expectedMessageBody);
+
+    queue.close();
+});
+
+// --------------------------------------------------------------------------------------------------------------------
+
+test("the message service provides a facade for custom message consumers", async () => {
+    const queueName = "/some/queue";
+    const expectedMessageBody = { test: "foo" };
+    const connection = new FakeConnection();
+    const queue = messageService.createQueue(queueName, connection);
+    const messageConsumer = connection.getConsumer(queue) as FakeMessageConsumer;
+    const promise = messageService.receive(queueName).promise;
+
+    messageConsumer.emit(JsmsMessageService.createMessage(queueName, expectedMessageBody));
+
+    const actualMessage = await promise;
+    expect(actualMessage.body).toEqual(expectedMessageBody);
+
+    queue.close();
+});
+
+// --------------------------------------------------------------------------------------------------------------------
+
+test("is open for extension via custom connection / message producers", async () => {
+    const queueName = "/some/queue";
+    const expectedMessageBody = { test: "foo" };
+    const connection = new FakeConnection();
+    const queue = messageService.createQueue(queueName, connection);
+    const messageProducer = connection.getProducer(queue) as FakeMessageProducer;
+    expect(messageProducer.getLastMessage()).toBeUndefined();
+    
+    messageService.send(queueName, expectedMessageBody);
+
+    const lastMessage = messageProducer.getLastMessage();
+    expect(lastMessage).toBeDefined();
+    expect(lastMessage.body).toEqual(expectedMessageBody);
+
+    queue.close();
+});
+
+// --------------------------------------------------------------------------------------------------------------------
 
 // test("a topic message is published to all subscribers", () => {
 //     const topicName = "/some/topic";
