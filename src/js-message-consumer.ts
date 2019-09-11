@@ -77,6 +77,10 @@ export class JsMessageConsumer extends JsmsMessageConsumer {
     }
 
     public onMessage(message: JsmsMessage, sender: JsmsDeferred<JsmsMessage, object, Error>): boolean {
+        if (message.isExpired()) {
+            return false;
+        }
+
         if (this.destination instanceof JsmsTopic) {
             return this.sendToTopic(message);
         } 
@@ -98,7 +102,7 @@ export class JsMessageConsumer extends JsmsMessageConsumer {
             }
         });
 
-        return false;
+        return result;
     }
 
     private sendToQueue(message: JsmsMessage, sender: JsmsDeferred<JsmsMessage, object, Error>): boolean {

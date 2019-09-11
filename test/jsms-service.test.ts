@@ -182,7 +182,7 @@ test("a queue receiver can send a response when the message is sent before regis
 
 // --------------------------------------------------------------------------------------------------------------------
 
-test("a queue removes expired messages", async (done) => {
+test("a queue doesn't deliver messages that are already expired", async (done) => {
     const queueName = "/some/queue";
     const messageBody = { test: "foo" };
     let receivedExpiredMessage = false;
@@ -199,6 +199,34 @@ test("a queue removes expired messages", async (done) => {
             receivedExpiredMessage = true;
         });
     
+    setTimeout(() => {
+        expect(receivedExpiredMessage).toBeFalsy();
+        done();
+    }, 1);
+});
+
+// --------------------------------------------------------------------------------------------------------------------
+
+test("a queue doesn't deliver messages that are already expired (2)", async (done) => {
+    const queueName = "/some/queue";
+    const connection = new FakeConnection();
+    const queue = messageService.createQueue(queueName, connection);
+    const producer = connection.getProducer(queue);
+    const expiredMessage = JsmsMessage.create(queueName, { test: "foo" }, 1);
+    let receivedExpiredMessage = false;
+
+    messageService.receive(queueName)
+        .then((message: JsmsMessage, resolve: ResolveFunction<object>) => {
+            receivedExpiredMessage = true;
+        });
+
+    const expiration = new Promise((resolve, reject) => {
+        setTimeout(() => {resolve()}, 10);
+    });
+    await expiration;
+    
+    producer.send(expiredMessage);
+        
     setTimeout(() => {
         expect(receivedExpiredMessage).toBeFalsy();
         done();
@@ -485,8 +513,6 @@ test("errors thrown by topic subsciber listeners are caught", async () => {
 });
 
 // --------------------------------------------------------------------------------------------------------------------
-
-// TODO: test a queue doesn't deliver expired messages
 
 // TODO: remove any redundant code from fake-* classes
 
