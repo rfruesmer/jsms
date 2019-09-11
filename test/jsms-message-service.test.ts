@@ -260,29 +260,29 @@ test("a message queue catches exceptions thrown by consumers and then rejects th
 
 // --------------------------------------------------------------------------------------------------------------------
 
-// test("a queued message is deleted after successful delivery", async () => {
-//     const queueName = "/some/queue";
-//     const messageBody = { test: "foo" };
-//     let secondDelivery = false;
+test("a queued message is deleted after successful delivery", async () => {
+    const queueName = "/some/queue";
+    const messageBody = { test: "foo" };
+    let secondDelivery = false;
 
-//     const promise = messageService.send(queueName, messageBody);
+    const promise = messageService.send(queueName, messageBody);
 
-//     messageService.receive(queueName)
-//         .then((message: Message, resolve: ResolveFunction<object>) => {
-//             // NOTE: the message is now considered to be sucessfully delivered 
-//             // Any errors during consuming the message mustn't change the successful delivery status:
-//             throw new Error("should be caught");
-//         });
+    messageService.receive(queueName)
+        .then((message: JsmsMessage, resolve: ResolveFunction<object>) => {
+            // NOTE: the message is now considered to be sucessfully delivered 
+            // Any errors during consuming the message mustn't change the successful delivery status:
+            throw new Error("should be caught");
+        });
 
-//     await expect(promise).rejects.toThrowError();
+    await expect(promise).rejects.toThrowError();
 
-//     messageService.receive(queueName)
-//         .then((message: Message, resolve: ResolveFunction<object>) => {
-//             secondDelivery = true;
-//         });
+    messageService.receive(queueName)
+        .then((message: JsmsMessage, resolve: ResolveFunction<object>) => {
+            secondDelivery = true;
+        });
 
-//     expect(secondDelivery).toBeFalsy();
-// });
+    expect(secondDelivery).toBeFalsy();
+});
 
 // // --------------------------------------------------------------------------------------------------------------------
 
