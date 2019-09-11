@@ -1,5 +1,3 @@
-import { JsmsDeferred } from "./jsms-deferred";
-import { JsmsMessage } from "./jsms-message";
 
 export abstract class JsmsDestination {
     private name: string;

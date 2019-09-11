@@ -447,8 +447,6 @@ test("errors thrown by topic subsciber listeners are caught", async () => {
 
 // --------------------------------------------------------------------------------------------------------------------
 
-// TODO: organize imports
-
 // TODO: test jsmessageproducer catches errors thrown by message listeners
 
 // TODO: test a queue doesn't deliver expired messages

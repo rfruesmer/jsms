@@ -2,8 +2,8 @@ import { JsmsDestination } from "./jsms-destination";
 import { JsmsMessageConsumer } from "./jsms-message-consumer";
 import { JsmsMessageProducer } from "./jsms-message-producer";
 import { JsmsQueue } from "./jsms-queue";
-import { checkArgument, checkState } from "./preconditions";
 import { JsmsTopic } from "./jsms-topic";
+import { checkArgument, checkState } from "./preconditions";
 
 export abstract class JsmsConnection {
     protected queues = new Map<string, JsmsQueue>();

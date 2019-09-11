@@ -1,5 +1,5 @@
-import { JsmsMessage } from "./jsms-message";
 import { JsmsDeferred } from "./jsms-deferred";
+import { JsmsMessage } from "./jsms-message";
 
 /**
  * A MessageListener object is used to receive asynchronously delivered messages.

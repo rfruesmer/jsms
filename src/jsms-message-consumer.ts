@@ -1,7 +1,7 @@
 import { JsmsConnection } from "./jsms-connection";
 import { JsmsDeferred } from "./jsms-deferred";
-import { JsmsMessage } from "./jsms-message";
 import { JsmsDestination } from "./jsms-destination";
+import { JsmsMessage } from "./jsms-message";
 import { JsmsMessageListener } from "./jsms-message-listener";
 
 /**

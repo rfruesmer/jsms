@@ -1,5 +1,5 @@
-import { JsmsMessageHeader } from "./jsms-message-header";
 import { v4 } from "uuid";
+import { JsmsMessageHeader } from "./jsms-message-header";
 
 /**
  * The Message class is the root class of all JSMS messages.

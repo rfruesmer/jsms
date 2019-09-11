@@ -1,11 +1,11 @@
 import { JsMessageConsumer } from "./js-message-consumer";
 import { JsMessageProducer } from "./js-message-producer";
 import { JsmsConnection } from "./jsms-connection";
+import { JsmsDestination } from "./jsms-destination";
+import { JsmsMessageConsumer } from "./jsms-message-consumer";
+import { JsmsMessageProducer } from "./jsms-message-producer";
 import { JsmsQueue } from "./jsms-queue";
 import { JsmsTopic } from "./jsms-topic";
-import { JsmsDestination } from "./jsms-destination";
-import { JsmsMessageProducer } from "./jsms-message-producer";
-import { JsmsMessageConsumer } from "./jsms-message-consumer";
 
 export class JsConnection extends JsmsConnection {
     public createQueue(queueName: string): JsmsQueue {

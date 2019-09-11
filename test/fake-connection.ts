@@ -1,4 +1,5 @@
 import { JsmsConnection } from "@/jsms-connection";
+import { JsmsDeferred } from "@/jsms-deferred";
 import { JsmsDestination } from "@/jsms-destination";
 import { JsmsMessage } from "@/jsms-message";
 import { JsmsMessageConsumer } from "@/jsms-message-consumer";
@@ -8,7 +9,6 @@ import { JsmsTopic } from "@/jsms-topic";
 import { FakeCustomMessage } from "./fake-custom-message";
 import { FakeMessageConsumer } from "./fake-message-consumer";
 import { FakeMessageProducer } from "./fake-message-producer";
-import { JsmsDeferred } from "@/jsms-deferred";
 
 export class FakeConnection extends JsmsConnection {
         

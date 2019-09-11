@@ -1,5 +1,5 @@
-import { JsmsMessage } from "./jsms-message";
 import { JsmsDestination } from "./jsms-destination";
+import { JsmsMessage } from "./jsms-message";
 
 export type MessageListenerCallback = (message: JsmsMessage) => void;
 
