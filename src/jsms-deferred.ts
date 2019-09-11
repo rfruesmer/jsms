@@ -11,6 +11,7 @@ export class JsmsDeferred<D, R, E> {
     private chained = false;
     private onChained: ChainedCallback;
 
+    // TODO: check if the "chained callback" is still needed
     // tslint:disable-next-line: no-empty
     constructor(onChained: ChainedCallback = () => {}) {
         this.onChained = onChained;

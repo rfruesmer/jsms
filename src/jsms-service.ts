@@ -1,14 +1,15 @@
-import { v4 } from "uuid";
+import { JsConnection } from "./js-connection";
 import { JsmsConnection } from "./jsms-connection";
 import { JsmsDeferred } from "./jsms-deferred";
-import { JsmsMessage } from "./jsms-message";
-import { JsmsMessageHeader } from "./jsms-message-header";
-import { JsmsQueue } from "./jsms-queue";
-import { checkState, checkArgument } from "./preconditions";
-import { JsConnection } from "./js-connection";
-import { MessageListenerCallback, JsmsTopic } from "./jsms-topic";
 import { JsmsDestination } from "./jsms-destination";
+import { JsmsMessage } from "./jsms-message";
+import { JsmsQueue } from "./jsms-queue";
+import { JsmsTopic, MessageListenerCallback } from "./jsms-topic";
+import { checkState } from "./preconditions";
 
+/**
+ * Convenience facade for simple interaction with the message system.
+ */
 export class JsmsService {
     private defaultConnection = new JsConnection();
     private connections = new Map<JsmsDestination, JsmsConnection>();
@@ -17,16 +18,11 @@ export class JsmsService {
     private queues = new Map<string, JsmsQueue>();
     private topics = new Map<string, JsmsTopic>();
 
-    // TODO: move to message producer (???)
-    public static createMessage(channel: string, body: object, timeToLive: number = 0, correlationID: string = v4()): JsmsMessage {
-        return new JsmsMessage(new JsmsMessageHeader(channel, correlationID, timeToLive), body);
-    }
-
     public send(queueName: string, messageBody: object = {}, timeToLive: number = 0): Promise<JsmsMessage> {
         const queue = this.getQueue(queueName);
         const connection = this.getConnection(queue);
         const producer = connection.getProducer(queue);
-        const message = JsmsService.createMessage(queueName, messageBody, timeToLive);
+        const message = JsmsMessage.create(queueName, messageBody, timeToLive);
         
         return producer.send(message);
     }
@@ -96,7 +92,7 @@ export class JsmsService {
         const topic = this.getTopic(topicName);
         const connection = this.getConnection(topic);
         const producer = connection.getProducer(topic);
-        const message = JsmsService.createMessage(topicName, messageBody);
+        const message = JsmsMessage.create(topicName, messageBody);
         
         producer.send(message);
     }

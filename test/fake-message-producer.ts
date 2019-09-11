@@ -1,26 +1,23 @@
-import { JsmsMessageProducer } from "@/jsms-message-producer";
-import { JsmsMessage } from "@/jsms-message";
+import { JsMessageProducer } from "@/js-message-producer";
 import { JsmsConnection } from "@/jsms-connection";
 import { JsmsDestination } from "@/jsms-destination";
+import { JsmsMessage } from "@/jsms-message";
 
 
-export class FakeMessageProducer implements JsmsMessageProducer {
-    private connection: JsmsConnection;
-    private destination: any;
+export class FakeMessageProducer extends JsMessageProducer {
     private lastMessage!: JsmsMessage;
     
     constructor(connection: JsmsConnection, destination: JsmsDestination) {
-        this.connection = connection;
-        this.destination = destination;
+        super(connection,  destination);
     }
     
     public send(message: JsmsMessage): Promise<JsmsMessage> {
         this.lastMessage = message;
-        const promise = new Promise<JsmsMessage>((resolve, reject) => {
-            resolve();
-        });
 
-        return promise;
+        // NOTE: a custom message producer can do custom things with the message now 
+
+        // TODO: check if test still works when not dispatching to super classer
+        return super.send(message);
     }
 
     public getLastMessage(): JsmsMessage {

@@ -26,7 +26,7 @@ class MessageQueueEntry {
  *
  */
 export class JsmsQueue extends JsmsDestination {
-    private entries: MessageQueueEntry[] = [];
+    private entries: JsmsMessage[] = [];
     private maintenanceInterval: any;
 
     // TODO: consider renaming to receiver-/consumer-deferreds
@@ -37,68 +37,25 @@ export class JsmsQueue extends JsmsDestination {
         this.maintenanceInterval = setInterval(this.removeExpiredMessages, 1000);
     }
 
-    public receive(): JsmsDeferred<JsmsMessage, object, Error> {
-        return this.dequeue();
+    public enqueue(message: JsmsMessage): void {
+        this.entries.push(message);
     }
-    
-    private dequeue(): JsmsDeferred<JsmsMessage, object, Error> {
 
+    public dequeue(): JsmsMessage | undefined {
         this.removeExpiredMessages();
-
-        // TODO: consider moving creation of the deferred object to receive()
-        const deferredDequeue = new JsmsDeferred<JsmsMessage, object, Error>(() => {
-            if (this.entries.length === 0) {
-                return;
-            }
-            
-            const currentEntry = this.entries[0];
-            this.entries.shift();
-
-            deferredDequeue.promise.then((responseBody: object) => {
-                const request = currentEntry.message;
-                const response = JsmsService.createMessage(request.header.channel, responseBody, 0, request.header.correlationID);
-                currentEntry.producerDeferred.resolve(response);
-            });
-
-            try {
-                deferredDequeue.resolve(currentEntry.message);
-            }
-            catch (error) {
-                currentEntry.producerDeferred.reject(error);
-            }
-        });
-
         if (this.entries.length === 0) {
-            this.deferredDequeues.push(deferredDequeue);
+            return undefined;
         }
 
-        return deferredDequeue;
-    }
-
-    public send(message: JsmsMessage): Promise<JsmsMessage> {
-        const deferred = new JsmsDeferred<JsmsMessage, object, Error>();
-
-        if (this.deferredDequeues.length > 0) {
-            const deferredDequeue = this.deferredDequeues[0];
-            this.deferredDequeues.shift();
-            deferredDequeue.resolve(message);
-            deferredDequeue.promise.then((response: JsmsMessage) => deferred.resolve(response));
-        }
-        else {
-            this.enqueue(message, deferred);
-        }
-
-        return deferred.promise;
-    }
-    
-    private enqueue(message: JsmsMessage, producerDeferred: JsmsDeferred<JsmsMessage, object, Error>): void {
-        this.entries.push(new MessageQueueEntry(message, producerDeferred));
+        const message = this.entries[0];
+        this.entries.shift();
+        return message;
     }
 
     private removeExpiredMessages = () => {
         const currentTimeMillis = new Date().getTime();
-        this.entries.filter((entry: MessageQueueEntry) => entry.message.header.expiration > 0 && currentTimeMillis > entry.message.header.expiration)
-            .map((entry: MessageQueueEntry) => this.entries.indexOf(entry))
+        this.entries.filter((message: JsmsMessage) => message.header.expiration > 0 && currentTimeMillis > message.header.expiration)
+            .map((message: JsmsMessage) => this.entries.indexOf(message))
             // TODO: consider moving the message to a dead letter queue
             .forEach((index: number) => this.entries.splice(index, 1));
     };
@@ -107,121 +64,3 @@ export class JsmsQueue extends JsmsDestination {
         clearInterval(this.maintenanceInterval);
     }  
 }
-
-// export class MessageQueue {
-//     private name: string;
-//     private producer!: MessageProducer;
-//     private consumer!: MessageConsumer;
-
-//     constructor(name: string) {
-//         this.name = name;
-//     }
-
-//     public setProducer(producer: MessageProducer): void {
-//         this.producer = this.producer;
-//     }
-
-//     public send(message: Message): Promise<Message> {
-//         return this.producer.send(message);
-//     }
-
-//     public setConsumer(consumer: MessageConsumer): void {
-//         this.consumer = consumer;
-//     }
-
-//     public receive(): Deferred<Message, object, Error> {
-//         return this.consumer.receive();
-//     }
-
-//     public close(): void {
-//         // clearInterval(this.maintenanceInterval);
-//     }
-
-
-    // private queue: MessageQueueEntry[] = [];
-    // private consumer!: MessageConsumer;
-    // private consumerDeferred!: Deferred<Message, object, Error> | null;
-    // private currentEntry!: MessageQueueEntry;
-    // private maintenanceInterval: any;
-
-    // constructor(name: string) {
-    //     this.name = name;
-    //     this.maintenanceInterval = setInterval(this.removeExpiredMessages, 1000);
-    // }
-
-    // private removeExpiredMessages = () => {
-    //     const currentTime = new Date().getTime();
-
-    //     this.queue
-    //         .filter(
-    //             (entry: MessageQueueEntry) =>
-    //                 entry.message.header.expiration > 0 && currentTime > entry.message.header.expiration
-    //         )
-    //         .map((entry: MessageQueueEntry) => this.queue.indexOf(entry))
-    //         .forEach((index: number) => this.queue.splice(index, 1));
-    // };
-
-    // public receive(): Deferred<Message, object, Error> {
-    //     checkState(!this.consumerDeferred, "Queue already has a receiver."); // Check that there's only one receiver for now
-
-    //     const consumerDeferred = new Deferred<Message, object, Error>(() => {
-    //         this.sendNextMessage();
-    //     });
-    //     consumerDeferred.promise.then((response: Message) => {
-    //         this.currentEntry.producerDeferred.resolve(response);
-    //     });
-
-    //     this.consumerDeferred = consumerDeferred;
-
-    //     return consumerDeferred;
-    // }
-
-    // private sendNextMessage(): boolean {
-    //     this.removeExpiredMessages();
-
-    //     if (!this.hasConsumer() 
-    //             || this.queue.length === 0) {
-    //         return false;
-    //     }
-
-    //     try {
-    //         this.currentEntry = this.queue[0];
-    //         if (this.consumer) {
-    //             this.consumer.receive(this.currentEntry.message);
-    //         }
-    //         else if (this.consumerDeferred) {
-    //             this.consumerDeferred.resolve(this.currentEntry.message);
-    //         }
-    //     }
-    //     catch (error) {
-    //         this.currentEntry.producerDeferred.reject(error);
-    //         return false;
-    //     }
-    //     finally {
-    //         this.consumerDeferred = null;
-    //         this.queue.shift();
-    //     }
-
-    //     return true;
-    // }
-
-    // public send(message: Message): Promise<Message> {
-    //     const producerDeferred = new Deferred<Message, void, void>();
-
-    //     this.queue.push(new MessageQueueEntry(message, producerDeferred));
-
-    //     if (this.hasConsumer()) {
-    //         this.sendNextMessage();
-    //     }
-
-    //     return producerDeferred.promise;
-    // }
-
-    // private hasConsumer(): boolean {
-    //     return !!this.consumerDeferred || !!this.consumer;
-    // }
-
-    // public close(): void {
-    //     clearInterval(this.maintenanceInterval);
-    // }
-// }

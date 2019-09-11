@@ -3,31 +3,33 @@ import { JsmsMessageProducer } from "@/jsms-message-producer";
 import { JsmsConnection } from "./jsms-connection";
 import { JsmsDestination } from "./jsms-destination";
 import { JsmsTopic } from "./jsms-topic";
+import { JsmsQueue } from "./jsms-queue";
+import { JsmsDeferred } from "./jsms-deferred";
 
 
-export class JsMessageProducer implements JsmsMessageProducer {
-    private connection: JsmsConnection;
-    private destination: JsmsDestination;
+export class JsMessageProducer extends JsmsMessageProducer {
 
     constructor(connection: JsmsConnection, destination: JsmsDestination) {
-        this.connection = connection;
-        this.destination = destination;
+        super(connection, destination);
     }
 
     public send(message: JsmsMessage): Promise<JsmsMessage> {
-        // return this.destination.send(message);
-
-        const promise = new Promise<JsmsMessage>((resolve, reject) => {
-            if (this.destination instanceof JsmsTopic) {
-                this.publish(message);
-                resolve();
+        const deferred = new JsmsDeferred<JsmsMessage, object, Error>();
+        
+        if (this.destination instanceof JsmsTopic) {
+            this.publish(message);
+            deferred.resolve(message); // TODO: this is inconsistent against queue behavior
+        }
+        else {
+            // since this an in-process producer, it can directly dispatch to the consumer
+            const consumer = this.connection.getConsumer(this.destination);
+            if (!consumer.onMessage(message, deferred)) {
+                const queue = this.destination as JsmsQueue;
+                queue.enqueue(message);
             }
-            else {
-                throw new Error("Not implemented.");
-            }
-        });
+        }
 
-        return promise;
+        return deferred.promise;
     }
     
     private publish(message: JsmsMessage): void {

@@ -5,13 +5,13 @@ export abstract class JsmsDestination {
     private name: string;
 
     // TODO: consider delegating to connection/producer
-    public send(message: JsmsMessage): Promise<JsmsMessage> {
+    public sendOld(message: JsmsMessage): Promise<JsmsMessage> {
         // tslint:disable-next-line: no-empty
         return new Promise<JsmsMessage>(() => {});
     }
 
     // TODO: consider delegating to connection/consumer
-    public receive(): JsmsDeferred<JsmsMessage, object, Error> {
+    public receiveOld(): JsmsDeferred<JsmsMessage, object, Error> {
         // tslint:disable-next-line: no-empty
         return new JsmsDeferred<JsmsMessage, object, Error>(() => {});
     }

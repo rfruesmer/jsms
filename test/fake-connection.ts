@@ -1,23 +1,30 @@
 import { JsmsConnection } from "@/jsms-connection";
-import { JsmsQueue } from "@/jsms-queue";
-import { FakeMessageConsumer } from "./fake-message-consumer";
-import { FakeMessageProducer } from "./fake-message-producer";
+import { JsmsDestination } from "@/jsms-destination";
 import { JsmsMessage } from "@/jsms-message";
-import { JsmsMessageHeader } from "@/jsms-message-header";
-import { v4 } from "uuid";
+import { JsmsMessageConsumer } from "@/jsms-message-consumer";
+import { JsmsMessageProducer } from "@/jsms-message-producer";
+import { JsmsQueue } from "@/jsms-queue";
 import { JsmsTopic } from "@/jsms-topic";
 import { FakeCustomMessage } from "./fake-custom-message";
+import { FakeMessageConsumer } from "./fake-message-consumer";
+import { FakeMessageProducer } from "./fake-message-producer";
+import { JsmsDeferred } from "@/jsms-deferred";
 
 export class FakeConnection extends JsmsConnection {
         
     public createQueue(queueName: string): JsmsQueue {
         const queue = new JsmsQueue(queueName);
-        const producer = new FakeMessageProducer(this, queue);
-        const consumer = new FakeMessageConsumer(this, queue)
-
-        super.addQueue(queue, producer, consumer);
+        super.addQueue(queue, this.createProducer(queue), this.createConsumer(queue));
         
         return queue;
+    }
+
+    protected createProducer(destination: JsmsDestination): JsmsMessageProducer {
+        return new FakeMessageProducer(this, destination);
+    }
+
+    protected createConsumer(destination: JsmsDestination): JsmsMessageConsumer {
+        return new FakeMessageConsumer(this, destination);
     }
 
     public onCustomMessageReceived(customMessage: FakeCustomMessage): void {
@@ -28,16 +35,14 @@ export class FakeConnection extends JsmsConnection {
         }
         
         const consumer = super.getConsumer(destination) as FakeMessageConsumer;
-        const message = new JsmsMessage(new JsmsMessageHeader(destination.getName(), v4(), 0), customMessage.data);
-        consumer.onMessage(message);
+        const message = JsmsMessage.create(destination.getName(), customMessage.data);
+        const responseDeferred = new JsmsDeferred<JsmsMessage, object, Error>();
+        consumer.onMessage(message, responseDeferred);
     }
 
     public createTopic(topicName: string): JsmsTopic {
         const topic = new JsmsTopic(topicName);
-        const producer = new FakeMessageProducer(this, topic);
-        const consumer = new FakeMessageConsumer(this, topic)
-
-        super.addTopic(topic, producer, consumer);
+        super.addTopic(topic, this.createProducer(topic), this.createConsumer(topic));
         
         return topic;
     }

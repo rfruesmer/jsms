@@ -1,14 +1,11 @@
-import { FakeMessageProducer } from "./fake-message-producer";
-import { FakeMessageConsumer } from "./fake-message-consumer";
-import { FakeConnection } from "./fake-connection";
-import { JsmsService } from "@/jsms-service";
-import { JsConnection } from "@/js-connection";
-import { JsmsMessage } from "@/jsms-message";
 import { ResolveFunction } from "@/jsms-deferred";
+import { JsmsMessage } from "@/jsms-message";
+import { JsmsService } from "@/jsms-service";
+import { FakeConnection } from "./fake-connection";
 import { FakeCustomMessage } from "./fake-custom-message";
+import { FakeMessageConsumer } from "./fake-message-consumer";
+import { FakeMessageProducer } from "./fake-message-producer";
 
-// TODO: convert to BDD tests - encapsulate setups/execution/verification in given/when/then where possible
-// TODO: split up into separate tests for PTP/pub-sub, message service and components
 
 let messageService: JsmsService;
 
@@ -95,6 +92,7 @@ test("a queue delivers pending messages in the order they were sent", async () =
 });
 
 // --------------------------------------------------------------------------------------------------------------------
+
 test("a queue delivers any messages in correct order if one or more receivers are already registered", async () => {
     const queueName = "/some/queue";
     const firstExpectedMessageBody = { test: "1" };
@@ -145,7 +143,7 @@ test("a queue receiver can send a response when the message is sent after regist
         });
 
     const response = await messageService.send(queueName, messageBody);
-    expect(response).toEqual(expectedResponseBody);
+    expect(response.body).toEqual(expectedResponseBody);
 });
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -235,58 +233,67 @@ test("a queued message is deleted after successful delivery", async () => {
 
 // --------------------------------------------------------------------------------------------------------------------
 
-// test("receiving queue messages is open for extension via custom connection", async () => {
-//     const queueName = "/some/queue";
-//     const expectedMessageBody = { test: "foo" };
-//     const connection = new FakeConnection();
-//     const queue = connection.createQueue(queueName);
-//     const messageConsumer = connection.getConsumer(queue) as FakeMessageConsumer;
-//     const promise = messageConsumer.receive().promise;
+test("queue is open for extension via custom queue receiver", async () => {
+    const queueName = "/some/queue";
+    const expectedMessageBody = { test: "foo" };
 
-//     connection.onCustomMessageReceived(new FakeCustomMessage(queueName, expectedMessageBody));
+    // given custom queue receiver for a given queue name
+    const connection = new FakeConnection();
+    const queue = connection.createQueue(queueName);
+    const customQueueReceiver = connection.getConsumer(queue) as FakeMessageConsumer;
+    const promise = customQueueReceiver.receive().promise;
 
-//     const actualMessage = await promise;
-//     expect(actualMessage.body).toEqual(expectedMessageBody);
+    // when receiving a custom message
+    connection.onCustomMessageReceived(new FakeCustomMessage(queueName, expectedMessageBody));
 
-//     queue.close();
-// });
+    // then the message should be sent to the custom queue receiver
+    const actualMessage = await promise;
+    expect(actualMessage.body).toEqual(expectedMessageBody);
 
-// --------------------------------------------------------------------------------------------------------------------
-
-// test("the message service provides a facade for custom queue messaging", async () => {
-//     const queueName = "/some/queue";
-//     const expectedMessageBody = { test: "foo" };
-//     const connection = new FakeConnection();
-//     const queue = messageService.createQueue(queueName, connection);
-//     const messageConsumer = connection.getConsumer(queue) as FakeMessageConsumer;
-//     const promise = messageService.receive(queueName).promise;
-
-//     connection.onCustomMessageReceived(new FakeCustomMessage(queueName, expectedMessageBody));
-
-//     const actualMessage = await promise;
-//     expect(actualMessage.body).toEqual(expectedMessageBody);
-
-//     queue.close();
-// });
+    queue.close();
+});
 
 // --------------------------------------------------------------------------------------------------------------------
-
-// test("sending queue messages is open for extension via custom connection", async () => {
-//     const queueName = "/some/queue";
-//     const expectedMessageBody = { test: "foo" };
-//     const connection = new FakeConnection();
-//     const queue = messageService.createQueue(queueName, connection);
-//     const messageProducer = connection.getProducer(queue) as FakeMessageProducer;
-//     expect(messageProducer.getLastMessage()).toBeUndefined();
     
-//     messageService.send(queueName, expectedMessageBody);
+test("message service integrates with custom queue receiver", async () => {
+    const queueName = "/some/queue";
+    const expectedMessageBody = { test: "foo" };
 
-//     const lastMessage = messageProducer.getLastMessage();
-//     expect(lastMessage).toBeDefined();
-//     expect(lastMessage.body).toEqual(expectedMessageBody);
+    // given custom queue receiver for a given queue name
+    const connection = new FakeConnection();
+    const queue = messageService.createQueue(queueName, connection);
+    const promise = messageService.receive(queueName).promise;
 
-//     queue.close();
-// });
+    // when receiving a custom message
+    connection.onCustomMessageReceived(new FakeCustomMessage(queueName, expectedMessageBody));
+
+    // then the message should be sent to the custom queue receiver
+    const actualMessage = await promise;
+    expect(actualMessage.body).toEqual(expectedMessageBody);
+
+    queue.close();
+});
+
+// --------------------------------------------------------------------------------------------------------------------
+
+test("message service integrates with custom queue sender", async () => {
+    const queueName = "/some/queue";
+    const expectedMessageBody = { test: "foo" };
+
+    // given custom queue sender for a given queue name
+    const connection = new FakeConnection();
+    const queue = messageService.createQueue(queueName, connection);
+    const customQueueSender = connection.getProducer(queue) as FakeMessageProducer;
+    expect(customQueueSender.getLastMessage()).toBeUndefined();
+    
+    messageService.send(queueName, expectedMessageBody);
+
+    const lastMessage = customQueueSender.getLastMessage();
+    expect(lastMessage).toBeDefined();
+    expect(lastMessage.body).toEqual(expectedMessageBody);
+
+    queue.close();
+});
 
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -418,9 +425,15 @@ test("message service creates default body to topic messages if none was specifi
 
 // --------------------------------------------------------------------------------------------------------------------
 
-// TODO: jsmessageproducer catches errors thrown by message listener
+// TODO: organize imports
+
+// TODO: test jsmessageproducer catches errors thrown by message listeners
 
 // TODO: test a queue doesn't deliver expired messages
+
+// TODO: introduce subclasses MessageConsumer > QueueReceiver, TopicSubscriber / MessageProducer > QueueSender, TopicPublisher (???)
+
+// TODO: test replyTo/responses
 
 // TODO: support for message listener
 
@@ -428,6 +441,12 @@ test("message service creates default body to topic messages if none was specifi
 
 // TODO: support for multiple topics
 
+// TODO: remove commented code
+
 // TODO: add jsdoc
 
 // TODO: receiveSync() (?)
+
+// TODO: convert to BDD tests - encapsulate setups/execution/verification in given/when/then where possible
+
+// TODO: split up into separate tests for PTP/pub-sub, message service and components

@@ -1,4 +1,5 @@
 import { JsmsMessage } from "./jsms-message";
+import { JsmsDeferred } from "./jsms-deferred";
 
 /**
  * A MessageListener object is used to receive asynchronously delivered messages.
@@ -9,5 +10,5 @@ export interface JsmsMessageListener {
      * 
      * @param message the message passed to the listener
      */
-    onMessage(message: JsmsMessage): void;
+    onMessage(message: JsmsMessage, responseDeferred: JsmsDeferred<JsmsMessage, object, Error>): boolean;
 }
