@@ -5,6 +5,7 @@ import { JsmsMessage } from "./jsms-message";
 import { JsmsMessageHeader } from "./jsms-message-header";
 import { JsmsMessageQueue } from "./jsms-message-queue";
 import { checkState, checkArgument } from "./preconditions";
+import { JsConnection } from "./js-connection";
 
 export class JsmsMessageService {
     private queueConnections = new Map<JsmsMessageQueue, JsmsConnection>();
@@ -15,7 +16,27 @@ export class JsmsMessageService {
         return new JsmsMessage(new JsmsMessageHeader(channel, correlationID, timeToLive), body);
     }
 
-    public createQueue(connection: JsmsConnection, queueName: string): JsmsMessageQueue {
+    public send(queueName: string, messageBody: object = {}, timeToLive: number = 0): Promise<JsmsMessage> {
+        const queue = this.getQueue(queueName);
+        const connection = this.queueConnections.get(queue);
+        // @ts-ignore: connection is guaranteed to be valid at this point
+        const producer = connection.getProducer(queue);
+        const message = JsmsMessageService.createMessage(queueName, messageBody, timeToLive);
+        
+        return producer.send(message);
+    }
+
+    private getQueue(queueName: string): JsmsMessageQueue {
+        let queue = this.queues.get(queueName);
+        if (!queue) {
+            queue = this.createQueue(queueName);
+            this.queues.set(queueName, queue);
+        }
+
+        return queue;
+    }
+
+    public createQueue(queueName: string, connection: JsmsConnection = new JsConnection()): JsmsMessageQueue {
         checkState(!this.queues.has(queueName));
 
         const queue = connection.createQueue(queueName);
@@ -25,22 +46,13 @@ export class JsmsMessageService {
         return queue;
     }
 
-    public send(queueName: string, messageBody: object = {}, timeToLive: number = 0): Promise<JsmsMessage> {
-        checkArgument(this.queues.has(queueName));
-        const queue = this.queues.get(queueName);
-        // @ts-ignore: check for valid queue already done before via checkArgument
-        const connection = this.queueConnections.get(queue);
-        // @ts-ignore: connection is guaranteed to be valid at this point
-        return connection.getProducer(queue).send(JsmsMessageService.createMessage(queueName, messageBody, timeToLive));
-    }
-
     public receive(queueName: string): JsmsDeferred<JsmsMessage, object, Error> {
-        checkArgument(this.queues.has(queueName));
-        const queue = this.queues.get(queueName);
-        // @ts-ignore: check for valid queue already done before via checkArgument
+        const queue = this.getQueue(queueName);
         const connection = this.queueConnections.get(queue);
         // @ts-ignore: connection is guaranteed to be valid at this point
-        return connection.getConsumer(queue).receive();
+        const consumer = connection.getConsumer(queue);
+
+        return consumer.receive();
     }
 
     public close(): void {

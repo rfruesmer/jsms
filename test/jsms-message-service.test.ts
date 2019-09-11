@@ -25,7 +25,7 @@ afterEach(() => {
 
 // --------------------------------------------------------------------------------------------------------------------
 
-test("is open for extension via custom message consumers", async () => {
+test("is open for extension via custom connection / message consumers", async () => {
     const queueName = "/some/queue";
     const expectedMessageBody = { test: "foo" };
     const connection = new FakeConnection();
@@ -47,7 +47,7 @@ test("the message service provides a facade for custom message consumers", async
     const queueName = "/some/queue";
     const expectedMessageBody = { test: "foo" };
     const connection = new FakeConnection();
-    const queue = messageService.createQueue(connection, queueName);
+    const queue = messageService.createQueue(queueName, connection);
     const messageConsumer = connection.getConsumer(queue) as FakeMessageConsumer;
     const promise = messageService.receive(queueName).promise;
 
@@ -61,11 +61,11 @@ test("the message service provides a facade for custom message consumers", async
 
 // --------------------------------------------------------------------------------------------------------------------
 
-test("is open for extension via custom message producers", async () => {
+test("is open for extension via custom connection / message producers", async () => {
     const queueName = "/some/queue";
     const expectedMessageBody = { test: "foo" };
     const connection = new FakeConnection();
-    const queue = messageService.createQueue(connection, queueName);
+    const queue = messageService.createQueue(queueName, connection);
     const messageProducer = connection.getProducer(queue) as FakeMessageProducer;
     expect(messageProducer.getLastMessage()).toBeUndefined();
     
@@ -83,8 +83,7 @@ test("is open for extension via custom message producers", async () => {
 test("a queue delivers a message immediately if a receiver is already registered", async () => {
     const queueName = "/some/queue";
     const expectedMessageBody = { test: "foo" };
-    const connection = new JsConnection();
-    const queue = messageService.createQueue(connection, queueName);
+
     const promise = messageService.receive(queueName).promise;
 
     messageService.send(queueName, expectedMessageBody);
@@ -98,8 +97,6 @@ test("a queue delivers a message immediately if a receiver is already registered
 test("a queue receiver can fetch a pending message after registration", async () => {
     const queueName = "/some/queue";
     const expectedMessageBody = { test: "foo" };
-    const connection = new JsConnection();
-    const queue = messageService.createQueue(connection, queueName);
 
     messageService.send(queueName, expectedMessageBody);
 
@@ -114,8 +111,7 @@ test("that a queue delivers any number of messages immediately if one or more re
     const firstExpectedMessageBody = { test: "1" };
     const secondExpectedMessageBody = { test: "2" };
     const thirdExpectedMessageBody = { test: "3" };
-    const connection = new JsConnection();
-    const queue = messageService.createQueue(connection, queueName);
+
     const firstMessagePromise = messageService.receive(queueName).promise;
     const secondMessagePromise = messageService.receive(queueName).promise;
     const thirdMessagePromise = messageService.receive(queueName).promise;
@@ -139,8 +135,6 @@ test("a queue delivers pending messages in the order they were sent", async () =
     const firstExpectedMessageBody = { test: "1" };
     const secondExpectedMessageBody = { test: "2" };
     const thirdExpectedMessageBody = { test: "3" };
-    const connection = new JsConnection();
-    const queue = messageService.createQueue(connection, queueName);
 
     messageService.send(queueName, firstExpectedMessageBody);
     messageService.send(queueName, secondExpectedMessageBody);
@@ -160,8 +154,6 @@ test("that a queue any messages in correct order if one or more receivers are al
     const firstExpectedMessageBody = { test: "1" };
     const secondExpectedMessageBody = { test: "2" };
     const thirdExpectedMessageBody = { test: "3" };
-    const connection = new JsConnection();
-    const queue = messageService.createQueue(connection, queueName);
 
     const firstMessagePromise = messageService.receive(queueName).promise;
     const secondMessagePromise = messageService.receive(queueName).promise;
@@ -183,8 +175,6 @@ test("that a queue any messages in correct order if one or more receivers are al
 test("message service creates a default body to queue messages if none was specified", async () => {
     const queueName = "/some/queue";
     const expectedMessageBody = {};
-    const connection = new JsConnection();
-    const queue = messageService.createQueue(connection, queueName);
 
     const promise = messageService.receive(queueName).promise;
     messageService.send(queueName);
@@ -199,8 +189,6 @@ test("a queue receiver can send a response when the message is sent after regist
     const queueName = "/some/queue";
     const messageBody = { test: "foo" };
     const expectedResponseBody = { response: "payload" };
-    const connection = new JsConnection();
-    const queue = messageService.createQueue(connection, queueName);
 
     messageService.receive(queueName)
         .then((message: JsmsMessage, resolve: ResolveFunction<object>) => {
@@ -217,8 +205,6 @@ test("a queue receiver can send a response when the message is sent before regis
     const queueName = "/some/queue";
     const messageBody = { test: "foo" };
     const expectedResponseBody = { response: "payload" };
-    const connection = new JsConnection();
-    const queue = messageService.createQueue(connection, queueName);
 
     const promise = messageService.send(queueName, messageBody);
 
@@ -236,8 +222,6 @@ test("a queue receiver can send a response when the message is sent before regis
 test("a queue removes expired messages", async (done) => {
     const queueName = "/some/queue";
     const messageBody = { test: "foo" };
-    const connection = new JsConnection();
-    const queue = messageService.createQueue(connection, queueName);
     let receivedExpiredMessage = false;
 
     messageService.send(queueName, messageBody, 100);
@@ -263,8 +247,6 @@ test("a queue removes expired messages", async (done) => {
 test("a message queue catches exceptions thrown by consumers and then rejects the promise", async () => {
     const queueName = "/some/queue";
     const messageBody = { test: "foo" };
-    const connection = new JsConnection();
-    const queue = messageService.createQueue(connection, queueName);
     
     const promise = messageService.send(queueName, messageBody);
 
