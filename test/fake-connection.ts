@@ -27,13 +27,13 @@ export class FakeConnection extends JsmsConnection {
         return new FakeMessageConsumer(this, destination);
     }
 
-    public onCustomMessageReceived(customMessage: FakeCustomMessage): void {
+    public onCustomMessageReceived(customMessage: FakeCustomMessage): boolean {
         const destination = super.getDestinationFor(customMessage.id);
         const consumer = super.getConsumer(destination) as FakeMessageConsumer;
         const message = JsmsMessage.create(destination.getName(), customMessage.data);
         const responseDeferred = new JsmsDeferred<JsmsMessage, object, Error>();
 
-        consumer.onMessage(message, responseDeferred);
+        return consumer.onMessage(message, responseDeferred);
     }
 
     public createTopic(topicName: string): JsmsTopic {

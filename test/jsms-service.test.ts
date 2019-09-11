@@ -148,6 +148,22 @@ test("a queue receiver can send a response when the message is sent after regist
 
 // --------------------------------------------------------------------------------------------------------------------
 
+test("JsMessageproducer catches errors thrown by message listeners", async () => {
+    const queueName = "/some/queue";
+    const messageBody = { test: "foo" };
+    const expectedResponseBody = { response: "payload" };
+
+    messageService.receive(queueName)
+        .then((message: JsmsMessage, resolve: ResolveFunction<object>) => {
+            throw new Error("which should be caught");
+        });
+
+    const response = messageService.send(queueName, messageBody);
+    await expect(response).rejects.toThrowError();
+});
+
+// --------------------------------------------------------------------------------------------------------------------
+
 test("a queue receiver can send a response when the message is sent before registration of the receiver", async () => {
     const queueName = "/some/queue";
     const messageBody = { test: "foo" };
@@ -319,6 +335,29 @@ test("topic subscription is open for extension via custom topic subscriber", asy
 
 // --------------------------------------------------------------------------------------------------------------------
 
+test("errors thrown by custom topic subscribers are caught by JsMessageConsumer", async () => {
+    const topicName = "/some/topic";
+    const expectedMessageBody = { test: "foo" };
+
+    // given custom message consumer for a given topic name
+    const connection = new FakeConnection();
+    const topic = messageService.createTopic(topicName, connection);
+    const customTopicSubscriber = connection.getConsumer(topic) as FakeMessageConsumer;
+    customTopicSubscriber.receive().then((message: JsmsMessage) => {
+        throw new Error("which should be caught");
+    });
+
+    // when receiving a custom message
+    const result = connection.onCustomMessageReceived(new FakeCustomMessage(topicName, expectedMessageBody));
+
+    // then the dispatch should have caught the exception and returned false
+    expect(result).toBeFalsy();
+
+    topic.close();
+});
+
+// --------------------------------------------------------------------------------------------------------------------
+
 test("message service integrates with custom topic subscriber", async () => {
     const topicName = "/some/topic";
     const expectedMessageBody = { test: "foo" };
@@ -447,8 +486,6 @@ test("errors thrown by topic subsciber listeners are caught", async () => {
 
 // --------------------------------------------------------------------------------------------------------------------
 
-// TODO: test jsmessageproducer catches errors thrown by message listeners
-
 // TODO: test a queue doesn't deliver expired messages
 
 // TODO: remove any redundant code from fake-* classes
@@ -456,6 +493,8 @@ test("errors thrown by topic subsciber listeners are caught", async () => {
 // TODO: introduce subclasses MessageConsumer > QueueReceiver, TopicSubscriber / MessageProducer > QueueSender, TopicPublisher (???)
 
 // TODO: test replyTo/responses
+
+// TODO: resolve all todos (everywhere)
 
 // TODO: support for message listener
 

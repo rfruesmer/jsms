@@ -4,7 +4,7 @@ import { JsmsMessage } from "./jsms-message";
 
 
 /**
- *  Implements point-to-point (PTP) messaging:
+ *  JsmsQueue is used for point-to-point (PTP) messaging:
  *
  *  - Each queue/message has only one consumer
  *
@@ -24,9 +24,6 @@ import { JsmsMessage } from "./jsms-message";
 export class JsmsQueue extends JsmsDestination {
     private entries: JsmsMessage[] = [];
     private maintenanceInterval: any;
-
-    // TODO: consider renaming to receiver-/consumer-deferreds
-    private deferredDequeues = new Array<JsmsDeferred<JsmsMessage, object, Error>>();
 
     constructor(name: string) {
         super(name);

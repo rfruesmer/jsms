@@ -7,8 +7,8 @@ import { JsmsQueue } from "./jsms-queue";
 import { JsmsTopic } from "./jsms-topic";
 
 export class JsMessageConsumer extends JsmsMessageConsumer {
-    protected receiveDeferreds = new Array<JsmsDeferred<JsmsMessage, object, Error>>();
-    protected responseDeferreds = new Map<string, JsmsDeferred<JsmsMessage, object, Error>>();
+    protected receivers = new Array<JsmsDeferred<JsmsMessage, object, Error>>();
+    protected senders = new Map<string, JsmsDeferred<JsmsMessage, object, Error>>();
 
     constructor(connection: JsmsConnection, destination: JsmsDestination) {
         super(connection, destination);
@@ -16,36 +16,43 @@ export class JsMessageConsumer extends JsmsMessageConsumer {
 
     public receive(): JsmsDeferred<JsmsMessage, object, Error> {
         if (this.destination instanceof JsmsTopic) {
-            // TODO: check if a deferred is really necessary/useful here
-            const receiveDeferred = new JsmsDeferred<JsmsMessage, object, Error>();
-            const topic = this.destination as JsmsTopic;
-            topic.subscribe((message: JsmsMessage) => {
-                receiveDeferred.resolve(message);
-            });
-
-            return receiveDeferred;
-        } else {
-            const queue = this.destination as JsmsQueue;
-            const message = queue.dequeue();
-            const receiveDeferred = this.createReceiveDeferred(message);
-            if (!message) {
-                this.receiveDeferreds.push(receiveDeferred);
-            }
-
-            return receiveDeferred;
+            return this.receiveTopicMessage();
+        } 
+        else {
+            return this.receiveQueueMessage();
         }
     }
 
-    private createReceiveDeferred(message: JsmsMessage | undefined): JsmsDeferred<JsmsMessage, object, Error> {
+    private receiveTopicMessage(): JsmsDeferred<JsmsMessage, object, Error> {
+        const receiver = new JsmsDeferred<JsmsMessage, object, Error>();
+        const topic = this.destination as JsmsTopic;
+        topic.subscribe((message: JsmsMessage) => {
+            receiver.resolve(message);
+        });
+
+        return receiver;
+    }
+
+    private receiveQueueMessage(): JsmsDeferred<JsmsMessage, object, Error> {
+        const queue = this.destination as JsmsQueue;
+        const message = queue.dequeue();
+        const receiver = this.createReceiver(message);
+        if (!message) {
+            this.receivers.push(receiver);
+        }
+
+        return receiver;
+    }
+
+    private createReceiver(message: JsmsMessage | undefined): JsmsDeferred<JsmsMessage, object, Error> {
         if (!message) {
             return new JsmsDeferred<JsmsMessage, object, Error>();
         }
 
-        const responseDeferred = this.responseDeferreds.get(message.header.id);
+        const sender = this.senders.get(message.header.id);
 
-        const receiveDeferred = new JsmsDeferred<JsmsMessage, object, Error>(() => {
-
-            receiveDeferred.promise.then((responseBody: object) => {
+        const receiver = new JsmsDeferred<JsmsMessage, object, Error>(() => {
+            receiver.promise.then((responseBody: object) => {
                 const request = message;
                 const response = JsmsMessage.create(
                     request.header.channel,
@@ -54,44 +61,82 @@ export class JsMessageConsumer extends JsmsMessageConsumer {
                     request.header.correlationID
                 );
                 // @ts-ignore: responseDeferred is guaranteed to be valid here
-                responseDeferred.resolve(response);
+                sender.resolve(response);
             });
 
             try {
-                receiveDeferred.resolve(message);
-            } catch (error) {
+                receiver.resolve(message);
+            } 
+            catch (error) {
                 // @ts-ignore: responseDeferred is guaranteed to be valid here
-                responseDeferred.reject(error);
+                sender.reject(error);
             }
         });
 
-        return receiveDeferred;
+        return receiver;
     }
 
-    public onMessage(message: JsmsMessage, responseDeferred: JsmsDeferred<JsmsMessage, object, Error>): boolean {
+    public onMessage(message: JsmsMessage, sender: JsmsDeferred<JsmsMessage, object, Error>): boolean {
         if (this.destination instanceof JsmsTopic) {
-            const topic = this.destination as JsmsTopic;
-            topic.getSubscribers().forEach(subscriber => subscriber(message));
-        } else {
-            if (this.receiveDeferreds.length === 0) {
-                this.responseDeferreds.set(message.header.id, responseDeferred);
+            return this.sendToTopic(message);
+        } 
+        else {
+            return this.sendToQueue(message, sender);
+        }
+    }
+
+    private sendToTopic(message: JsmsMessage): boolean {
+        let result = true;
+        const topic = this.destination as JsmsTopic;
+        topic.getSubscribers().forEach(subscriber => {
+            try {
+                subscriber(message)
+            }
+            catch (e) {
+                console.error(e);
+                result = false;
+            }
+        });
+
+        return false;
+    }
+
+    private sendToQueue(message: JsmsMessage, sender: JsmsDeferred<JsmsMessage, object, Error>): boolean {
+        try {
+            const receiver = this.enqueueReceiver(message, sender);
+            if (!receiver) {
                 return false;
             }
-
-            const receiveDeferred = this.receiveDeferreds[0];
-            receiveDeferred.promise.then((responseBody: object) => {
-                const response = JsmsMessage.create(
-                    message.header.channel,
-                    responseBody,
-                    0,
-                    message.header.correlationID
-                );
-                responseDeferred.resolve(response);
-            });
-            this.receiveDeferreds.shift();
-            receiveDeferred.resolve(message);
+            receiver.resolve(message);
+        }
+        catch (e) {
+            sender.reject(e);
+            return false;
         }
 
         return true;
+    }
+
+    private enqueueReceiver(message: JsmsMessage, sender: JsmsDeferred<JsmsMessage, object, Error>): JsmsDeferred<JsmsMessage, object, Error> | null {
+        if (this.receivers.length === 0) {
+            this.senders.set(message.header.id, sender);
+            return null;
+        }
+
+        const receiver = this.receivers[0];
+        receiver.promise.then((responseBody: object) => {
+            const response = JsmsMessage.create(
+                message.header.channel,
+                responseBody,
+                0,
+                message.header.correlationID
+            );
+
+            sender.resolve(response);
+        });
+
+        this.receivers.shift();     
+
+        return receiver;
     }
 }
