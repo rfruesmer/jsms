@@ -1,11 +1,7 @@
 import { JsmsDeferred } from "./jsms-deferred";
 import { JsmsDestination } from "./jsms-destination";
 import { JsmsMessage } from "./jsms-message";
-import { JsmsService } from "./jsms-service";
 
-class MessageQueueEntry {
-    constructor(public message: JsmsMessage, public producerDeferred: JsmsDeferred<JsmsMessage, object, Error>) {}
-}
 
 /**
  *  Implements point-to-point (PTP) messaging:

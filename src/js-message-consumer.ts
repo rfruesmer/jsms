@@ -37,12 +37,13 @@ export class JsMessageConsumer extends JsmsMessageConsumer {
     }
 
     private createReceiveDeferred(message: JsmsMessage | undefined): JsmsDeferred<JsmsMessage, object, Error> {
-        const receiveDeferred = new JsmsDeferred<JsmsMessage, object, Error>(() => {
-            if (!message) {
-                return;
-            }
+        if (!message) {
+            return new JsmsDeferred<JsmsMessage, object, Error>();
+        }
 
-            const responseDeferred = this.responseDeferreds.get(message.header.id);
+        const responseDeferred = this.responseDeferreds.get(message.header.id);
+
+        const receiveDeferred = new JsmsDeferred<JsmsMessage, object, Error>(() => {
 
             receiveDeferred.promise.then((responseBody: object) => {
                 const request = message;
@@ -52,17 +53,15 @@ export class JsMessageConsumer extends JsmsMessageConsumer {
                     0,
                     request.header.correlationID
                 );
-                if (responseDeferred) {
-                    responseDeferred.resolve(response);
-                }
+                // @ts-ignore: responseDeferred is guaranteed to be valid here
+                responseDeferred.resolve(response);
             });
 
             try {
                 receiveDeferred.resolve(message);
             } catch (error) {
-                if (responseDeferred) {
-                    responseDeferred.reject(error);
-                }
+                // @ts-ignore: responseDeferred is guaranteed to be valid here
+                responseDeferred.reject(error);
             }
         });
 

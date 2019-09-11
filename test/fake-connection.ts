@@ -29,14 +29,10 @@ export class FakeConnection extends JsmsConnection {
 
     public onCustomMessageReceived(customMessage: FakeCustomMessage): void {
         const destination = super.getDestinationFor(customMessage.id);
-        if (!destination) {
-            console.warn("Received unknown message: " + customMessage.id)
-            return;
-        }
-        
         const consumer = super.getConsumer(destination) as FakeMessageConsumer;
         const message = JsmsMessage.create(destination.getName(), customMessage.data);
         const responseDeferred = new JsmsDeferred<JsmsMessage, object, Error>();
+
         consumer.onMessage(message, responseDeferred);
     }
 

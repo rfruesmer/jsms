@@ -218,7 +218,7 @@ test("a queued message is deleted after successful delivery", async () => {
         .then((message: JsmsMessage, resolve: ResolveFunction<object>) => {
             // NOTE: the message is now considered to be sucessfully delivered 
             // Any errors during consuming the message mustn't change the successful delivery status:
-            throw new Error("should be caught");
+            throw new Error("which should be caught");
         });
 
     await expect(promise).rejects.toThrowError();
@@ -313,6 +313,8 @@ test("topic subscription is open for extension via custom topic subscriber", asy
     // then the message should be published to the custom message consumer
     const actualMessage = await promise;
     expect(actualMessage.body).toEqual(expectedMessageBody);
+
+    topic.close();
 });
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -336,6 +338,8 @@ test("message service integrates with custom topic subscriber", async () => {
 
     // then the message should be published to the subscriber
     expect(actualMessageBody).toEqual(expectedMessageBody);
+
+    topic.close();
 });
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -357,6 +361,8 @@ test("message service integrates with custom topic publisher", async () => {
     const lastMessage = messageProducer.getLastMessage();
     expect(lastMessage).toBeDefined();
     expect(lastMessage.body).toEqual(expectedMessageBody);
+
+    topic.close();
 });
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -425,11 +431,29 @@ test("message service creates default body to topic messages if none was specifi
 
 // --------------------------------------------------------------------------------------------------------------------
 
+test("errors thrown by topic subsciber listeners are caught", async () => {
+    const topicName = "/some/topic";
+    const expectedMessageBody = {};
+
+    const executionOfTopicListener = () => {
+        messageService.subscribe(topicName, (message: JsmsMessage) => { 
+            throw new Error("which should be caught");
+        });
+        messageService.publish(topicName);
+    };
+
+    expect(executionOfTopicListener).not.toThrow();
+});
+
+// --------------------------------------------------------------------------------------------------------------------
+
 // TODO: organize imports
 
 // TODO: test jsmessageproducer catches errors thrown by message listeners
 
 // TODO: test a queue doesn't deliver expired messages
+
+// TODO: remove any redundant code from fake-* classes
 
 // TODO: introduce subclasses MessageConsumer > QueueReceiver, TopicSubscriber / MessageProducer > QueueSender, TopicPublisher (???)
 

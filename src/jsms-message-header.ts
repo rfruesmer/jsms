@@ -11,7 +11,7 @@ export class JsmsMessageHeader {
      * @param timeToLive The time in milliseconds (from now) until this message will be discarded.
      * @param correlationID Used for matching replies/responses to original message.
      */
-    constructor(channel: string, timeToLive: number = 0, correlationID: string = v4()) {
+    constructor(channel: string, timeToLive: number, correlationID: string) {
         this.id = v4();
         this.channel = channel;
         this.expiration = timeToLive > 0 ? new Date().getTime() + timeToLive : 0;

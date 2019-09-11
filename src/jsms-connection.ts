@@ -32,9 +32,14 @@ export abstract class JsmsConnection {
         this.consumers.set(topic, consumer);
     }
 
-    protected getDestinationFor(channel: string): JsmsDestination | undefined {
-        const destination = this.queues.get(channel);
-        return destination ? destination : this.topics.get(channel);
+    protected getDestinationFor(channel: string): JsmsDestination {
+        let destination = this.queues.get(channel) as JsmsDestination | undefined;
+        if (!destination) {
+            destination = this.topics.get(channel);
+        }
+        checkState(!!destination, "Unknown channel: " + channel);
+        // @ts-ignore: check for undefined already done before via checkState
+        return destination;
     }
 
     public getConsumer(destination: JsmsDestination): JsmsMessageConsumer {
