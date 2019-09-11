@@ -4,7 +4,7 @@
 <a href="https://travis-ci.org/rfruesmer/jsms"><img alt="Build Status" src="https://travis-ci.org/rfruesmer/jsms.svg?branch=master"></a>
 <a href="https://codecov.io/gh/rfruesmer/jsms"><img alt="Coverage Status" src="https://codecov.io/gh/rfruesmer/jsms/master.svg"></a>
 
-A lightweight implementation of a messaging client framework (inspired by the Java™ Message Service API).
+A lightweight implementation of a messaging client framework for JavaScript/TypeScript (inspired by the Java™ Message Service API).
 
 **DISCLAIMER / IMPORTANT NOTICE**:
 
