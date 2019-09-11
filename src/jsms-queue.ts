@@ -48,9 +48,7 @@ export class JsmsQueue extends JsmsDestination {
     private removeExpiredMessages = () => {
         const currentTimeMillis = new Date().getTime();
         this.entries
-            .filter(
-                (message: JsmsMessage) => message.header.expiration > 0 && currentTimeMillis > message.header.expiration
-            )
+            .filter((message: JsmsMessage) => message.header.expiration > 0 && currentTimeMillis > message.header.expiration)
             .map((message: JsmsMessage) => this.entries.indexOf(message))
             .forEach((index: number) => this.entries.splice(index, 1));
     };

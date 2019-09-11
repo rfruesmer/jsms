@@ -67,7 +67,7 @@ export class JsQueueReceiver extends JsmsMessageConsumer {
 
     private sendToQueue(message: JsmsMessage, sender: JsmsDeferred<JsmsMessage, object, Error>): boolean {
         try {
-            const receiver = this.enqueueReceiver(message, sender);
+            const receiver = this.dequeueReceiver(message, sender);
             if (!receiver) {
                 return false;
             }
@@ -81,7 +81,7 @@ export class JsQueueReceiver extends JsmsMessageConsumer {
         return true;
     }
 
-    private enqueueReceiver(message: JsmsMessage, sender: JsmsDeferred<JsmsMessage, object, Error>): JsmsDeferred<JsmsMessage, object, Error> | null {
+    private dequeueReceiver(message: JsmsMessage, sender: JsmsDeferred<JsmsMessage, object, Error>): JsmsDeferred<JsmsMessage, object, Error> | null {
         if (this.receivers.length === 0) {
             this.senders.set(message.header.id, sender);
             return null;
