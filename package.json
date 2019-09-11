@@ -1,7 +1,7 @@
 {
-  "name": "jsms",
+  "name": "jsms-core",
   "version": "1.0.2-alpha.10",
-  "description": "JavaScript Message Service",
+  "description": "A JavaScript Messaging Framework",
   "scripts": {
     "test": "jest --collect-coverage",
     "build": "npm run clean && npm run compile && npm run lint && npm run test && npm run prepare-dist",
@@ -21,7 +21,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rfruesmer/jsms.git"
+    "url": "git+https://github.com/rfruesmer/jsms-core.git"
   },
   "keywords": [
     "messaging",
@@ -32,9 +32,9 @@
   "author": "Reinhold Früsmer",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/rfruesmer/jsms/issues"
+    "url": "https://github.com/rfruesmer/jsms-core/issues"
   },
-  "homepage": "https://github.com/rfruesmer/jsms#readme",
+  "homepage": "https://github.com/rfruesmer/jsms-core#readme",
   "devDependencies": {
     "@types/jest": "^24.0.18",
     "@types/uuid": "^3.4.5",
