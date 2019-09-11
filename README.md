@@ -12,7 +12,7 @@ The purpose of this module is to act as an extensible platform for adding provid
 
 The original use case for this project was the need to combine two partly redundant messaging solutions - one being a mediator and the other being an embedded Chromium browser - into one centralized messaging service.
 
-It can be used right out of the box in terms of an in-process mediator/event bus, but for using protocols/transports like for example STOMP over WebSocket, you usually will have to integrate your own or other (3rd party) communication implementations by creating a custom JSMS connection class.
+It can be used right out of the box in terms of an in-process mediator/event bus, but for using protocols/transports like for example STOMP over WebSocket, you have to integrate your own or other (3rd party) communication implementations by creating a custom JSMS connection class.
 
 ## Major differences compared to JMS
 
