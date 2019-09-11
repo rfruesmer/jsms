@@ -5,24 +5,40 @@ import { FakeMessageProducer } from "./fake-message-producer";
 import { JsmsMessage } from "@/jsms-message";
 import { JsmsMessageHeader } from "@/jsms-message-header";
 import { v4 } from "uuid";
+import { JsmsTopic } from "@/jsms-topic";
+import { FakeCustomMessage } from "./fake-custom-message";
 
 export class FakeConnection extends JsmsConnection {
-    private queue!: JsmsQueue;
-    private consumer!: FakeMessageConsumer;
-    private producer!: FakeMessageProducer;
         
     public createQueue(queueName: string): JsmsQueue {
-        this.queue = new JsmsQueue(queueName);
-        this.producer = new FakeMessageProducer(this, this.queue);
-        this.consumer = new FakeMessageConsumer(this, this.queue)
+        const queue = new JsmsQueue(queueName);
+        const producer = new FakeMessageProducer(this, queue);
+        const consumer = new FakeMessageConsumer(this, queue)
 
-        super.addQueue(this.queue, this.producer, this.consumer);
+        super.addQueue(queue, producer, consumer);
         
-        return this.queue;
+        return queue;
     }
 
-    public onDataReceived(data: object): void {
-        const message = new JsmsMessage(new JsmsMessageHeader(this.queue.getName(), v4(), 0));
-        this.consumer.onMessage(message);
+    public onCustomMessageReceived(customMessage: FakeCustomMessage): void {
+        const destination = super.getDestinationFor(customMessage.id);
+        if (!destination) {
+            console.warn("Received unknown message: " + customMessage.id)
+            return;
+        }
+        
+        const consumer = super.getConsumer(destination) as FakeMessageConsumer;
+        const message = new JsmsMessage(new JsmsMessageHeader(destination.getName(), v4(), 0), customMessage.data);
+        consumer.onMessage(message);
+    }
+
+    public createTopic(topicName: string): JsmsTopic {
+        const topic = new JsmsTopic(topicName);
+        const producer = new FakeMessageProducer(this, topic);
+        const consumer = new FakeMessageConsumer(this, topic)
+
+        super.addTopic(topic, producer, consumer);
+        
+        return topic;
     }
 }

@@ -1,6 +1,7 @@
 import { JsmsMessage } from "./jsms-message";
+import { JsmsDestination } from "./jsms-destination";
 
-export type SubscriberCallback = (message: JsmsMessage) => void;
+export type MessageListenerCallback = (message: JsmsMessage) => void;
 
 /**
  *  Implements publish/subscribe messaging.
@@ -19,18 +20,24 @@ export type SubscriberCallback = (message: JsmsMessage) => void;
  *    must continue to be active in order for it to consume messages.
  *
  */
-export class JsmsTopic {
-    private subscribers = new Array<SubscriberCallback>();
+export class JsmsTopic extends JsmsDestination {
+    private subscribers = new Array<MessageListenerCallback>();
 
-    constructor(private name: string) {}
+    constructor(name: string) {
+        super(name);
+    }
 
-    public subscribe(subscriber: SubscriberCallback): void {
+    public subscribe(subscriber: MessageListenerCallback): void {
         if (this.subscribers.indexOf(subscriber) === -1) {
             this.subscribers.push(subscriber);
         }
     }
 
-    public publish(message: JsmsMessage): void {
-        this.subscribers.forEach(subscriber => subscriber(message));
+    public getSubscribers(): MessageListenerCallback[] {
+        return [... this.subscribers];
+    }
+
+    public close(): void {
+        // do nothing
     }
 }

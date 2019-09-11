@@ -5,6 +5,7 @@ import { JsmsService } from "@/jsms-service";
 import { JsConnection } from "@/js-connection";
 import { JsmsMessage } from "@/jsms-message";
 import { ResolveFunction } from "@/jsms-deferred";
+import { FakeCustomMessage } from "./fake-custom-message";
 
 // TODO: convert to BDD tests - encapsulate setups/execution/verification in given/when/then where possible
 // TODO: split up into separate tests for PTP/pub-sub, message service and components
@@ -234,126 +235,199 @@ test("a queued message is deleted after successful delivery", async () => {
 
 // --------------------------------------------------------------------------------------------------------------------
 
-test("is open for extension via custom connection / message consumers", async () => {
-    const queueName = "/some/queue";
-    const expectedMessageBody = { test: "foo" };
-    const connection = new FakeConnection();
-    const queue = connection.createQueue(queueName);
-    const messageConsumer = connection.getConsumer(queue) as FakeMessageConsumer;
-    const promise = messageConsumer.receive().promise;
+// test("receiving queue messages is open for extension via custom connection", async () => {
+//     const queueName = "/some/queue";
+//     const expectedMessageBody = { test: "foo" };
+//     const connection = new FakeConnection();
+//     const queue = connection.createQueue(queueName);
+//     const messageConsumer = connection.getConsumer(queue) as FakeMessageConsumer;
+//     const promise = messageConsumer.receive().promise;
 
-    messageConsumer.emit(JsmsService.createMessage(queueName, expectedMessageBody));
+//     connection.onCustomMessageReceived(new FakeCustomMessage(queueName, expectedMessageBody));
 
-    const actualMessage = await promise;
-    expect(actualMessage.body).toEqual(expectedMessageBody);
+//     const actualMessage = await promise;
+//     expect(actualMessage.body).toEqual(expectedMessageBody);
 
-    queue.close();
-});
-
-// --------------------------------------------------------------------------------------------------------------------
-
-test("the message service provides a facade for custom message consumers", async () => {
-    const queueName = "/some/queue";
-    const expectedMessageBody = { test: "foo" };
-    const connection = new FakeConnection();
-    const queue = messageService.createQueue(queueName, connection);
-    const messageConsumer = connection.getConsumer(queue) as FakeMessageConsumer;
-    const promise = messageService.receive(queueName).promise;
-
-    messageConsumer.emit(JsmsService.createMessage(queueName, expectedMessageBody));
-
-    const actualMessage = await promise;
-    expect(actualMessage.body).toEqual(expectedMessageBody);
-
-    queue.close();
-});
+//     queue.close();
+// });
 
 // --------------------------------------------------------------------------------------------------------------------
 
-test("is open for extension via custom connection / message producers", async () => {
-    const queueName = "/some/queue";
-    const expectedMessageBody = { test: "foo" };
-    const connection = new FakeConnection();
-    const queue = messageService.createQueue(queueName, connection);
-    const messageProducer = connection.getProducer(queue) as FakeMessageProducer;
-    expect(messageProducer.getLastMessage()).toBeUndefined();
+// test("the message service provides a facade for custom queue messaging", async () => {
+//     const queueName = "/some/queue";
+//     const expectedMessageBody = { test: "foo" };
+//     const connection = new FakeConnection();
+//     const queue = messageService.createQueue(queueName, connection);
+//     const messageConsumer = connection.getConsumer(queue) as FakeMessageConsumer;
+//     const promise = messageService.receive(queueName).promise;
+
+//     connection.onCustomMessageReceived(new FakeCustomMessage(queueName, expectedMessageBody));
+
+//     const actualMessage = await promise;
+//     expect(actualMessage.body).toEqual(expectedMessageBody);
+
+//     queue.close();
+// });
+
+// --------------------------------------------------------------------------------------------------------------------
+
+// test("sending queue messages is open for extension via custom connection", async () => {
+//     const queueName = "/some/queue";
+//     const expectedMessageBody = { test: "foo" };
+//     const connection = new FakeConnection();
+//     const queue = messageService.createQueue(queueName, connection);
+//     const messageProducer = connection.getProducer(queue) as FakeMessageProducer;
+//     expect(messageProducer.getLastMessage()).toBeUndefined();
     
-    messageService.send(queueName, expectedMessageBody);
+//     messageService.send(queueName, expectedMessageBody);
 
+//     const lastMessage = messageProducer.getLastMessage();
+//     expect(lastMessage).toBeDefined();
+//     expect(lastMessage.body).toEqual(expectedMessageBody);
+
+//     queue.close();
+// });
+
+// --------------------------------------------------------------------------------------------------------------------
+
+test("topic subscription is open for extension via custom topic subscriber", async () => {
+    const topicName = "/some/topic";
+    const expectedMessageBody = { test: "foo" };
+
+    // given custom message consumer for a given topic name
+    const connection = new FakeConnection();
+    const topic = messageService.createTopic(topicName, connection);
+    const customTopicSubscriber = connection.getConsumer(topic) as FakeMessageConsumer;
+    const promise = customTopicSubscriber.receive().promise;
+
+    // when receiving a custom message
+    connection.onCustomMessageReceived(new FakeCustomMessage(topicName, expectedMessageBody));
+
+    // then the message should be published to the custom message consumer
+    const actualMessage = await promise;
+    expect(actualMessage.body).toEqual(expectedMessageBody);
+});
+
+// --------------------------------------------------------------------------------------------------------------------
+
+test("message service integrates with custom topic subscriber", async () => {
+    const topicName = "/some/topic";
+    const expectedMessageBody = { test: "foo" };
+    let actualMessageBody = {};
+
+    // given custom connection incl. custom message consumer for given topic name
+    const connection = new FakeConnection();
+    const topic = messageService.createTopic(topicName, connection);
+
+    // given subscriber for topic 
+    const promise = messageService.subscribe(topicName, (message: JsmsMessage) => {
+        actualMessageBody = message.body;
+    });
+
+    // when receiving a custom message
+    connection.onCustomMessageReceived(new FakeCustomMessage(topicName, expectedMessageBody));
+
+    // then the message should be published to the subscriber
+    expect(actualMessageBody).toEqual(expectedMessageBody);
+});
+
+// --------------------------------------------------------------------------------------------------------------------
+
+test("message service integrates with custom topic publisher", async () => {
+    const topicName = "/some/topic";
+    const expectedMessageBody = { test: "foo" };
+
+    // given custom message producer for a given topic name
+    const connection = new FakeConnection();
+    const topic = messageService.createTopic(topicName, connection);
+    const messageProducer = connection.getProducer(topic) as FakeMessageProducer;
+    expect(messageProducer.getLastMessage()).toBeUndefined();
+
+    // when publishing a message to topic
+    messageService.publish(topicName, expectedMessageBody);
+
+    // then the custom message producer should have received the message
     const lastMessage = messageProducer.getLastMessage();
     expect(lastMessage).toBeDefined();
     expect(lastMessage.body).toEqual(expectedMessageBody);
-
-    queue.close();
 });
 
 // --------------------------------------------------------------------------------------------------------------------
 
-// test("a topic message is published to all subscribers", () => {
-//     const topicName = "/some/topic";
-//     const expectedMessageBody = { test: "foo" };
-//     let receivedCount = 0;
+test("a topic message is published to all subscribers exactly once", () => {
+    const topicName = "/some/topic";
+    const expectedMessageBody = { test: "foo" };
+    let receivedCount = 0;
 
-//     messageService.subscribe(topicName, (actualMessage: Message) => { 
-//         expect(actualMessage.body).toEqual(expectedMessageBody);
-//         receivedCount++; 
-//     });
-//     messageService.subscribe(topicName, (actualMessage: Message) => { 
-//         expect(actualMessage.body).toEqual(expectedMessageBody);
-//         receivedCount++; 
-//     });
+    messageService.subscribe(topicName, (actualMessage: JsmsMessage) => { 
+        expect(actualMessage.body).toEqual(expectedMessageBody);
+        receivedCount++; 
+    });
 
-//     messageService.publish(topicName, expectedMessageBody);
+    messageService.subscribe(topicName, (actualMessage: JsmsMessage) => { 
+        expect(actualMessage.body).toEqual(expectedMessageBody);
+        receivedCount++; 
+    });
 
-//     expect(receivedCount).toBe(2);
-// });
+    messageService.publish(topicName, expectedMessageBody);
 
-// // --------------------------------------------------------------------------------------------------------------------
+    expect(receivedCount).toBe(2);
+});
 
-// test("a subscriber is only called once", () => {
-//     const topicName = "/some/topic";
-//     const messageBody = { test: "foo" };
-//     let receivedCount = 0;
+// --------------------------------------------------------------------------------------------------------------------
 
-//     const subscriber = (message: Message) => { receivedCount++; }
-//     messageService.subscribe(topicName, subscriber);
-//     messageService.subscribe(topicName, subscriber);
+test("a subscriber is called only once", () => {
+    const topicName = "/some/topic";
+    const messageBody = { test: "foo" };
+    let receivedCount = 0;
 
-//     messageService.publish(topicName, messageBody);
+    const subscriber = (message: JsmsMessage) => { receivedCount++; }
+    messageService.subscribe(topicName, subscriber);
+    messageService.subscribe(topicName, subscriber);
 
-//     expect(receivedCount).toBe(1);
-// });
+    messageService.publish(topicName, messageBody);
 
-// // --------------------------------------------------------------------------------------------------------------------
+    expect(receivedCount).toBe(1);
+});
 
-// test("a message is only published to it's topic subscribers", () => {
-//     let received = false;
+// --------------------------------------------------------------------------------------------------------------------
 
-//     messageService.subscribe("/interesting/topic", (message: Message) => { received = true });
-//     messageService.publish("/uninteresting/topic", {});
+test("a message is only published to it's topic subscribers", () => {
+    let received = false;
 
-//     expect(received).toBeFalsy();
-// });
+    messageService.subscribe("/interesting/topic", (message: JsmsMessage) => { received = true });
+    messageService.publish("/uninteresting/topic", {});
+
+    expect(received).toBeFalsy();
+});
    
-// // --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
-// test("message service creates default body to topic messages if none was specified", async () => {
-//     const topicName = "/some/topic";
-//     const expectedMessageBody = {};
-//     let actualMessageBody = null;
+test("message service creates default body to topic messages if none was specified", async () => {
+    const topicName = "/some/topic";
+    const expectedMessageBody = {};
+    let actualMessageBody = null;
 
-//     messageService.subscribe(topicName, (message: Message) => { 
-//         actualMessageBody = message.body;
-//     });
-//     messageService.publish(topicName);
+    messageService.subscribe(topicName, (message: JsmsMessage) => { 
+        actualMessageBody = message.body;
+    });
+    messageService.publish(topicName);
 
-//     expect(actualMessageBody).toEqual(expectedMessageBody);
-// });
+    expect(actualMessageBody).toEqual(expectedMessageBody);
+});
 
-// // --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
+
+// TODO: jsmessageproducer catches errors thrown by message listener
+
+// TODO: test a queue doesn't deliver expired messages
+
+// TODO: support for message listener
 
 // TODO: support for multiple queues
 
 // TODO: support for multiple topics
 
-// TODO: receiveSync()
+// TODO: add jsdoc
+
+// TODO: receiveSync() (?)

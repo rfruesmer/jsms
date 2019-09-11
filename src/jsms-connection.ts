@@ -3,15 +3,17 @@ import { JsmsMessageConsumer } from "./jsms-message-consumer";
 import { JsmsMessageProducer } from "./jsms-message-producer";
 import { JsmsQueue } from "./jsms-queue";
 import { checkArgument, checkState } from "./preconditions";
+import { JsmsTopic } from "./jsms-topic";
 
 
 export abstract class JsmsConnection {
     protected queues = new Map<string, JsmsQueue>();
-    protected producers = new Map<JsmsQueue, JsmsMessageProducer>();
-    protected consumers = new Map<JsmsQueue, JsmsMessageConsumer>();
+    protected topics = new Map<string, JsmsTopic>();
+    protected producers = new Map<JsmsDestination, JsmsMessageProducer>();
+    protected consumers = new Map<JsmsDestination, JsmsMessageConsumer>();
 
-    // TODO: consider moving creation of queues
     public abstract createQueue(queueName: string): JsmsQueue;
+    public abstract createTopic(topicName: string): JsmsTopic;
 
     protected addQueue(queue: JsmsQueue, producer: JsmsMessageProducer, consumer: JsmsMessageConsumer): void {
         checkState(!this.queues.has(queue.getName()), "A queue with the same name is already registered");
@@ -21,15 +23,28 @@ export abstract class JsmsConnection {
         this.consumers.set(queue, consumer);
     }
 
-    public getConsumer(queue: JsmsQueue): JsmsMessageConsumer {
-        checkArgument(this.consumers.has(queue));
-        // @ts-ignore: check for undefined already done before via checkArgument
-        return this.consumers.get(queue);
+    protected addTopic(topic: JsmsTopic, producer: JsmsMessageProducer, consumer: JsmsMessageConsumer): void {
+        checkState(!this.topics.has(topic.getName()), "A topic with the same name is already registered");
+
+        this.topics.set(topic.getName(), topic);
+        this.producers.set(topic, producer);
+        this.consumers.set(topic, consumer);
     }
 
-    public getProducer(queue: JsmsQueue): JsmsMessageProducer {
-        checkArgument(this.producers.has(queue));
+    protected getDestinationFor(channel: string): JsmsDestination | undefined {
+        const  destination = this.queues.get(channel);
+        return destination ? destination : this.topics.get(channel);
+    }
+
+    public getConsumer(destination: JsmsDestination): JsmsMessageConsumer {
+        checkArgument(this.consumers.has(destination));
         // @ts-ignore: check for undefined already done before via checkArgument
-        return this.producers.get(queue);
+        return this.consumers.get(destination);
+    }
+
+    public getProducer(destination: JsmsDestination): JsmsMessageProducer {
+        checkArgument(this.producers.has(destination));
+        // @ts-ignore: check for undefined already done before via checkArgument
+        return this.producers.get(destination);
     }
 }

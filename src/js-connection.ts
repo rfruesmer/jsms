@@ -1,7 +1,8 @@
+import { JsMessageConsumer } from "./js-message-consumer";
+import { JsMessageProducer } from "./js-message-producer";
 import { JsmsConnection } from "./jsms-connection";
 import { JsmsQueue } from "./jsms-queue";
-import { JsMessageProducer } from "./js-message-producer";
-import { JsMessageConsumer } from "./js-message-consumer";
+import { JsmsTopic } from "./jsms-topic";
 
 export class JsConnection extends JsmsConnection {
 
@@ -11,7 +12,17 @@ export class JsConnection extends JsmsConnection {
         const consumer = new JsMessageConsumer(this, queue);
 
         super.addQueue(queue, producer, consumer);
-        
+
         return queue;
-   }
+    }
+
+    public createTopic(topicName: string): JsmsTopic {
+        const topic = new JsmsTopic(topicName);
+        const producer = new JsMessageProducer(this, topic);
+        const consumer = new JsMessageConsumer(this, topic);
+
+        super.addTopic(topic, producer, consumer);
+
+        return topic;
+    }
 }

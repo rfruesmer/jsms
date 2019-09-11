@@ -25,8 +25,7 @@ class MessageQueueEntry {
  *  successfully by one consumer.
  *
  */
-export class JsmsQueue implements JsmsDestination {
-    private name: string;
+export class JsmsQueue extends JsmsDestination {
     private entries: MessageQueueEntry[] = [];
     private maintenanceInterval: any;
 
@@ -34,12 +33,8 @@ export class JsmsQueue implements JsmsDestination {
     private deferredDequeues = new Array<JsmsDeferred<JsmsMessage, object, Error>>();
 
     constructor(name: string) {
-        this.name = name;
+        super(name);
         this.maintenanceInterval = setInterval(this.removeExpiredMessages, 1000);
-    }
-
-    public getName(): string {
-        return this.name;
     }
 
     public receive(): JsmsDeferred<JsmsMessage, object, Error> {
@@ -165,10 +160,6 @@ export class JsmsQueue implements JsmsDestination {
     //         .map((entry: MessageQueueEntry) => this.queue.indexOf(entry))
     //         .forEach((index: number) => this.queue.splice(index, 1));
     // };
-
-    // public getName(): string {
-    //     return this.name;
-    // }
 
     // public receive(): Deferred<Message, object, Error> {
     //     checkState(!this.consumerDeferred, "Queue already has a receiver."); // Check that there's only one receiver for now
