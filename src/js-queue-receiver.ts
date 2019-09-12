@@ -48,7 +48,7 @@ export class JsQueueReceiver extends JsmsMessageConsumer {
                 receiver.resolve(message);
             } 
             catch (error) {
-                // @ts-ignore: responseDeferred is guaranteed to be valid here
+                // @ts-ignore: sender is guaranteed to be valid here
                 sender.reject(error);
             }
         });
