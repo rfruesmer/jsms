@@ -6,14 +6,15 @@ import { JsmsMessage } from "./jsms-message";
 /**
  *  JsmsQueue is used for point-to-point (PTP) messaging:
  *
- *  - Each queue/message has only one consumer
+ *  * Each queue/message has only one consumer
  *
- *  - A sender and a receiver of a message have no timing dependencies.
+ *  * A sender and a receiver of a message have no timing dependencies.
  *    The receiver can fetch the message whether or not it was running
  *    when the client sent the message.
  *
- *  - Queues retain all messages sent to them until the messages are
- *    consumed or until the message expires.
+ *  * Queues retain all (up to maxSize) messages sent to them until 
+ *    the messages are consumed, the message expires or the queue is 
+ *    closed - messages aren't persisted.
  *
  *  Use PTP messaging when every message you send must be processed
  *  successfully by one consumer.

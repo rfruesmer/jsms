@@ -16,10 +16,14 @@ It can be used right out of the box in terms of an in-process mediator/event bus
 
 ## Major differences compared to JMS
 
-- JSMS is client-only - it's completely independent from any concrete server-side messaging implementations
+- JSMS is built client-first, therefore the name jsms-*client*. Although it might be run on a server as well e. g. as a Node.js application, it doesn't come with  any concrete server-side messaging implementations
+  
 - JSMS is not - and most probably never will be - a fully compliant implementation of the Java Message Service API specs, since JSMS targets a simplified and more lightweight approach
+  
 - There is no Session object - it's concept was flattened into the Connection object where appropriate
+  
 - JSMS doesn't target any threading/worker model (at least not for now), therefore all receive functions are asynchronous by nature using ECMAScript 2015 promises
+  
 - Replying to a message is facilitated by using a promise's resolve callback - no need for temporary queues or similar
 
 ## Models

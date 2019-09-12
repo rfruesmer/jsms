@@ -8,7 +8,13 @@ import { JsmsTopic, MessageListenerCallback } from "./jsms-topic";
 import { checkState } from "./preconditions";
 
 /**
- * Convenience facade for simple interaction with the message system.
+ *  Convenience facade for simple interaction with the message system.
+ * 
+ *  Current limitations:
+ * 
+ * * Queue- and topic names must be unique, meaning that a queue 
+ *   cannot share the same name with a topic and vice versa.
+ * 
  */
 export class JsmsService {
     private defaultConnection = new JsConnection();
@@ -20,7 +26,7 @@ export class JsmsService {
      *  Sends a message to the specified queue.
      * 
      *  Note: if the queue doesn't exist yet, a new queue using the default 
-     *  connection will be generated automatically, .
+     *  JsConnection will be created.
      */
     public send(queueName: string, messageBody: object = {}, timeToLive: number = 0): Promise<JsmsMessage> {
         const queue = this.getQueue(queueName);
@@ -47,7 +53,7 @@ export class JsmsService {
     }
 
     /**
-     *  Creates a new queue for the given connection.
+     *  Creates a new queue for the given connection on this node.
      */
     public createQueue(queueName: string, connection: JsmsConnection = this.defaultConnection): JsmsQueue {
         checkState(!this.queues.has(queueName));
@@ -74,7 +80,7 @@ export class JsmsService {
      *  Registers a callback function on the given topic.
      * 
      *  Note: if the topic doesn't exist yet, a new topic using the default 
-     *  connection will be generated automatically.
+     *  JsConnection will be created.
      */
     public subscribe(topicName: string, subscriber: MessageListenerCallback): void {
         const topic = this.getTopic(topicName);
@@ -91,7 +97,7 @@ export class JsmsService {
     }
 
     /**
-     *  Creates a new topic for the given connection.
+     *  Creates a new topic for the given connection on this node.
      */
     public createTopic(topicName: string, connection: JsmsConnection = this.defaultConnection): JsmsTopic {
         checkState(!this.topics.has(topicName));
@@ -104,10 +110,10 @@ export class JsmsService {
     }
 
     /**
-     * Publishes a message to the given topic.
+     *  Publishes a message to the given topic.
      * 
      *  Note: if the topic doesn't exist yet, a new topic using the default 
-     *  connection will be generated automatically.
+     *  JsConnection will be created.
      */
     public publish(topicName: string, messageBody: object = {}): void {
         const topic = this.getTopic(topicName);
@@ -116,6 +122,16 @@ export class JsmsService {
         const message = JsmsMessage.create(topicName, messageBody);
 
         producer.send(message);
+    }
+
+    /**
+     *  Unsubscribes the listener from the specified topic.
+     */
+    public unsubscribe(topicName: string, subscriber: MessageListenerCallback): void {
+        const topic = this.topics.get(topicName);
+        if (topic) {
+            topic.unsubscribe(subscriber);
+        }        
     }
 
     /**

@@ -40,7 +40,7 @@ export class JsQueueReceiver extends JsmsMessageConsumer {
                     0,
                     request.header.correlationID
                 );
-                // @ts-ignore: responseDeferred is guaranteed to be valid here
+                // @ts-ignore: sender is guaranteed to be valid here
                 sender.resolve(response);
             });
 
@@ -57,7 +57,8 @@ export class JsQueueReceiver extends JsmsMessageConsumer {
     }
 
     public onMessage(message: JsmsMessage, sender: JsmsDeferred<JsmsMessage, object, Error>): boolean {
-        if (message.isExpired()) {
+        if (message.header.channel !== this.getDestination().getName()
+                || message.isExpired()) {
             return false;
         }
 
