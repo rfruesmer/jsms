@@ -28,7 +28,7 @@ export class JsmsService {
      *  Note: if the queue doesn't exist yet, a new queue using the default 
      *  JsConnection will be created.
      */
-    public send(queueName: string, messageBody: object = {}, timeToLive: number = 0): Promise<JsmsMessage> {
+    public send(queueName: string, messageBody: object = {}, timeToLive: number = 0): Promise<object> {
         const queue = this.getQueue(queueName);
         const connection = this.getConnection(queue);
         const producer = connection.getProducer(queue);
@@ -68,7 +68,7 @@ export class JsmsService {
     /**
      *  Receives the next message from the given queue.
      */
-    public receive(queueName: string): JsmsDeferred<JsmsMessage, object, Error> {
+    public receive(queueName: string): JsmsDeferred<object> {
         const queue = this.getQueue(queueName);
         const connection = this.getConnection(queue);
         const consumer = connection.getConsumer(queue);

@@ -4,28 +4,31 @@ import { JsmsDestination } from "./jsms-destination";
 import { JsmsMessage } from "./jsms-message";
 import { JsmsMessageProducer } from "./jsms-message-producer";
 import { JsmsTopic } from "./jsms-topic";
+import { getLogger } from "@log4js-node/log4js-api";
 
 export class JsTopicPublisher extends JsmsMessageProducer {
+    private logger = getLogger("jsms");
+    
     constructor(connection: JsmsConnection, destination: JsmsDestination) {
         super(connection, destination);
     }
 
-    public send(message: JsmsMessage): Promise<JsmsMessage> {
-        const deferred = new JsmsDeferred<JsmsMessage, object, Error>();
+    public send(message: JsmsMessage): Promise<object> {
+        const deferred = new JsmsDeferred<object>();
 
         this.sendToTopic(message, deferred);
 
         return deferred.promise;
     }
 
-    private sendToTopic(message: JsmsMessage, deferred: JsmsDeferred<JsmsMessage, object, Error>): void {
+    private sendToTopic(message: JsmsMessage, deferred: JsmsDeferred<object>): void {
         const topic = this.getDestination() as JsmsTopic;
         topic.getSubscribers().forEach(subscriber => {
             try {
                 subscriber(message);
             } 
             catch (error) {
-                console.error(error);
+                this.logger.error(error);
             }
         });
         

@@ -4,9 +4,16 @@ import { FakeConnection } from "./fake-connection";
 import { FakeCustomMessage } from "./fake-custom-message";
 import { FakeTopicPublisher } from "./fake-topic-publisher";
 import { JsTopicSubscriber } from "@/js-topic-subscriber";
+import { getLogger } from "@log4js-node/log4js-api";
 
 
 let messageService: JsmsService;
+
+// --------------------------------------------------------------------------------------------------------------------
+
+beforeAll(() => {
+    getLogger("jsms").level = "debug";
+});
 
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -37,7 +44,7 @@ test("topic subscription is open for extension via custom topic subscriber", asy
 
     // then the message should be published to the custom message consumer
     const actualMessage = await promise;
-    expect(actualMessage.body).toEqual(expectedMessageBody);
+    expect(actualMessage).toEqual(expectedMessageBody);
 
     topic.close();
 });
@@ -52,7 +59,7 @@ test("errors thrown by custom topic subscribers are caught by JsMessageConsumer"
     const connection = new FakeConnection();
     const topic = messageService.createTopic(topicName, connection);
     const customTopicSubscriber = connection.getConsumer(topic) as JsTopicSubscriber;
-    customTopicSubscriber.receive().then((message: JsmsMessage) => {
+    customTopicSubscriber.receive().then((message: object) => {
         throw new Error("which should be caught");
     });
 

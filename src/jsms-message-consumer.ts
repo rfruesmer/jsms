@@ -25,11 +25,11 @@ export abstract class JsmsMessageConsumer implements JsmsMessageListener {
      *
      * This call is run asynchronuos and therefore doesn't block.
      */
-    public abstract receive(): JsmsDeferred<JsmsMessage, object, Error>;
+    public abstract receive(): JsmsDeferred<object>;
 
     /**
      * @see JsmsMessageListener
      */
     public abstract onMessage(message: JsmsMessage, 
-        responseDeferred: JsmsDeferred<JsmsMessage, object, Error>): boolean;
+        responseDeferred: JsmsDeferred<object>): boolean;
 }

@@ -10,8 +10,8 @@ export class JsQueueSender extends JsmsMessageProducer {
         super(connection, destination);
     }
 
-    public send(message: JsmsMessage): Promise<JsmsMessage> {
-        const deferred = new JsmsDeferred<JsmsMessage, object, Error>();
+    public send(message: JsmsMessage): Promise<object> {
+        const deferred = new JsmsDeferred<object>();
 
         // since this an in-process producer, it can directly dispatch to the consumer
         const destination = this.getDestination();

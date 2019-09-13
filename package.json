@@ -38,6 +38,7 @@
     "@types/jest": "^24.0.18",
     "@types/uuid": "^3.4.5",
     "jest": "^24.9.0",
+    "log4js": "^5.1.0",
     "mvmv": "^0.9.8",
     "prettier": "^1.18.2",
     "rimraf": "^3.0.0",
@@ -47,6 +48,7 @@
     "typescript": "^3.6.2"
   },
   "dependencies": {
+    "@log4js-node/log4js-api": "^1.0.2",
     "uuid": "^3.3.3"
   },
   "files": [

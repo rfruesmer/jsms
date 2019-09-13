@@ -4,27 +4,30 @@ import { JsmsDestination } from "./jsms-destination";
 import { JsmsMessage } from "./jsms-message";
 import { JsmsMessageConsumer } from "./jsms-message-consumer";
 import { JsmsTopic } from "./jsms-topic";
+import { getLogger } from "@log4js-node/log4js-api";
 
 export class JsTopicSubscriber extends JsmsMessageConsumer {
+    private logger = getLogger("jsms");
+
     constructor(connection: JsmsConnection, destination: JsmsDestination) {
         super(connection, destination);
     }
 
-    public receive(): JsmsDeferred<JsmsMessage, object, Error> {
+    public receive(): JsmsDeferred<object> {
         return this.receiveTopicMessage();
     }
 
-    private receiveTopicMessage(): JsmsDeferred<JsmsMessage, object, Error> {
-        const receiver = new JsmsDeferred<JsmsMessage, object, Error>();
+    private receiveTopicMessage(): JsmsDeferred<object> {
+        const receiver = new JsmsDeferred<object>();
         const topic = this.getDestination() as JsmsTopic;
         topic.subscribe((message: JsmsMessage) => {
-            receiver.resolve(message);
+            receiver.resolve(message.body);
         });
 
         return receiver;
     }
 
-    public onMessage(message: JsmsMessage, sender: JsmsDeferred<JsmsMessage, object, Error>): boolean {
+    public onMessage(message: JsmsMessage, sender: JsmsDeferred<object>): boolean {
         return this.sendToTopic(message);
     }
 
@@ -36,7 +39,7 @@ export class JsTopicSubscriber extends JsmsMessageConsumer {
                 subscriber(message);
             }
             catch (e) {
-                console.error(e);
+                this.logger.error(e);
                 result = false;
             }
         });

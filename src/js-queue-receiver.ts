@@ -6,14 +6,14 @@ import { JsmsMessageConsumer } from "./jsms-message-consumer";
 import { JsmsQueue } from "./jsms-queue";
 
 export class JsQueueReceiver extends JsmsMessageConsumer {
-    protected receivers = new Array<JsmsDeferred<JsmsMessage, object, Error>>();
-    protected senders = new Map<string, JsmsDeferred<JsmsMessage, object, Error>>();
+    protected receivers = new Array<JsmsDeferred<object>>();
+    protected senders = new Map<string, JsmsDeferred<object>>();
 
     constructor(connection: JsmsConnection, destination: JsmsDestination) {
         super(connection, destination);
     }
 
-    public receive(): JsmsDeferred<JsmsMessage, object, Error> {
+    public receive(): JsmsDeferred<object> {
         const queue = this.getDestination() as JsmsQueue;
         const message = queue.dequeue();
         const receiver = this.createReceiver(message);
@@ -24,28 +24,27 @@ export class JsQueueReceiver extends JsmsMessageConsumer {
         return receiver;
     }
 
-    private createReceiver(message: JsmsMessage | undefined): JsmsDeferred<JsmsMessage, object, Error> {
+    private createReceiver(message: JsmsMessage | undefined): JsmsDeferred<object> {
         if (!message) {
-            return new JsmsDeferred<JsmsMessage, object, Error>();
+            return new JsmsDeferred<object>();
         }
 
         const sender = this.senders.get(message.header.id);
 
-        const receiver = new JsmsDeferred<JsmsMessage, object, Error>(() => {
+        let chained = false;
+        const receiver = new JsmsDeferred<object>(() => {
+            if (chained) {
+                return;
+            }
+            chained = true;
+            
             receiver.promise.then((responseBody: object) => {
-                const request = message;
-                const response = JsmsMessage.create(
-                    request.header.channel,
-                    responseBody,
-                    0,
-                    request.header.correlationID
-                );
                 // @ts-ignore: sender is guaranteed to be valid here
-                sender.resolve(response);
+                sender.resolve(responseBody);
             });
 
             try {
-                receiver.resolve(message);
+                receiver.resolve(message.body);
             } 
             catch (error) {
                 // @ts-ignore: sender is guaranteed to be valid here
@@ -56,7 +55,7 @@ export class JsQueueReceiver extends JsmsMessageConsumer {
         return receiver;
     }
 
-    public onMessage(message: JsmsMessage, sender: JsmsDeferred<JsmsMessage, object, Error>): boolean {
+    public onMessage(message: JsmsMessage, sender: JsmsDeferred<object>): boolean {
         if (message.header.channel !== this.getDestination().getName()
                 || message.isExpired()) {
             return false;
@@ -66,13 +65,13 @@ export class JsQueueReceiver extends JsmsMessageConsumer {
         return this.sendToQueue(message, sender);
     }
 
-    private sendToQueue(message: JsmsMessage, sender: JsmsDeferred<JsmsMessage, object, Error>): boolean {
+    private sendToQueue(message: JsmsMessage, sender: JsmsDeferred<object>): boolean {
         try {
             const receiver = this.dequeueReceiver(message, sender);
             if (!receiver) {
                 return false;
             }
-            receiver.resolve(message);
+            receiver.resolve(message.body);
         }
         catch (e) {
             sender.reject(e);
@@ -82,7 +81,7 @@ export class JsQueueReceiver extends JsmsMessageConsumer {
         return true;
     }
 
-    private dequeueReceiver(message: JsmsMessage, sender: JsmsDeferred<JsmsMessage, object, Error>): JsmsDeferred<JsmsMessage, object, Error> | null {
+    private dequeueReceiver(message: JsmsMessage, sender: JsmsDeferred<object>): JsmsDeferred<object> | null {
         if (this.receivers.length === 0) {
             this.senders.set(message.header.id, sender);
             return null;
@@ -90,14 +89,7 @@ export class JsQueueReceiver extends JsmsMessageConsumer {
 
         const receiver = this.receivers[0];
         receiver.promise.then((responseBody: object) => {
-            const response = JsmsMessage.create(
-                message.header.channel,
-                responseBody,
-                0,
-                message.header.correlationID
-            );
-
-            sender.resolve(response);
+            sender.resolve(responseBody);
         });
 
         this.receivers.shift();     

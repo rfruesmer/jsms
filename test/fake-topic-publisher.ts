@@ -4,7 +4,7 @@ import { JsmsMessage } from "@/jsms-message";
 export class FakeTopicPublisher extends JsTopicPublisher {
     private lastMessage!: JsmsMessage;
 
-    public send(message: JsmsMessage): Promise<JsmsMessage> {
+    public send(message: JsmsMessage): Promise<object> {
         this.lastMessage = message;
 
         // NOTE: a custom message producer isn't limited to calling super, 

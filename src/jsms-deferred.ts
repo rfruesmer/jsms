@@ -1,57 +1,94 @@
 export type ResolveFunction<R> = (value: R) => void;
 export type RejectFunction<E> = (reason: E) => void;
-type ThenCallback<D, R, E> = (value: D, resolve: ResolveFunction<R>, reject: RejectFunction<E>) => void;
-type ChainedCallback<D, R, E> = (deferred?: JsmsDeferred<D, R, E>) => void;
+type ThenCallback<D> = (value: D, resolve: ResolveFunction<D>) => any;
+type ChainedCallback<D> = (next: JsmsDeferred<D> | undefined) => void;
 
 /**
- * Utility class for handling ECMAScript 2015 promises.
+ *  Utility class for handling ECMAScript promises.
+ * 
+ *  NOTE: Chaining of JsmsDeferred is working different than with ECMAScript 
+ *        promises in favor of allowing a request/reply-style pattern.
  */
-export class JsmsDeferred<D, R, E> {
-    public id = "";
-    private thenCallback!: ThenCallback<D, R, E>;
+export class JsmsDeferred<D> {
+    public debugId = "";
+    private thenCallback!: ThenCallback<D>;
     private _promise!: Promise<D>;
     private resolveFunction!: any;
     private rejectFunction!: any;
-    private chained = false;
-    private onChained: ChainedCallback<D, R, E>;
+    private onChained: ChainedCallback<D>;
+    private next?: JsmsDeferred<D>;
+    private _thenResult?: D;
 
-    // tslint:disable-next-line: no-empty
-    constructor(onChained: ChainedCallback<D, R, E> = () => {}) {
+    /**
+     * 
+     * @param onChained Callback function that is called when either a then 
+     *                  function is chained to this deferred or when the 
+     *                  promise is requested.
+     */
+    constructor(onChained: ChainedCallback<D> = () => { /** do nothing */}) {
         this.onChained = onChained;
-
         this._promise = new Promise<D>((resolve, reject) => {
             this.resolveFunction = resolve;
             this.rejectFunction = reject;
         });
     }
 
+    /**
+     *  Requesting the promise sets this deferred into an active state by 
+     *  calling the onChained handler.
+     * 
+     *  @returns the internal promise object
+     */
     get promise(): Promise<D> {
-        this.notifyChained();
+        this.onChained(this.next);
         return this._promise;
     }
 
-    private notifyChained(): void {
-        if (!this.chained) {
-            this.chained = true;
-            this.onChained(this);
-        }
+    /**
+     *  @returns the result of the then function (if any)
+     */
+    public get thenResult(): D | undefined {
+        return this._thenResult;
     }
 
-    public then(callback: ThenCallback<D, R, E>): Promise<D> {
+    /**
+     *  Chains this deferred to the given then callback and sets it into an 
+     *  active state by calling the onChained handler.
+     * 
+     *  @param callback the function to call when the promise is fullfilled
+     */
+    public then(callback: ThenCallback<D>): JsmsDeferred<D> {
         this.thenCallback = callback;
-        this.notifyChained();
-        return this._promise;
+        this.next = new JsmsDeferred<D>();
+        this.next.debugId = this.debugId + " next";
+        this.onChained(this.next);
+        return this.next;
     }
 
-    public resolve(value: D, resolve?: any): void {
+    /**
+     *  Resolves the promise with the given value.
+     * 
+     *  @param value Argument to be resolved by this deferred - Promise or 
+     *               thenable not supported (yet).
+     */
+    public resolve(value: D): void {
         if (this.thenCallback) {
-            this.thenCallback(value, resolve ? resolve : this.resolveFunction, this.rejectFunction);
-        } else {
+            this._thenResult = this.thenCallback(value, this.resolveFunction);
+            if (this._thenResult) {
+                this.resolveFunction(this._thenResult);
+            }
+        } 
+        else {
             this.resolveFunction(value);
         }
     }
 
-    public reject(reason: E): void {
+    /**
+     *  Resolves the promise with the given reason.
+     *  
+     *  @param reason Reason why the promise is rejected.
+     */
+    public reject(reason: any): void {
         this.rejectFunction(reason);
     }
 }

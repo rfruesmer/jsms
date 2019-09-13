@@ -1,8 +1,16 @@
 import { JsmsService } from "@/jsms-service";
-import { JsmsMessage } from "@/jsms-message";
+import { getLogger, Logger } from "@log4js-node/log4js-api";
 
-// let retryCount = 0;
+
+let logger: Logger;
 let messageService: JsmsService;
+
+// --------------------------------------------------------------------------------------------------------------------
+
+beforeAll(() => {
+    logger = getLogger("jsms");
+    logger.level = "debug";
+});
 
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -22,14 +30,14 @@ class HandshakeServer {
     private receiveCount = 0;
 
     public receivePing(): void {
-        messageService.receive("PING").then((message: JsmsMessage, resolve) => {
+        messageService.receive("PING").then((message: object) => {
             this.receiveCount++;
-            console.log("[HandshakeServer] received: #" + this.receiveCount + "\n" + JSON.stringify(message));
+            logger.info("[HandshakeServer] received: #" + this.receiveCount + "\n" + JSON.stringify(message));
 
             // simulate delayed reachability by replying only on the third message
             if (this.receiveCount === 3) {
-                console.log("[HandshakeServer] sending response");
-                resolve({reply: "PONG"});
+                logger.info("[HandshakeServer] sending response");
+                return {reply: "PONG"};
             }
             else {
                 // listen & repeat
@@ -49,12 +57,12 @@ class HandshakeClient {
     constructor(private done: any) {}
 
     public sendPing(): void {
-        console.log("[HandshakeClient] sending ping");
+        logger.info("[HandshakeClient] sending ping");
 
         messageService.send("PING")
-            .then((response: JsmsMessage) => {
+            .then((response: object) => {
                 this.ack = true;
-                console.log("[HandshakeClient] received response: " + "\n" + JSON.stringify(response));
+                logger.info("[HandshakeClient] received response: " + "\n" + JSON.stringify(response));
                 this.done();
             });
 

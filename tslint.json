@@ -9,7 +9,7 @@
         "interface-name": false,
         "max-classes-per-file": false,
         "member-ordering": false,
-        "no-console": false,
+        "no-console": true,
         "no-empty-interface": false,
         "one-line": [true, "check-open-brace", "check-whitespace"],
         "ordered-imports": false,
