@@ -1,21 +1,22 @@
 export type ResolveFunction<R> = (value: R) => void;
 export type RejectFunction<E> = (reason: E) => void;
 type ThenCallback<D, R, E> = (value: D, resolve: ResolveFunction<R>, reject: RejectFunction<E>) => void;
-type ChainedCallback = () => void;
+type ChainedCallback<D, R, E> = (deferred?: JsmsDeferred<D, R, E>) => void;
 
 /**
  * Utility class for handling ECMAScript 2015 promises.
  */
 export class JsmsDeferred<D, R, E> {
+    public id = "";
     private thenCallback!: ThenCallback<D, R, E>;
     private _promise!: Promise<D>;
     private resolveFunction!: any;
     private rejectFunction!: any;
     private chained = false;
-    private onChained: ChainedCallback;
+    private onChained: ChainedCallback<D, R, E>;
 
     // tslint:disable-next-line: no-empty
-    constructor(onChained: ChainedCallback = () => {}) {
+    constructor(onChained: ChainedCallback<D, R, E> = () => {}) {
         this.onChained = onChained;
 
         this._promise = new Promise<D>((resolve, reject) => {
@@ -32,7 +33,7 @@ export class JsmsDeferred<D, R, E> {
     private notifyChained(): void {
         if (!this.chained) {
             this.chained = true;
-            this.onChained();
+            this.onChained(this);
         }
     }
 
@@ -42,9 +43,9 @@ export class JsmsDeferred<D, R, E> {
         return this._promise;
     }
 
-    public resolve(value: D): void {
+    public resolve(value: D, resolve?: any): void {
         if (this.thenCallback) {
-            this.thenCallback(value, this.resolveFunction, this.rejectFunction);
+            this.thenCallback(value, resolve ? resolve : this.resolveFunction, this.rejectFunction);
         } else {
             this.resolveFunction(value);
         }

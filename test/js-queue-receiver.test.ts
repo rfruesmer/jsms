@@ -41,7 +41,7 @@ test("a queue receiver doesn't dispatch expired messages", async () => {
     });
 
     const expiration = new Promise((resolve, reject) => {
-        setTimeout(() => {resolve()}, 100);
+        setTimeout(() => {resolve();}, 100);
     });
     await expiration;
 

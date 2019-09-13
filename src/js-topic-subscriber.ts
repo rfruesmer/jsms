@@ -33,7 +33,7 @@ export class JsTopicSubscriber extends JsmsMessageConsumer {
         const topic = this.getDestination() as JsmsTopic;
         topic.getSubscribers().forEach(subscriber => {
             try {
-                subscriber(message)
+                subscriber(message);
             }
             catch (e) {
                 console.error(e);

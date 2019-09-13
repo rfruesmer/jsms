@@ -50,7 +50,7 @@ export class JsmsQueue extends JsmsDestination {
             .filter((message: JsmsMessage) => message.header.expiration > 0 && currentTimeMillis > message.header.expiration)
             .map((message: JsmsMessage) => this.entries.indexOf(message))
             .forEach((index: number) => this.entries.splice(index, 1));
-    };
+    }
 
     public close(): void {
         clearInterval(this.maintenanceInterval);

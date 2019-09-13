@@ -28,7 +28,7 @@ class HandshakeServer {
 
             // simulate delayed reachability by replying only on the third message
             if (this.receiveCount === 3) {
-                console.log("[HandshakeServer] sending response")
+                console.log("[HandshakeServer] sending response");
                 resolve({reply: "PONG"});
             }
             else {
@@ -49,7 +49,7 @@ class HandshakeClient {
     constructor(private done: any) {}
 
     public sendPing(): void {
-        console.log("[HandshakeClient] sending ping")
+        console.log("[HandshakeClient] sending ping");
 
         messageService.send("PING")
             .then((response: JsmsMessage) => {

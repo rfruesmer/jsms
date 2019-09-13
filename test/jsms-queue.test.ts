@@ -189,7 +189,7 @@ test("a queue doesn't deliver messages that are already expired", async (done) =
     messageService.send(queueName, messageBody, 100);
 
     const expiration = new Promise((resolve, reject) => {
-        setTimeout(() => {resolve()}, 150);
+        setTimeout(() => { resolve(); }, 150);
     });
     await expiration;
     
@@ -220,7 +220,7 @@ test("a queue doesn't deliver messages that are already expired (2)", async (don
         });
 
     const expiration = new Promise((resolve, reject) => {
-        setTimeout(() => {resolve()}, 10);
+        setTimeout(() => {resolve();}, 10);
     });
     await expiration;
     

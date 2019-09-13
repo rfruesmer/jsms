@@ -13,6 +13,7 @@
         "no-empty-interface": false,
         "one-line": [true, "check-open-brace", "check-whitespace"],
         "ordered-imports": false,
+        "semicolon": [true, "always"],
         "typedef": [true, "call-signature"],
         "variable-name": {
             "options": [

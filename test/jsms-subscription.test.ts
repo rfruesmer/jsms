@@ -142,7 +142,7 @@ test("a subscriber is called only once", () => {
     const messageBody = { test: "foo" };
     let receivedCount = 0;
 
-    const subscriber = (message: JsmsMessage) => { receivedCount++; }
+    const subscriber = (message: JsmsMessage) => { receivedCount++; };
     messageService.subscribe(topicName, subscriber);
     messageService.subscribe(topicName, subscriber);
 
@@ -156,7 +156,7 @@ test("a subscriber is called only once", () => {
 test("a message is only published to it's topic subscribers", () => {
     let received = false;
 
-    messageService.subscribe("/interesting/topic", (message: JsmsMessage) => { received = true });
+    messageService.subscribe("/interesting/topic", (message: JsmsMessage) => { received = true; });
     messageService.publish("/uninteresting/topic", {});
 
     expect(received).toBeFalsy();
