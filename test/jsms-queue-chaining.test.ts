@@ -1,5 +1,6 @@
 import { JsmsDeferred } from "@/jsms-deferred";
 import { getLogger, Logger } from "@log4js-node/log4js-api";
+import { JsmsMessage } from "@/jsms-message";
 
 let logger: Logger;
 
@@ -13,18 +14,18 @@ beforeAll(() => {
 // --------------------------------------------------------------------------------------------------------------------
 
 class PingPongService {
-    private receivers = new Array<JsmsDeferred<object>>();
-    private senders = new Array<JsmsDeferred<object>>();
+    private receivers = new Array<JsmsDeferred<JsmsMessage>>();
+    private senders = new Array<JsmsDeferred<JsmsMessage>>();
 
-    public receive(): JsmsDeferred<object> {
+    public receive(): JsmsDeferred<JsmsMessage> {
         const receiver = this.createReceiverDeferred();
         receiver.debugId = "Receiver";
 
         return receiver;
     }
 
-    private createReceiverDeferred(): JsmsDeferred<object> {
-        const receiverDeferred = new JsmsDeferred<object>((receiverDeferredNext: any) => {
+    private createReceiverDeferred(): JsmsDeferred<JsmsMessage> {
+        const receiverDeferred = new JsmsDeferred<JsmsMessage>((receiverDeferredNext: any) => {
             this.onReceiverChained(receiverDeferredNext);
         });
         this.receivers.push(receiverDeferred);
@@ -45,17 +46,17 @@ class PingPongService {
         };
     }
 
-    public send(message: object): JsmsDeferred<object> {
+    public send(message: object): JsmsDeferred<JsmsMessage> {
         const sender = this.createSenderDeferred();
         sender.debugId = "Sender";
 
-        this.resolve(message);
+        this.resolve(message instanceof JsmsMessage ? message : JsmsMessage.create("", message));
 
         return sender;
     }
 
-    private createSenderDeferred(): JsmsDeferred<object> {
-        const senderDeferred = new JsmsDeferred<object>((senderDeferredNext: any) => {
+    private createSenderDeferred(): JsmsDeferred<JsmsMessage> {
+        const senderDeferred = new JsmsDeferred<JsmsMessage>((senderDeferredNext: any) => {
             this.onSenderChained(senderDeferredNext);
         });
         this.senders.push(senderDeferred);
@@ -88,7 +89,7 @@ class PingPongService {
             return;
         }
             
-        receiver.resolve(message);
+        receiver.resolve(message instanceof JsmsMessage ? message : JsmsMessage.create("", message));
         receiver.promise.then((value: object) => {
             const senderNext = this.senders[0];
             this.senders.shift();
@@ -115,32 +116,32 @@ test("ping-pong", async () => {
 
     const promise = new Promise<void>((resolve) => {
         pingPongService.receive()
-            .then((actualRequest: object) => {
-                expect(actualRequest).toEqual({request: "PING1"});
+            .then((actualRequest: JsmsMessage) => {
+                expect(actualRequest.body).toEqual({request: "PING1"});
                 const response = {response: "PONG1"};
                 responses.push(response);
                 return response;
             })
-            .then((actualRequest: object) => {
-                expect(actualRequest).toEqual({request: "PING2"});
+            .then((actualRequest: JsmsMessage) => {
+                expect(actualRequest.body).toEqual({request: "PING2"});
                 const response = {response: "PONG2"};
                 responses.push(response);
                 return response;
             })
-            .then((actualRequest: object) => {
-                expect(actualRequest).toEqual({request: "PING3"});
+            .then((actualRequest: JsmsMessage) => {
+                expect(actualRequest.body).toEqual({request: "PING3"});
                 const response = {response: "PONG3"};
                 responses.push(response);
                 return response;
             })
-            .then((actualRequest: object) => {
-                expect(actualRequest).toEqual({request: "PING4"});
+            .then((actualRequest: JsmsMessage) => {
+                expect(actualRequest.body).toEqual({request: "PING4"});
                 const response = {response: "PONG4"};
                 responses.push(response);
                 return response;
             })
-            .then((actualRequest: object) => {
-                expect(actualRequest).toEqual({request: "PING5"});
+            .then((actualRequest: JsmsMessage) => {
+                expect(actualRequest.body).toEqual({request: "PING5"});
                 const response = {response: "PONG5"};
                 responses.push(response);
                 return response;
@@ -195,4 +196,4 @@ test("ping-pong", async () => {
     ]);
 });
 
-// // --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------

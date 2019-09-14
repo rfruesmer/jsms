@@ -26,5 +26,5 @@ export abstract class JsmsMessageProducer {
      * @param  {JsmsMessage} message The message to send
      * @returns Promise represents the response if the listener replies to this message, otherwise undefined.
      */
-    public abstract send(message: JsmsMessage): Promise<object>;
+    public abstract send(message: JsmsMessage): Promise<JsmsMessage>;
 }

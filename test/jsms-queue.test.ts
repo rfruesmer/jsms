@@ -32,7 +32,7 @@ test("a queue delivers a message immediately if a receiver is already registered
     messageService.send(queueName, expectedMessageBody);
 
     const actualMessage = await promise;
-    expect(actualMessage).toEqual(expectedMessageBody);
+    expect(actualMessage.body).toEqual(expectedMessageBody);
 });
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -44,7 +44,7 @@ test("a queue receiver can fetch a pending message after registration", async ()
     messageService.send(queueName, expectedMessageBody);
 
     const actualMessage = await messageService.receive(queueName).promise;
-    expect(actualMessage).toEqual(expectedMessageBody);
+    expect(actualMessage.body).toEqual(expectedMessageBody);
 });
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -64,11 +64,11 @@ test("a queue delivers any number of messages immediately if one or more receive
     messageService.send(queueName, thirdExpectedMessageBody);
 
     const firstMessage = await firstMessagePromise;
-    expect(firstMessage).toEqual(firstExpectedMessageBody);
+    expect(firstMessage.body).toEqual(firstExpectedMessageBody);
     const secondMessage = await secondMessagePromise;
-    expect(secondMessage).toEqual(secondExpectedMessageBody);
+    expect(secondMessage.body).toEqual(secondExpectedMessageBody);
     const thirdMessage = await thirdMessagePromise;
-    expect(thirdMessage).toEqual(thirdExpectedMessageBody);
+    expect(thirdMessage.body).toEqual(thirdExpectedMessageBody);
  });
     
 // --------------------------------------------------------------------------------------------------------------------
@@ -84,11 +84,11 @@ test("a queue delivers pending messages in the order they were sent", async () =
     messageService.send(queueName, thirdExpectedMessageBody);
 
     let actualMessage = await messageService.receive(queueName).promise;
-    expect(actualMessage).toEqual(firstExpectedMessageBody);
+    expect(actualMessage.body).toEqual(firstExpectedMessageBody);
     actualMessage = await messageService.receive(queueName).promise;
-    expect(actualMessage).toEqual(secondExpectedMessageBody);
+    expect(actualMessage.body).toEqual(secondExpectedMessageBody);
     actualMessage = await messageService.receive(queueName).promise;
-    expect(actualMessage).toEqual(thirdExpectedMessageBody);
+    expect(actualMessage.body).toEqual(thirdExpectedMessageBody);
 });
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -110,11 +110,11 @@ test("a queue delivers any messages in correct order if one or more receivers ar
     messageService.send(queueName, thirdExpectedMessageBody);
 
     const thirdMessage = await thirdMessagePromise;
-    expect(thirdMessage).toEqual(thirdExpectedMessageBody);
+    expect(thirdMessage.body).toEqual(thirdExpectedMessageBody);
     const secondMessage = await secondMessagePromise;
-    expect(secondMessage).toEqual(secondExpectedMessageBody);
+    expect(secondMessage.body).toEqual(secondExpectedMessageBody);
     const firstMessage = await firstMessagePromise;
-    expect(firstMessage).toEqual(firstExpectedMessageBody);
+    expect(firstMessage.body).toEqual(firstExpectedMessageBody);
 });
     
 // --------------------------------------------------------------------------------------------------------------------
@@ -127,7 +127,7 @@ test("message service creates a default body to queue messages if none was speci
     messageService.send(queueName);
 
     const actualMessage = await promise;
-    expect(actualMessage).toEqual(expectedMessageBody);
+    expect(actualMessage.body).toEqual(expectedMessageBody);
 });
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -138,12 +138,12 @@ test("a queue receiver can send a response when the message is sent after regist
     const expectedResponseBody = { response: "payload" };
 
     messageService.receive(queueName)
-        .then((message: object) => {
+        .then((message: JsmsMessage) => {
             return expectedResponseBody;
         });
 
     const response = await messageService.send(queueName, messageBody);
-    expect(response).toEqual(expectedResponseBody);
+    expect(response.body).toEqual(expectedResponseBody);
 });
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -153,7 +153,7 @@ test("JsMessageproducer catches errors thrown by message listeners", async () =>
     const messageBody = { test: "foo" };
 
     messageService.receive(queueName)
-        .then((message: object) => {
+        .then((message: JsmsMessage) => {
             throw new Error("which should be caught");
         });
 
@@ -171,7 +171,7 @@ test("a queue receiver can send a response when the message is sent before regis
     const promise = messageService.send(queueName, messageBody);
 
     messageService.receive(queueName)
-        .then((message: object) => {
+        .then((message: JsmsMessage) => {
             return expectedResponseBody;
         });
 
@@ -194,7 +194,7 @@ test("a queue doesn't deliver messages that are already expired", async (done) =
     await expiration;
     
     messageService.receive(queueName)
-        .then((message: object) => {
+        .then((message: JsmsMessage) => {
             receivedExpiredMessage = true;
         });
     
@@ -215,7 +215,7 @@ test("a queue doesn't deliver messages that are already expired (2)", async (don
     let receivedExpiredMessage = false;
 
     messageService.receive(queueName)
-        .then((message: object) => {
+        .then((message: JsmsMessage) => {
             receivedExpiredMessage = true;
         });
 
@@ -241,7 +241,7 @@ test("a message queue catches exceptions thrown by consumers and then rejects th
     const promise = messageService.send(queueName, messageBody);
 
     messageService.receive(queueName)
-        .then((message: object) => {
+        .then((message: JsmsMessage) => {
             throw new Error("which should be caught and reject the sender promise");
         });
 
@@ -259,7 +259,7 @@ test("a queued message is deleted after successful delivery when the listener se
     const promise = messageService.send(queueName, messageBody);
 
     messageService.receive(queueName)
-        .then((message: object) => {
+        .then((message: JsmsMessage) => {
             return expectedResponseBody;
         });
 
@@ -267,7 +267,7 @@ test("a queued message is deleted after successful delivery when the listener se
     expect(response).toEqual(expectedResponseBody);
 
     messageService.receive(queueName)
-        .then((message: object) => {
+        .then((message: JsmsMessage) => {
             secondDelivery = true;
         });
 
@@ -284,7 +284,7 @@ test("a queued message is deleted after successful delivery even when the listen
     const promise = messageService.send(queueName, messageBody);
 
     messageService.receive(queueName)
-        .then((message: object) => {
+        .then((message: JsmsMessage) => {
             // NOTE: the message is now considered to be sucessfully delivered 
             // Any errors during consuming the message mustn't change the successful delivery status:
             throw new Error("which should be caught");
@@ -293,7 +293,7 @@ test("a queued message is deleted after successful delivery even when the listen
     await expect(promise).rejects.toThrowError();
 
     messageService.receive(queueName)
-        .then((message: object) => {
+        .then((message: JsmsMessage) => {
             secondDelivery = true;
         });
 
@@ -317,7 +317,7 @@ test("queue is open for extension via custom queue receiver", async () => {
 
     // then the message should be sent to the custom queue receiver
     const actualMessage = await promise;
-    expect(actualMessage).toEqual(expectedMessageBody);
+    expect(actualMessage.body).toEqual(expectedMessageBody);
 
     queue.close();
 });
@@ -338,7 +338,7 @@ test("message service integrates with custom queue receiver", async () => {
 
     // then the message should be sent to the custom queue receiver
     const actualMessage = await promise;
-    expect(actualMessage).toEqual(expectedMessageBody);
+    expect(actualMessage.body).toEqual(expectedMessageBody);
 
     queue.close();
 });

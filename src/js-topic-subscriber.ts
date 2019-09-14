@@ -13,21 +13,21 @@ export class JsTopicSubscriber extends JsmsMessageConsumer {
         super(connection, destination);
     }
 
-    public receive(): JsmsDeferred<object> {
+    public receive(): JsmsDeferred<JsmsMessage> {
         return this.receiveTopicMessage();
     }
 
-    private receiveTopicMessage(): JsmsDeferred<object> {
-        const receiver = new JsmsDeferred<object>();
+    private receiveTopicMessage(): JsmsDeferred<JsmsMessage> {
+        const receiver = new JsmsDeferred<JsmsMessage>();
         const topic = this.getDestination() as JsmsTopic;
         topic.subscribe((message: JsmsMessage) => {
-            receiver.resolve(message.body);
+            receiver.resolve(message);
         });
 
         return receiver;
     }
 
-    public onMessage(message: JsmsMessage, sender: JsmsDeferred<object>): boolean {
+    public onMessage(message: JsmsMessage, sender: JsmsDeferred<JsmsMessage>): boolean {
         return this.sendToTopic(message);
     }
 

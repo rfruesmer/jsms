@@ -11,20 +11,20 @@ test("a queue receiver dispatches non-expired messages with valid channel name",
     const connection = new FakeConnection();
     const queueReceiver = new JsQueueReceiver(connection, queue);
     const expectedMessage = JsmsMessage.create("/some/queue", {test: "foo"}, 0);
-    let actualMessage: object | null = null;
+    let actualMessage: JsmsMessage | null = null;
 
-    queueReceiver.receive().then((message: object) => {
+    queueReceiver.receive().then((message: JsmsMessage) => {
         actualMessage = message;    
     });
 
-    const result = queueReceiver.onMessage(expectedMessage, new JsmsDeferred<object>());
+    const result = queueReceiver.onMessage(expectedMessage, new JsmsDeferred<JsmsMessage>());
 
     queue.close();
     
     expect(result).toBeTruthy();
     expect(actualMessage).toBeDefined();
-    // @ts-ignore: receivedMessage is guaruanteed to be valid now
-    expect(actualMessage).toEqual(expectedMessage.body);
+    // @ts-ignore: actualMessage is guaruanteed to be valid now
+    expect(actualMessage.body).toEqual(expectedMessage.body);
 });
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -34,9 +34,9 @@ test("a queue receiver doesn't dispatch expired messages", async () => {
     const connection = new FakeConnection();
     const queueReceiver = new JsQueueReceiver(connection, queue);
     const expectedMessage = JsmsMessage.create("/some/queue", {test: "foo"}, 10);
-    let actualMessage: object | null = null;
+    let actualMessage: JsmsMessage | null = null;
 
-    queueReceiver.receive().then((message: object) => {
+    queueReceiver.receive().then((message: JsmsMessage) => {
         actualMessage = message;    
     });
 
@@ -45,7 +45,7 @@ test("a queue receiver doesn't dispatch expired messages", async () => {
     });
     await expiration;
 
-    const result = queueReceiver.onMessage(expectedMessage, new JsmsDeferred<object>());
+    const result = queueReceiver.onMessage(expectedMessage, new JsmsDeferred<JsmsMessage>());
 
     queue.close();
     
@@ -60,13 +60,13 @@ test("a queue receiver doesn't dispatch messages with a different channel name",
     const connection = new FakeConnection();
     const queueReceiver = new JsQueueReceiver(connection, queue);
     const expectedMessage = JsmsMessage.create("/some/different/queue", {test: "foo"}, 0);
-    let actualMessage: object | null = null;
+    let actualMessage: JsmsMessage | null = null;
 
-    queueReceiver.receive().then((message: object) => {
+    queueReceiver.receive().then((message: JsmsMessage) => {
         actualMessage = message;    
     });
 
-    const result = queueReceiver.onMessage(expectedMessage, new JsmsDeferred<object>());
+    const result = queueReceiver.onMessage(expectedMessage, new JsmsDeferred<JsmsMessage>());
 
     queue.close();
     

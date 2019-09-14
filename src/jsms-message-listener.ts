@@ -10,5 +10,5 @@ export interface JsmsMessageListener {
      *
      * @param message the message passed to the listener
      */
-    onMessage(message: JsmsMessage, responseDeferred: JsmsDeferred<object>): boolean;
+    onMessage(message: JsmsMessage, responseDeferred: JsmsDeferred<JsmsMessage>): boolean;
 }

@@ -44,7 +44,7 @@ test("topic subscription is open for extension via custom topic subscriber", asy
 
     // then the message should be published to the custom message consumer
     const actualMessage = await promise;
-    expect(actualMessage).toEqual(expectedMessageBody);
+    expect(actualMessage.body).toEqual(expectedMessageBody);
 
     topic.close();
 });
@@ -59,7 +59,7 @@ test("errors thrown by custom topic subscribers are caught by JsMessageConsumer"
     const connection = new FakeConnection();
     const topic = messageService.createTopic(topicName, connection);
     const customTopicSubscriber = connection.getConsumer(topic) as JsTopicSubscriber;
-    customTopicSubscriber.receive().then((message: object) => {
+    customTopicSubscriber.receive().then((message: JsmsMessage) => {
         throw new Error("which should be caught");
     });
 

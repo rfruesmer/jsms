@@ -30,20 +30,21 @@ class HandshakeServer {
     private receiveCount = 0;
 
     public receivePing(): void {
-        messageService.receive("PING").then((message: object) => {
-            this.receiveCount++;
-            logger.info("[HandshakeServer] received: #" + this.receiveCount + "\n" + JSON.stringify(message));
+        messageService.receive("PING")
+            .then((message: object) => {
+                this.receiveCount++;
+                logger.info("[HandshakeServer] received: #" + this.receiveCount + "\n" + JSON.stringify(message));
 
-            // simulate delayed reachability by replying only on the third message
-            if (this.receiveCount === 3) {
-                logger.info("[HandshakeServer] sending response");
-                return {reply: "PONG"};
-            }
-            else {
-                // listen & repeat
-                this.receivePing();
-            }
-        });
+                // simulate delayed reachability by replying only on the third message
+                if (this.receiveCount === 3) {
+                    logger.info("[HandshakeServer] sending response");
+                    return {reply: "PONG"};
+                }
+                else {
+                    // listen & repeat
+                    this.receivePing();
+                }
+            });
     }
 }
 

@@ -30,7 +30,7 @@ export class FakeConnection extends JsmsConnection {
         const destination = super.getDestinationFor(customMessage.id);
         const consumer = super.getConsumer(destination);
         const message = JsmsMessage.create(destination.getName(), customMessage.data);
-        const responseDeferred = new JsmsDeferred<object>();
+        const responseDeferred = new JsmsDeferred<JsmsMessage>();
 
         return consumer.onMessage(message, responseDeferred);
     }
