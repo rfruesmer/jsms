@@ -6,8 +6,8 @@ type ChainedCallback<D> = (next: JsmsDeferred<D> | undefined) => void;
 /**
  *  Utility class for handling ECMAScript promises.
  * 
- *  NOTE: Chaining of JsmsDeferred is working different than with ECMAScript 
- *        promises in favor of allowing a request/reply-style pattern.
+ *  NOTE: Chaining of JsmsDeferred is working different compared to ECMAScript 
+ *        promises, in favor of a request/reply-style communication pattern.
  */
 export class JsmsDeferred<D> {
     public debugId = "";
@@ -18,6 +18,7 @@ export class JsmsDeferred<D> {
     private onChained: ChainedCallback<D>;
     private next?: JsmsDeferred<D>;
     private _thenResult?: D;
+    private promised = false;
 
     /**
      * 
@@ -25,7 +26,7 @@ export class JsmsDeferred<D> {
      *                  function is chained to this deferred or when the 
      *                  promise is requested.
      */
-    constructor(onChained: ChainedCallback<D> = () => { /** do nothing */}) {
+    constructor(onChained: ChainedCallback<D> = () => { /** do nothing */ }) {
         this.onChained = onChained;
         this._promise = new Promise<D>((resolve, reject) => {
             this.resolveFunction = resolve;
@@ -40,7 +41,10 @@ export class JsmsDeferred<D> {
      *  @returns the internal promise object
      */
     get promise(): Promise<D> {
-        this.onChained(this.next);
+        if (!this.promised) {
+            this.promised = true;
+            this.onChained(this.next);
+        }
         return this._promise;
     }
 
