@@ -41,7 +41,7 @@ export class JsQueueReceiver extends JsmsMessageConsumer {
             
             receiver.promise.then((responseBody: object) => {
                 // @ts-ignore: sender is guaranteed to be valid here
-                sender.resolve(responseBody);
+                sender.resolve(JsmsMessage.create(message.header.channel, responseBody, 0, message.header.correlationID));
             });
 
             try {

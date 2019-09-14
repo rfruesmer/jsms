@@ -176,7 +176,7 @@ test("a queue receiver can send a response when the message is sent before regis
         });
 
     const response = await promise;
-    expect(response).toEqual(expectedResponseBody);
+    expect(response.body).toEqual(expectedResponseBody);
 });
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -264,7 +264,7 @@ test("a queued message is deleted after successful delivery when the listener se
         });
 
     const response = await promise;
-    expect(response).toEqual(expectedResponseBody);
+    expect(response.body).toEqual(expectedResponseBody);
 
     messageService.receive(queueName)
         .then((message: JsmsMessage) => {
