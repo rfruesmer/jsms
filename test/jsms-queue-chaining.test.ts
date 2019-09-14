@@ -1,6 +1,7 @@
 import { JsmsDeferred } from "@/jsms-deferred";
 import { getLogger, Logger } from "@log4js-node/log4js-api";
 import { JsmsMessage } from "@/jsms-message";
+import { JsmsService } from "@/jsms-service";
 
 let logger: Logger;
 
@@ -12,188 +13,89 @@ beforeAll(() => {
 });
 
 // --------------------------------------------------------------------------------------------------------------------
+test("message queue supports reply/request chaining of deferreds", async () => {
 
-class PingPongService {
-    private receivers = new Array<JsmsDeferred<JsmsMessage>>();
-    private senders = new Array<JsmsDeferred<JsmsMessage>>();
+    const receivedRequests = new Array<object>();
+    const receivedResponses = new Array<object>();
 
-    public receive(): JsmsDeferred<JsmsMessage> {
-        const receiver = this.createReceiverDeferred();
-        receiver.debugId = "Receiver";
-
-        return receiver;
-    }
-
-    private createReceiverDeferred(): JsmsDeferred<JsmsMessage> {
-        const receiverDeferred = new JsmsDeferred<JsmsMessage>((receiverDeferredNext: any) => {
-            this.onReceiverChained(receiverDeferredNext);
-        });
-        this.receivers.push(receiverDeferred);
-
-        return receiverDeferred;
-    }
-    
-    private onReceiverChained = (receiverDeferredNext: any): void => {
-        if (!receiverDeferredNext) {
-            return;
-        }
-
-        this.receivers.push(receiverDeferredNext);
-
-        receiverDeferredNext.onChained = (receiverDeferredNextNext: any) => {
-            this.receivers.push(receiverDeferredNextNext);
-            receiverDeferredNextNext.onChained = this.onReceiverChained;
-        };
-    }
-
-    public send(message: object): JsmsDeferred<JsmsMessage> {
-        const sender = this.createSenderDeferred();
-        sender.debugId = "Sender";
-
-        this.resolve(message instanceof JsmsMessage ? message : JsmsMessage.create("", message));
-
-        return sender;
-    }
-
-    private createSenderDeferred(): JsmsDeferred<JsmsMessage> {
-        const senderDeferred = new JsmsDeferred<JsmsMessage>((senderDeferredNext: any) => {
-            this.onSenderChained(senderDeferredNext);
-        });
-        this.senders.push(senderDeferred);
-
-        return senderDeferred;
-    }
-    
-    private onSenderChained = (senderDeferredNext: any): void => {
-        if (!senderDeferredNext) {
-            return;
-        }
-
-        this.senders.push(senderDeferredNext);
-
-        senderDeferredNext.onChained = (senderDeferredNextNext: any) => {
-            senderDeferredNext.chained = false;
-            this.senders.push(senderDeferredNextNext);
-            senderDeferredNextNext.onChained = this.onSenderChained;
-            senderDeferredNextNext.promise.then((value: object) => {
-                logger.info(value);
-            });
-        };
-    }
-
-    private resolve(message: object): void {
-        const receiver = this.receivers[0];
-        this.receivers.shift();
-
-        if (!receiver) {
-            return;
-        }
-            
-        receiver.resolve(message instanceof JsmsMessage ? message : JsmsMessage.create("", message));
-        receiver.promise.then((value: object) => {
-            const senderNext = this.senders[0];
-            this.senders.shift();
-
-            if (receiver.thenResult && senderNext) {
-                senderNext.resolve(receiver.thenResult);
-                senderNext.promise.then((_value: object) => {
-                    if (senderNext.thenResult) {
-                        this.resolve(senderNext.thenResult);
-                    }
-                });
-            }
-        });
-    }
-}
-// --------------------------------------------------------------------------------------------------------------------
-
-test("ping-pong", async () => {
-
-    const requests = new Array<object>();
-    const responses = new Array<object>();
-
-    const pingPongService = new PingPongService();
+    const queueName = "/some/queue";
+    const messageService = new JsmsService();
 
     const promise = new Promise<void>((resolve) => {
-        pingPongService.receive()
+        messageService.receive(queueName)
             .then((actualRequest: JsmsMessage) => {
                 expect(actualRequest.body).toEqual({request: "PING1"});
-                const response = {response: "PONG1"};
-                responses.push(response);
-                return response;
+                receivedRequests.push(actualRequest.body);
+                return {response: "PONG1"};
             })
             .then((actualRequest: JsmsMessage) => {
                 expect(actualRequest.body).toEqual({request: "PING2"});
-                const response = {response: "PONG2"};
-                responses.push(response);
-                return response;
+                receivedRequests.push(actualRequest.body);
+                return {response: "PONG2"};
             })
             .then((actualRequest: JsmsMessage) => {
                 expect(actualRequest.body).toEqual({request: "PING3"});
-                const response = {response: "PONG3"};
-                responses.push(response);
-                return response;
+                receivedRequests.push(actualRequest.body);
+                return {response: "PONG3"};
             })
             .then((actualRequest: JsmsMessage) => {
                 expect(actualRequest.body).toEqual({request: "PING4"});
-                const response = {response: "PONG4"};
-                responses.push(response);
-                return response;
+                receivedRequests.push(actualRequest.body);
+                return {response: "PONG4"};
             })
             .then((actualRequest: JsmsMessage) => {
                 expect(actualRequest.body).toEqual({request: "PING5"});
-                const response = {response: "PONG5"};
-                responses.push(response);
-                return response;
+                receivedRequests.push(actualRequest.body);
+                return {response: "PONG5"};
             });
         
-        pingPongService.send({request: "PING1"})
-            .then((actualResponse: object) => {
-                expect(actualResponse).toEqual({response: "PONG1"});
-                const request = {request: "PING2"};
-                requests.push(request);
-                return request;
+        messageService.send(queueName, {request: "PING1"})
+            .then((actualResponse: JsmsMessage) => {
+                expect(actualResponse.body).toEqual({response: "PONG1"});
+                receivedResponses.push(actualResponse.body);
+                return {request: "PING2"};
             })
-            .then((actualResponse: object) => {
-                expect(actualResponse).toEqual({response: "PONG2"});
-                const request = {request: "PING3"};
-                requests.push(request);
-                return request;
+            .then((actualResponse: JsmsMessage) => {
+                expect(actualResponse.body).toEqual({response: "PONG2"});
+                receivedResponses.push(actualResponse.body);
+                return {request: "PING3"};
             })
-            .then((actualResponse: object) => {
-                expect(actualResponse).toEqual({response: "PONG3"});
-                const request = {request: "PING4"};
-                requests.push(request);
-                return request;
+            .then((actualResponse: JsmsMessage) => {
+                expect(actualResponse.body).toEqual({response: "PONG3"});
+                receivedResponses.push(actualResponse.body);
+                return {request: "PING4"};
             })
-            .then((actualResponse: object) => {
-                expect(actualResponse).toEqual({response: "PONG4"});
-                const request = {request: "PING5"};
-                requests.push(request);
-                return request;
+            .then((actualResponse: JsmsMessage) => {
+                expect(actualResponse.body).toEqual({response: "PONG4"});
+                receivedResponses.push(actualResponse.body);
+                return {request: "PING5"};
             })
-            .then((actualResponse: object) => {
-                expect(actualResponse).toEqual({response: "PONG5"});
+            .then((actualResponse: JsmsMessage) => {
+                expect(actualResponse.body).toEqual({response: "PONG5"});
+                receivedResponses.push(actualResponse.body);
                 resolve();
             });
     });
 
     await promise;
 
-    expect(requests).toEqual([
+    expect(receivedRequests).toEqual([
+        {request: "PING1"},
         {request: "PING2"},
         {request: "PING3"},
         {request: "PING4"},
         {request: "PING5"}
     ]);
 
-    expect(responses).toEqual([
+    expect(receivedResponses).toEqual([
         {response: "PONG1"},
         {response: "PONG2"},
         {response: "PONG3"},
         {response: "PONG4"},
         {response: "PONG5"}
     ]);
+
+    messageService.close();
 });
 
 // --------------------------------------------------------------------------------------------------------------------

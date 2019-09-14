@@ -51,23 +51,25 @@ test("topic subscription is open for extension via custom topic subscriber", asy
 
 // --------------------------------------------------------------------------------------------------------------------
 
-test("errors thrown by custom topic subscribers are caught by JsMessageConsumer", async () => {
+test("errors thrown by topic subscribers are caught by JsMessageConsumer", async () => {
     const topicName = "/some/topic";
     const expectedMessageBody = { test: "foo" };
 
     // given custom message consumer for a given topic name
     const connection = new FakeConnection();
     const topic = messageService.createTopic(topicName, connection);
-    const customTopicSubscriber = connection.getConsumer(topic) as JsTopicSubscriber;
-    customTopicSubscriber.receive().then((message: JsmsMessage) => {
+    const topicSubscriber = connection.getConsumer(topic) as JsTopicSubscriber;
+    topicSubscriber.receive().then((message: JsmsMessage) => {
         throw new Error("which should be caught");
     });
 
     // when receiving a custom message
-    const result = connection.onCustomMessageReceived(new FakeCustomMessage(topicName, expectedMessageBody));
-
-    // then the dispatch should have caught the exception and returned false
-    expect(result).toBeFalsy();
+    const customMessage = new FakeCustomMessage(topicName, expectedMessageBody);
+    const result = await connection.onCustomMessageReceived(customMessage).promise;
+    
+    // then the dispatch should have caught the exception and resolved the promise
+    expect(result.header.channel).toEqual(customMessage.id);
+    expect(result.body).toEqual(customMessage.data);
 
     topic.close();
 });

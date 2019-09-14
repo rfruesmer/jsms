@@ -142,7 +142,7 @@ test("a queue receiver can send a response when the message is sent after regist
             return expectedResponseBody;
         });
 
-    const response = await messageService.send(queueName, messageBody);
+    const response = await messageService.send(queueName, messageBody).promise;
     expect(response.body).toEqual(expectedResponseBody);
 });
 
@@ -157,8 +157,8 @@ test("JsMessageproducer catches errors thrown by message listeners", async () =>
             throw new Error("which should be caught");
         });
 
-    const response = messageService.send(queueName, messageBody);
-    await expect(response).rejects.toThrowError();
+    const promise = messageService.send(queueName, messageBody).promise;
+    await expect(promise).rejects.toThrowError();
 });
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -168,7 +168,7 @@ test("a queue receiver can send a response when the message is sent before regis
     const messageBody = { test: "foo" };
     const expectedResponseBody = { response: "payload" };
 
-    const promise = messageService.send(queueName, messageBody);
+    const promise = messageService.send(queueName, messageBody).promise;
 
     messageService.receive(queueName)
         .then((message: JsmsMessage) => {
@@ -238,7 +238,7 @@ test("a message queue catches exceptions thrown by consumers and then rejects th
     const queueName = "/some/queue";
     const messageBody = { test: "foo" };
     
-    const promise = messageService.send(queueName, messageBody);
+    const promise = messageService.send(queueName, messageBody).promise;
 
     messageService.receive(queueName)
         .then((message: JsmsMessage) => {
@@ -256,7 +256,7 @@ test("a queued message is deleted after successful delivery when the listener se
     const expectedResponseBody = { response: "ACK" };
     let secondDelivery = false;
 
-    const promise = messageService.send(queueName, messageBody);
+    const promise = messageService.send(queueName, messageBody).promise;
 
     messageService.receive(queueName)
         .then((message: JsmsMessage) => {
@@ -281,7 +281,7 @@ test("a queued message is deleted after successful delivery even when the listen
     const messageBody = { test: "foo" };
     let secondDelivery = false;
 
-    const promise = messageService.send(queueName, messageBody);
+    const promise = messageService.send(queueName, messageBody).promise;
 
     messageService.receive(queueName)
         .then((message: JsmsMessage) => {

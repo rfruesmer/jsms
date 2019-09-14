@@ -9,6 +9,8 @@ export interface JsmsMessageListener {
      * Passes a message to the listener.
      *
      * @param message the message passed to the listener
+     * @returns A deferred promise for the response. If the message isn't valid
+     *          (e.g. expired) the promise will be rejected.
      */
-    onMessage(message: JsmsMessage, responseDeferred: JsmsDeferred<JsmsMessage>): boolean;
+    onMessage(message: JsmsMessage): JsmsDeferred<JsmsMessage>;
 }

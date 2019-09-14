@@ -30,6 +30,5 @@ export abstract class JsmsMessageConsumer implements JsmsMessageListener {
     /**
      * @see JsmsMessageListener
      */
-    public abstract onMessage(message: JsmsMessage, 
-        responseDeferred: JsmsDeferred<JsmsMessage>): boolean;
+    public abstract onMessage(message: JsmsMessage): JsmsDeferred<JsmsMessage>;
 }

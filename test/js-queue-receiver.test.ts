@@ -17,7 +17,7 @@ test("a queue receiver dispatches non-expired messages with valid channel name",
         actualMessage = message;    
     });
 
-    const result = queueReceiver.onMessage(expectedMessage, new JsmsDeferred<JsmsMessage>());
+    const result = queueReceiver.onMessage(expectedMessage);
 
     queue.close();
     
@@ -45,17 +45,17 @@ test("a queue receiver doesn't dispatch expired messages", async () => {
     });
     await expiration;
 
-    const result = queueReceiver.onMessage(expectedMessage, new JsmsDeferred<JsmsMessage>());
+    const promise = queueReceiver.onMessage(expectedMessage).promise;
 
     queue.close();
     
-    expect(result).toBeFalsy();
+    await expect(promise).rejects.toEqual("message expired");
     expect(actualMessage).toBeNull();
 });
 
 // --------------------------------------------------------------------------------------------------------------------
 
-test("a queue receiver doesn't dispatch messages with a different channel name", () => {
+test("a queue receiver doesn't dispatch messages with a different channel name", async  () => {
     const queue = new JsmsQueue("/some/queue");
     const connection = new FakeConnection();
     const queueReceiver = new JsQueueReceiver(connection, queue);
@@ -66,11 +66,11 @@ test("a queue receiver doesn't dispatch messages with a different channel name",
         actualMessage = message;    
     });
 
-    const result = queueReceiver.onMessage(expectedMessage, new JsmsDeferred<JsmsMessage>());
+    const promise = queueReceiver.onMessage(expectedMessage).promise;
 
     queue.close();
     
-    expect(result).toBeFalsy();
+    await expect(promise).rejects.toEqual("invalid channel");
     expect(actualMessage).toBeNull();
 });
 

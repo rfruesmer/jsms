@@ -13,12 +13,12 @@ export class JsTopicPublisher extends JsmsMessageProducer {
         super(connection, destination);
     }
 
-    public send(message: JsmsMessage): Promise<JsmsMessage> {
+    public send(message: JsmsMessage): JsmsDeferred<JsmsMessage> {
         const deferred = new JsmsDeferred<JsmsMessage>();
 
         this.sendToTopic(message, deferred);
 
-        return deferred.promise;
+        return deferred;
     }
 
     private sendToTopic(message: JsmsMessage, deferred: JsmsDeferred<JsmsMessage>): void {

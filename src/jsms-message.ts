@@ -25,6 +25,18 @@ export class JsmsMessage {
         return new JsmsMessage(new JsmsMessageHeader(channel, timeToLive, correlationID), body);
     }
 
+    /**
+     * Convenience factory method for creating a response.
+     *
+     * @param channel The topic or queue name.
+     * @param body The message's payload.
+     * @param timeToLive The time in milliseconds (from now) until this message will be discarded.
+     * @param correlationID Used for matching replies/responses to original message.
+     */
+    public static createResponse(originalMessage: JsmsMessage, responseBody: object = {}, timeToLive: number = 0): JsmsMessage {
+        return JsmsMessage.create(originalMessage.header.channel, responseBody, timeToLive, originalMessage.header.correlationID);
+    }
+
     public isExpired(): boolean {
         return this.header.expiration > 0 ? new Date().getTime() > this.header.expiration : false;
     }

@@ -27,8 +27,12 @@ export class JsTopicSubscriber extends JsmsMessageConsumer {
         return receiver;
     }
 
-    public onMessage(message: JsmsMessage, sender: JsmsDeferred<JsmsMessage>): boolean {
-        return this.sendToTopic(message);
+    public onMessage(message: JsmsMessage): JsmsDeferred<JsmsMessage> {
+        this.sendToTopic(message);
+
+        const deferred = new JsmsDeferred<JsmsMessage>();
+        deferred.resolve(message);
+        return deferred;
     }
 
     private sendToTopic(message: JsmsMessage): boolean {

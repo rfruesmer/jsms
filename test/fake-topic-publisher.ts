@@ -1,10 +1,11 @@
 import { JsTopicPublisher } from "@/js-topic-publisher";
 import { JsmsMessage } from "@/jsms-message";
+import { JsmsDeferred } from "@/jsms-deferred";
 
 export class FakeTopicPublisher extends JsTopicPublisher {
     private lastMessage!: JsmsMessage;
 
-    public send(message: JsmsMessage): Promise<JsmsMessage> {
+    public send(message: JsmsMessage): JsmsDeferred<JsmsMessage> {
         this.lastMessage = message;
 
         // NOTE: a custom message producer isn't limited to calling super, 

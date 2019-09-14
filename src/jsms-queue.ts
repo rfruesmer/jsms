@@ -35,6 +35,7 @@ export class JsmsQueue extends JsmsDestination {
 
     public dequeue(): JsmsMessage | undefined {
         this.removeExpiredMessages();
+
         if (this.entries.length === 0) {
             return undefined;
         }
