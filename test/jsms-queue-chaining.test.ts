@@ -13,7 +13,7 @@ beforeAll(() => {
 });
 
 // --------------------------------------------------------------------------------------------------------------------
-test("message queue supports reply/request chaining of deferreds", async () => {
+test.skip("message queue supports reply/request chaining of deferreds", async () => {
 
     const receivedRequests = new Array<object>();
     const receivedResponses = new Array<object>();

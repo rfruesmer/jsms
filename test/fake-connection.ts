@@ -9,6 +9,7 @@ import { FakeCustomMessage } from "./fake-custom-message";
 import { FakeQueueSender } from "./fake-queue-sender";
 import { FakeTopicPublisher } from "./fake-topic-publisher";
 
+
 export class FakeConnection extends JsmsConnection {
     private lastSentMessage!: JsmsMessage;
 
@@ -34,8 +35,12 @@ export class FakeConnection extends JsmsConnection {
         return consumer.onMessage(message);
     }
 
-    public send(message: JsmsMessage): void {
+    public send(message: JsmsMessage): JsmsDeferred<JsmsMessage> {
         this.lastSentMessage = message;
+
+        const destination = super.getDestinationFor(message.header.channel);
+        const consumer = super.getConsumer(destination);
+        return consumer.onMessage(message);
     }
 
     public getLastSentMessage(): JsmsMessage {

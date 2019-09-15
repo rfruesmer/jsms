@@ -1,7 +1,9 @@
-import { JsmsDeferred } from "./jsms-deferred";
 import { JsmsDestination } from "./jsms-destination";
 import { JsmsMessage } from "./jsms-message";
+import { checkArgument } from "./preconditions";
 
+
+type MessageExpiredListener = (message: JsmsMessage) => void;
 
 /**
  *  JsmsQueue is used for point-to-point (PTP) messaging:
@@ -23,26 +25,11 @@ import { JsmsMessage } from "./jsms-message";
 export class JsmsQueue extends JsmsDestination {
     private entries: JsmsMessage[] = [];
     private maintenanceInterval: any;
+    private expiredListeners = new Array<MessageExpiredListener>();
 
     constructor(name: string) {
         super(name);
         this.maintenanceInterval = setInterval(this.removeExpiredMessages, 1000);
-    }
-
-    public enqueue(message: JsmsMessage): void {
-        this.entries.push(message);
-    }
-
-    public dequeue(): JsmsMessage | undefined {
-        this.removeExpiredMessages();
-
-        if (this.entries.length === 0) {
-            return undefined;
-        }
-
-        const message = this.entries[0];
-        this.entries.shift();
-        return message;
     }
 
     private removeExpiredMessages = () => {
@@ -50,7 +37,26 @@ export class JsmsQueue extends JsmsDestination {
         this.entries
             .filter((message: JsmsMessage) => message.header.expiration > 0 && currentTimeMillis > message.header.expiration)
             .map((message: JsmsMessage) => this.entries.indexOf(message))
-            .forEach((index: number) => this.entries.splice(index, 1));
+            .forEach((index: number) => {
+                const removedMessages = this.entries.splice(index, 1);
+                this.expiredListeners.forEach((listener) => listener(removedMessages[0]));
+            });
+    }
+
+    public enqueue(message: JsmsMessage): void {
+        checkArgument(message.header.channel === this.getName());
+        this.entries.push(message);
+    }
+
+    public dequeue(): JsmsMessage | undefined {
+        this.removeExpiredMessages();
+        return this.entries.shift();
+    }
+
+    public addMessageExpiredListener(listener: MessageExpiredListener): void {
+        if (this.expiredListeners.indexOf(listener) === -1) {
+            this.expiredListeners.push(listener);
+        }
     }
 
     public close(): void {

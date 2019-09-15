@@ -37,7 +37,8 @@ export class JsmsService {
         return producer.send(message);
     }
 
-    private getQueue(queueName: string): JsmsQueue {
+    /** NO public API - only public visible for testing */
+    public getQueue(queueName: string): JsmsQueue {
         let queue = this.queues.get(queueName);
         if (!queue) {
             queue = this.createQueue(queueName);
@@ -46,7 +47,8 @@ export class JsmsService {
         return queue;
     }
 
-    private getConnection(destination: JsmsDestination): JsmsConnection {
+    /** NO public API - only public visible for testing */
+    public getConnection(destination: JsmsDestination): JsmsConnection {
         const connection = this.connections.get(destination);
         // @ts-ignore: connection is guaranteed to be valid here
         return connection;

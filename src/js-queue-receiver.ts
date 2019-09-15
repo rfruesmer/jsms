@@ -7,165 +7,101 @@ import { JsmsQueue } from "./jsms-queue";
 
 
 export class JsQueueReceiver extends JsmsMessageConsumer {
-    protected deferredDeliveries = new Array<JsmsDeferred<JsmsMessage>>();
-    protected deferredResponseMap = new Map<string, JsmsDeferred<JsmsMessage>>();
-    protected deferredResponseList = new Array<JsmsDeferred<JsmsMessage>>();
+    private deferredDeliveries = new Array<JsmsDeferred<JsmsMessage>>();
+    private deferredResponses = new Map<string, JsmsDeferred<JsmsMessage>>();
 
     constructor(connection: JsmsConnection, destination: JsmsDestination) {
         super(connection, destination);
+        
+        this.queue.addMessageExpiredListener((message: JsmsMessage) => {
+            const deferredResponse = this.dequeueResponseFor(message);
+            deferredResponse.reject("message expired");
+        });
     }
 
     public receive(): JsmsDeferred<JsmsMessage> {
-        const queue = this.getDestination() as JsmsQueue;
-        const message = queue.dequeue();
-        const deferredDelivery = this.createDeferredDelivery(message);
+        const deferredDelivery = new JsmsDeferred<JsmsMessage>();
+        const message = this.queue.dequeue();
+        if (message) {
+            this.deliverTo(deferredDelivery, message, this.dequeueResponseFor(message));
+        }
+        else {
+            this.enqueueDelivery(deferredDelivery);
+        }
 
         return deferredDelivery;
     }
 
-    private createDeferredDelivery(message: JsmsMessage | undefined): JsmsDeferred<JsmsMessage> {
-        const deferredDelivery = message 
-            ? this.createFullfilledDelivery(message) 
-            : this.createPendingDelivery();
-        
+    private get queue(): JsmsQueue {
+        return this.getDestination() as JsmsQueue;
+    }
+
+    private dequeueResponseFor(message: JsmsMessage): JsmsDeferred<JsmsMessage> {
+        const response = this.deferredResponses.get(message.header.id);
+        this.deferredResponses.delete(message.header.id);
+        // @ts-ignore: response is guaranteed to be defined
+        return response;
+    }
+
+    private deliverTo(deferredDelivery: JsmsDeferred<JsmsMessage>, message: JsmsMessage, deferredResponse: JsmsDeferred<JsmsMessage>): void {
+        deferredDelivery.resolve(message)
+            .then((responseBody: object) => {
+                deferredResponse.resolve(JsmsMessage.createResponse(message, responseBody));
+            })
+            .catch((reason: any) => {
+                deferredResponse.reject(reason);
+            });
+    }
+
+    private enqueueDelivery(deferredDelivery: JsmsDeferred<JsmsMessage>): void {
         this.deferredDeliveries.push(deferredDelivery);
-
-        return deferredDelivery;
-    }
-    
-    private createFullfilledDelivery(message: JsmsMessage): JsmsDeferred<JsmsMessage> {
-        const deferredResponse = this.dequeueDeferredResponseFor(message);
-
-        const deferredDelivery = new JsmsDeferred<JsmsMessage>(() => {
-            try {
-                deferredDelivery.promise.then((responseBody: object) => {
-                    // @ts-ignore: deferred is guaranteed to be defined here
-                    deferredResponse.resolve(JsmsMessage.createResponse(message, responseBody));
-                });
-
-                deferredDelivery.resolve(message);
-            } 
-            catch (error) {
-                // @ts-ignore: deferred is guaranteed to be defined here
-                deferredResponse.reject(error);
-            }
-        });
-
-        return deferredDelivery;
     }
 
-    private dequeueDeferredResponseFor(message: JsmsMessage): JsmsDeferred<JsmsMessage> | undefined {
-        const deferredResponse = this.deferredResponseMap.get(message.header.id);
-        if (deferredResponse) {
-            this.deferredResponseMap.delete(message.header.id);
-            const index = this.deferredResponseList.indexOf(deferredResponse);
-            this.deferredResponseList.splice(index, 1);
+    public onMessage(message: JsmsMessage): JsmsDeferred<JsmsMessage> {
+        const deferredResponse = new JsmsDeferred<JsmsMessage>();
+        if (!this.validate(message, deferredResponse)) {
+            return deferredResponse;
+        }
+
+        const deferredDelivery = this.dequeueDelivery();
+        if (deferredDelivery) {
+            this.deliverTo(deferredDelivery, message, deferredResponse);
+        }
+        else {
+            this.enqueue(message, deferredResponse);                
         }
 
         return deferredResponse;
     }
-
-    private createPendingDelivery(): JsmsDeferred<JsmsMessage> {
-        const onDeliveryChained = (nextDelivery: any): void => {
-            if (!nextDelivery) {
-                return;
-            }
     
-            this.deferredDeliveries.push(nextDelivery);
-    
-            nextDelivery.onChained = (nextNextDelivery: any) => {
-                this.deferredDeliveries.push(nextNextDelivery);
-                nextNextDelivery.onChained = onDeliveryChained;
-            };
-        };
-
-        return new JsmsDeferred<JsmsMessage>(onDeliveryChained);
-    }
-
-    public onMessage(message: JsmsMessage): JsmsDeferred<JsmsMessage> {
-        const deferredResponse = this.createDeferredResponse(message);
-
+    private validate(message: JsmsMessage, deferredResponse: JsmsDeferred<JsmsMessage>): boolean {
         if (message.header.channel !== this.getDestination().getName()) {
             deferredResponse.reject("invalid channel");
-            return deferredResponse;
+            return false;
         }
         
         if (message.isExpired()) {
             deferredResponse.reject("message expired");
-            return deferredResponse;
+            return false;
         }
 
-        // since this an in-process receiver, it can directly dispatch to the queue
-        this.sendToQueue(message);
-
-        return deferredResponse;
+        return true;
     }
     
-    private createDeferredResponse(message: JsmsMessage): JsmsDeferred<JsmsMessage> {
-        const onResponseChained = (nextDeferredResponse: any): void => {
-            if (!nextDeferredResponse) {
-                return;
-            }
-    
-            this.deferredResponseList.push(nextDeferredResponse);
-            // TODO: this.deferredResponseMap.set(...) / dequeue
-    
-            nextDeferredResponse.onChained = (nextNextResponse: any) => {
-                this.deferredResponseList.push(nextNextResponse);
-                // TODO: this.deferredResponseMap.set(...) / dequeue
-                nextNextResponse.onChained = onResponseChained;
-            };
-        };
-
-        const deferredResponse = new JsmsDeferred<JsmsMessage>(onResponseChained);
-        this.enqueueDeferredResponseFor(message, deferredResponse);
-
-        return deferredResponse;
-    }
-    
-    private enqueueDeferredResponseFor(message: JsmsMessage, deferredResponse: JsmsDeferred<JsmsMessage>): void {
-        this.deferredResponseList.push(deferredResponse);
-        this.deferredResponseMap.set(message.header.id, deferredResponse);
+    private dequeueDelivery(): JsmsDeferred<JsmsMessage> | undefined {
+        return this.deferredDeliveries.shift();
     }
 
-    private sendToQueue(message: JsmsMessage): void {
-        try {
-            if (this.deferredDeliveries.length === 0) {
-                const queue = this.getDestination() as JsmsQueue;
-                queue.enqueue(message);
-                return;
-            }
-
-            const deferredDelivery = this.dequeueDeferredDeliveryFor(message);
-            deferredDelivery.resolve(message);
-        }
-        catch (e) {
-            const deferredResponse = this.deferredResponseList[0];
-            this.deferredResponseList.shift();
-            deferredResponse.reject(e);
-            return;
-        }
+    private enqueue(message: JsmsMessage, deferredResponse: JsmsDeferred<JsmsMessage>): void {
+        this.queue.enqueue(message);
+        this.deferredResponses.set(message.header.id, deferredResponse);
     }
 
-    private dequeueDeferredDeliveryFor(message: JsmsMessage): JsmsDeferred<JsmsMessage> {
-        const deferredDelivery = this.deferredDeliveries[0];
-        this.deferredDeliveries.shift();
-
-        deferredDelivery.promise.then(() => {
-            const nextDeferredResponse = this.deferredResponseList[0];
-            this.deferredResponseList.shift();
-            this.deferredResponseMap.delete(message.header.id);
-
-            if (deferredDelivery.thenResult) {
-                nextDeferredResponse.resolve(JsmsMessage.createResponse(message, deferredDelivery.thenResult));
-                nextDeferredResponse.promise.then(() => {
-                    if (nextDeferredResponse.thenResult) {
-                        this.sendToQueue(JsmsMessage.createResponse(message, nextDeferredResponse.thenResult));
-                    }
-                });
-            }
-        });
-
-        return deferredDelivery;
+    /**
+     *  Only used for testing and NOT part of the public API.
+     */
+    public isEmpty(): boolean {
+        return this.deferredDeliveries.length === 0
+                && this.deferredResponses.size === 0;
     }
 }

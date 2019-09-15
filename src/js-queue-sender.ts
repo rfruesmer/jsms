@@ -14,8 +14,7 @@ export class JsQueueSender extends JsmsMessageProducer {
         // since this an in-process producer, it can directly dispatch to the consumer
         const destination = this.getDestination();
         const consumer = this.getConnection().getConsumer(destination);
-        const deferred = consumer.onMessage(message);
-        
-        return deferred;
+
+        return consumer.onMessage(message);
     }
 }

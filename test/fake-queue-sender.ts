@@ -7,15 +7,10 @@ export class FakeQueueSender extends JsQueueSender {
 
     public send(message: JsmsMessage): JsmsDeferred<JsmsMessage> {
 
-        // NOTE: a custom message producer isn't limited to calling super, 
-        // but can do custom things with the message now
+        // NOTE: a custom message producer isn't limited to sending messages 
+        // to the connection but can do custom things with the message 
 
         const connection = this.getConnection() as FakeConnection;
-        connection.send(message);
-
-        const deferred = new JsmsDeferred<JsmsMessage>();
-        deferred.resolve(message);
-
-        return deferred;
+        return connection.send(message);
     }
 }

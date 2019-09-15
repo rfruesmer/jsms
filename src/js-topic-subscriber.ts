@@ -35,19 +35,10 @@ export class JsTopicSubscriber extends JsmsMessageConsumer {
         return deferred;
     }
 
-    private sendToTopic(message: JsmsMessage): boolean {
-        let result = true;
+    private sendToTopic(message: JsmsMessage): void {
         const topic = this.getDestination() as JsmsTopic;
         topic.getSubscribers().forEach(subscriber => {
-            try {
-                subscriber(message);
-            }
-            catch (e) {
-                this.logger.error(e);
-                result = false;
-            }
+            subscriber(message);
         });
-
-        return result;
     }
 }
