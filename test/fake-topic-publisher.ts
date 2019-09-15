@@ -1,4 +1,4 @@
-import { JsTopicPublisher } from "@/js-topic-publisher";
+import { JsTopicPublisher } from "@/internal/js-topic-publisher";
 import { JsmsMessage } from "@/jsms-message";
 import { JsmsDeferred } from "@/jsms-deferred";
 

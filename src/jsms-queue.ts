@@ -1,6 +1,6 @@
 import { JsmsDestination } from "./jsms-destination";
 import { JsmsMessage } from "./jsms-message";
-import { checkArgument } from "./preconditions";
+import { checkArgument } from "./internal/preconditions";
 
 
 type MessageExpiredListener = (message: JsmsMessage) => void;

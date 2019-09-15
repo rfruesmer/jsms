@@ -1,8 +1,3 @@
-// export * from "./dist/js-connection";
-// export * from "./dist/js-queue-receiver";
-// export * from "./dist/js-queue-sender";
-// export * from "./dist/js-topic-publisher";
-// export * from "./dist/js-topic-subscriber";
 export * from "./dist/jsms-connection";
 export * from "./dist/jsms-deferred";
 export * from "./dist/jsms-destination";

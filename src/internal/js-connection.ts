@@ -1,10 +1,10 @@
+import { JsmsConnection } from "../jsms-connection";
+import { JsmsQueue } from "../jsms-queue";
+import { JsmsTopic } from "../jsms-topic";
 import { JsQueueReceiver } from "./js-queue-receiver";
 import { JsQueueSender } from "./js-queue-sender";
 import { JsTopicPublisher } from "./js-topic-publisher";
 import { JsTopicSubscriber } from "./js-topic-subscriber";
-import { JsmsConnection } from "./jsms-connection";
-import { JsmsQueue } from "./jsms-queue";
-import { JsmsTopic } from "./jsms-topic";
 
 /**
  * The JsConnection allows clients to connect to each other inside the 

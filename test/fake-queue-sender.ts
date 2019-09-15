@@ -1,4 +1,4 @@
-import { JsQueueSender } from "@/js-queue-sender";
+import { JsQueueSender } from "@/internal/js-queue-sender";
 import { JsmsMessage } from "@/jsms-message";
 import { FakeConnection } from "./fake-connection";
 import { JsmsDeferred } from "@/jsms-deferred";

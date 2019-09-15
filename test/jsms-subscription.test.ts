@@ -1,10 +1,10 @@
+import { JsTopicSubscriber } from "@/internal/js-topic-subscriber";
 import { JsmsMessage } from "@/jsms-message";
 import { JsmsService } from "@/jsms-service";
+import { getLogger } from "@log4js-node/log4js-api";
 import { FakeConnection } from "./fake-connection";
 import { FakeCustomMessage } from "./fake-custom-message";
 import { FakeTopicPublisher } from "./fake-topic-publisher";
-import { JsTopicSubscriber } from "@/js-topic-subscriber";
-import { getLogger } from "@log4js-node/log4js-api";
 
 
 let messageService: JsmsService;

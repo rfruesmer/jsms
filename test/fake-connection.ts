@@ -1,5 +1,5 @@
-import { JsQueueReceiver } from "@/js-queue-receiver";
-import { JsTopicSubscriber } from "@/js-topic-subscriber";
+import { JsQueueReceiver } from "@/internal/js-queue-receiver";
+import { JsTopicSubscriber } from "@/internal/js-topic-subscriber";
 import { JsmsConnection } from "@/jsms-connection";
 import { JsmsDeferred } from "@/jsms-deferred";
 import { JsmsMessage } from "@/jsms-message";

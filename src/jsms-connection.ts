@@ -3,7 +3,7 @@ import { JsmsMessageConsumer } from "./jsms-message-consumer";
 import { JsmsMessageProducer } from "./jsms-message-producer";
 import { JsmsQueue } from "./jsms-queue";
 import { JsmsTopic } from "./jsms-topic";
-import { checkArgument, checkState } from "./preconditions";
+import { checkArgument, checkState } from "./internal/preconditions";
 
 /**
  *  A Connection object is a client's active connection to its JSMS provider

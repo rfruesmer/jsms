@@ -1,4 +1,4 @@
-import { checkArgument, checkState } from "@/preconditions";
+import { checkArgument, checkState } from "@/internal/preconditions";
 
 // --------------------------------------------------------------------------------------------------------------------
 

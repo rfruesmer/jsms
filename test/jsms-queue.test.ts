@@ -1,10 +1,9 @@
-import { JsQueueReceiver } from "@/js-queue-receiver";
+import { JsQueueReceiver } from "@/internal/js-queue-receiver";
 import { JsmsMessage } from "@/jsms-message";
+import { JsmsQueue } from "@/jsms-queue";
 import { JsmsService } from "@/jsms-service";
 import { FakeConnection } from "./fake-connection";
 import { FakeCustomMessage } from "./fake-custom-message";
-import { FakeQueueSender } from "./fake-queue-sender";
-import { JsmsQueue } from "@/jsms-queue";
 
 
 let messageService: JsmsService;
@@ -368,10 +367,18 @@ test("a queue doesn't add the same expired listener twice", async () => {
 
 // --------------------------------------------------------------------------------------------------------------------
 
-test.skip("a queue retries delivery until the producer is ready or the message expires", () => {
-    // TODO
-    expect(false).toBeTruthy();
+test("a queue retries delivering a message until the producer is ready or the message expires", () => {
+    const queueName = "/some/queue";
+
+    // given custom connection with an unready producer
+    const connection = new FakeConnection();
+    // const queue = connection.createQueueWithDelayedClient(queueName);
+    // const customQueueReceiver = connection.getConsumer(queue) as JsQueueReceiver;
+
 });
 
 // --------------------------------------------------------------------------------------------------------------------
-
+// TODO
+// test("a queue retries receiving a message until the producer is ready or the message expires", () => {
+//     expect(false).toBeTruthy();
+// });

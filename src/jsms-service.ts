@@ -1,11 +1,11 @@
-import { JsConnection } from "./js-connection";
+import { JsConnection } from "./internal/js-connection";
 import { JsmsConnection } from "./jsms-connection";
 import { JsmsDeferred } from "./jsms-deferred";
 import { JsmsDestination } from "./jsms-destination";
 import { JsmsMessage } from "./jsms-message";
 import { JsmsQueue } from "./jsms-queue";
 import { JsmsTopic, MessageListenerCallback } from "./jsms-topic";
-import { checkState } from "./preconditions";
+import { checkState } from "./internal/preconditions";
 
 /**
  *  Convenience facade for simple interaction with the message system.
