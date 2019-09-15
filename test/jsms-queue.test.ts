@@ -368,9 +368,9 @@ test("a queue doesn't add the same expired listener twice", async () => {
 
 // --------------------------------------------------------------------------------------------------------------------
 
-test.skip("a queue retries delivery until the producer is ready or the message expires", () => {
-    // TODO
-    expect(false).toBeTruthy();
-});
+// test.skip("a queue retries delivery until the producer is ready or the message expires", () => {
+//     // TODO
+//     expect(false).toBeTruthy();
+// });
 
 // --------------------------------------------------------------------------------------------------------------------
