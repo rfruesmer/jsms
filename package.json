@@ -23,10 +23,13 @@
     "url": "git+https://github.com/rfruesmer/jsms.git"
   },
   "keywords": [
+    "event bus",
+    "mediator",
     "messaging",
     "message service",
-    "event bus",
-    "mediator"
+    "message queue",
+    "publish",
+    "subscribe"
   ],
   "author": "Reinhold Früsmer",
   "license": "MIT",
