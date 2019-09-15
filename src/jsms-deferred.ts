@@ -77,7 +77,7 @@ export class JsmsDeferred<D> {
     }
 
     /**
-     *  Resolves the promise with the given reason.
+     *  Rejects the promise with the given reason.
      *  
      *  @param reason Reason why the promise is rejected.
      */
