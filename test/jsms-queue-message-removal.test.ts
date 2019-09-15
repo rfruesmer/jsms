@@ -82,7 +82,7 @@ test("a queued message is deleted after successful delivery when the listener do
 test("a queued message is deleted after successful delivery even when the listener throws an error", async (done) => {
     const queueName = "/some/queue";
     const messageBody = { test: "foo" };
-    const expectedError = new Error("which should be caught")
+    const expectedError = new Error("which should be caught");
     let secondDelivery = false;
 
     // given the message is sent before the receiver is running
