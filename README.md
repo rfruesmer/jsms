@@ -44,3 +44,28 @@ JSMS makes use of [log4js-api](https://www.npmjs.com/package/@log4js-node/log4js
 ## Contribution
 
 Please keep in mind that this project is still in alpha state, but if you find something important missing or not working right in your use case, don't hesitate and feel free to open an issue or to send me a pull request.
+
+## Credits
+
+<table align="center">
+    <tr>
+        <td>@log4js-node/log4js-api</td>
+        <td align="right">
+            <a href="https://www.npmjs.com/package/@log4js-node/log4js-api">homepage</a>
+            &nbsp;-&nbsp;  
+            <a href="https://github.com/log4js-node/log4js-api/blob/master/LICENSE">show license</a>
+        </td>
+    </tr>
+    <tr>
+        <td>uuid </td>
+        <td align="right">
+            <a href="https://www.npmjs.com/package/uuid">homepage</a>
+            &nbsp;-&nbsp;  
+            <a href="https://github.com/kelektiv/node-uuid/blob/master/LICENSE.md">show license</a>
+        </td>
+    </tr>
+</table>
+
+## License
+
+MIT
