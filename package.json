@@ -1,6 +1,6 @@
 {
   "name": "jsms",
-  "version": "1.0.0-alpha.11",
+  "version": "1.0.0-alpha.12",
   "description": "A JavaScript Messaging Framework",
   "scripts": {
     "test": "jest --collect-coverage",
