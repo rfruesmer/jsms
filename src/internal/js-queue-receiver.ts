@@ -48,7 +48,7 @@ export class JsQueueReceiver extends JsmsMessageConsumer {
                       deferredResponse: JsmsDeferred<JsmsMessage>): void {
         deferredDelivery.resolve(message)
             .then((responseBody: object) => {
-                deferredResponse.resolve(JsmsMessage.createResponse(message, responseBody));
+                deferredResponse.resolve(JsmsMessage.createResponse(message, responseBody ? responseBody : {}));
             })
             .catch((reason: any) => {
                 deferredResponse.reject(reason);
@@ -99,9 +99,7 @@ export class JsQueueReceiver extends JsmsMessageConsumer {
         this.deferredResponses.set(message.header.id, deferredResponse);
     }
 
-    /**
-     *  Only used for testing and NOT part of the public API.
-     */
+    /** NO public API - only used for testing */
     public isEmpty(): boolean {
         return this.deferredDeliveries.length === 0
                 && this.deferredResponses.size === 0;

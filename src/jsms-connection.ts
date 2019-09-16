@@ -67,4 +67,16 @@ export abstract class JsmsConnection {
         // @ts-ignore: check for undefined already done before via checkArgument
         return this.producers.get(destination);
     }
+
+    /**
+     *  Closes the connection.
+     * 
+     *  Since a provider typically allocates significant resources on behalf 
+     *  of a connection, clients should close these resources when they are 
+     *  not needed.
+     */
+    public close(): void {
+        this.queues.forEach((queue) => queue.close());
+        this.topics.forEach((topic) => topic.close());
+    }
 }

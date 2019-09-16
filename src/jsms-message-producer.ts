@@ -24,14 +24,17 @@ export abstract class JsmsMessageProducer {
     }
 
     /**
-     * @param  {JsmsMessage} message The message to send
-     * @returns For PTP messaging: a deferred promise that represents the 
-     *          response if the listener replies to this message. If the 
-     *          message is invalid (e.g. expired) the promise will be rejected.
+     *  @param   message The message to send
      * 
-     *          For pub/sub messaging: a deferred promise that represents the 
-     *          original message - it will be resolved as soon as the message
-     *          has been sent to all subscribers.
+     *  @returns For PTP messaging: a deferred promise that represents the 
+     *           response if the listener replies to this message. If the 
+     *           message is invalid (e.g. expired) the promise will be rejected.
+     *           For pub/sub messaging: a deferred promise that represents the 
+     *           original message - it will be resolved as soon as the message
+     *           has been sent to all subscribers.
+     * 
+     *  @throws  Error if the JSMS provider fails to send the message due 
+     *           to some internal error, e. g. the connection isn't available
      */
     public abstract send(message: JsmsMessage): JsmsDeferred<JsmsMessage>;
 }

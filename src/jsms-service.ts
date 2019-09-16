@@ -1,11 +1,12 @@
 import { JsConnection } from "./internal/js-connection";
+import { checkState } from "./internal/preconditions";
 import { JsmsConnection } from "./jsms-connection";
 import { JsmsDeferred } from "./jsms-deferred";
 import { JsmsDestination } from "./jsms-destination";
 import { JsmsMessage } from "./jsms-message";
+import { JsmsMessageProducer } from "./jsms-message-producer";
 import { JsmsQueue } from "./jsms-queue";
 import { JsmsTopic, MessageListenerCallback } from "./jsms-topic";
-import { checkState } from "./internal/preconditions";
 
 /**
  *  Convenience facade for simple interaction with the message system.
@@ -17,6 +18,9 @@ import { checkState } from "./internal/preconditions";
  * 
  */
 export class JsmsService {
+    private static readonly MAX_RETRIES = 60;
+    private static readonly RETRY_INTERVAL = 100;
+
     private defaultConnection = new JsConnection();
     private connections = new Map<JsmsDestination, JsmsConnection>();
     private queues = new Map<string, JsmsQueue>();
@@ -27,14 +31,51 @@ export class JsmsService {
      * 
      *  Note: if the queue doesn't exist yet, a new queue using the default 
      *  JsConnection will be created.
+     * 
+     *  @returns a deferred promise that represents the response. If the 
+     *           listener doen't reply, the response body will be empty.
+     *           If the message is invalid (e.g. expired) the promise will be 
+     *           rejected.
      */
     public send(queueName: string, messageBody: object = {}, timeToLive: number = 0): JsmsDeferred<JsmsMessage> {
         const queue = this.getQueue(queueName);
         const connection = this.getConnection(queue);
         const producer = connection.getProducer(queue);
         const message = JsmsMessage.create(queueName, messageBody, timeToLive);
+        
+        try {
+            return producer.send(message);
+        }
+        catch (e) {
+            return this.retry(message, producer);
+        }
+    }
+    
+    private retry(message: JsmsMessage, 
+                  producer: JsmsMessageProducer, 
+                  deferredRetry: JsmsDeferred<JsmsMessage> = new JsmsDeferred<JsmsMessage>(),
+                  retryCount: number = 0): JsmsDeferred<JsmsMessage> {
+        setTimeout(() => {
+            try {
+                const deferredResponse = producer.send(message);
+                deferredResponse.then((response: JsmsMessage) => {
+                    deferredRetry.resolve(response);
+                });
+            }
+            catch (e) {
+                if (message.isExpired()) {
+                    deferredRetry.reject("message expired");
+                }
+                else if (retryCount > JsmsService.MAX_RETRIES) {
+                    deferredRetry.reject("exceeded max retries");
+                }
+                else {
+                    this.retry(message, producer, deferredRetry, retryCount + 1);
+                }
+            }
+        }, JsmsService.RETRY_INTERVAL);
 
-        return producer.send(message);
+        return deferredRetry;
     }
 
     /** NO public API - only public visible for testing */
@@ -116,6 +157,10 @@ export class JsmsService {
      * 
      *  Note: if the topic doesn't exist yet, a new topic using the default 
      *  JsConnection will be created.
+     * 
+     *  @returns a deferred promise that represents the original message - it 
+     *           will be resolved as soon as the message has been sent to all 
+     *           subscribers.
      */
     public publish(topicName: string, messageBody: object = {}): void {
         const topic = this.getTopic(topicName);
@@ -140,6 +185,6 @@ export class JsmsService {
      *  Releases all resources allocated by this service.
      */
     public close(): void {
-        this.queues.forEach((queue: JsmsQueue) => queue.close());
+        this.connections.forEach((connection: JsmsConnection) => connection.close());
     }
 }

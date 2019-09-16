@@ -11,7 +11,10 @@ import { FakeTopicPublisher } from "./fake-topic-publisher";
 
 
 export class FakeConnection extends JsmsConnection {
+    private available = true;
+    private availabilityTimer: any;
     private lastSentMessage!: JsmsMessage;
+    private lastQueueName = "";
 
     public createQueue(queueName: string): JsmsQueue {
         const queue = new JsmsQueue(queueName);
@@ -38,6 +41,11 @@ export class FakeConnection extends JsmsConnection {
     public send(message: JsmsMessage): JsmsDeferred<JsmsMessage> {
         this.lastSentMessage = message;
 
+        if (!this.available) {
+            this.lastQueueName = message.header.channel;
+            throw new Error("connection unavailable");
+        }
+
         const destination = super.getDestinationFor(message.header.channel);
         const consumer = super.getConsumer(destination);
         return consumer.onMessage(message);
@@ -45,5 +53,23 @@ export class FakeConnection extends JsmsConnection {
 
     public getLastSentMessage(): JsmsMessage {
         return this.lastSentMessage;
+    }
+
+    public simulateDelayedAvailability(durationMillis: number): void {
+        this.available = false;
+        this.availabilityTimer = setTimeout(() => {
+            this.available = true;
+            const consumer = this.getConsumer(this.getDestinationFor(this.lastQueueName));
+            consumer.receive()
+                .then((message: JsmsMessage) => {
+                    return { response: "PONG" };
+                }); 
+        }, durationMillis);
+    }
+
+    public close(): void {
+        super.close();
+
+        clearTimeout(this.availabilityTimer);
     }
 }

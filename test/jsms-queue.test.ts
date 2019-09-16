@@ -189,6 +189,45 @@ test("a queue receiver can chain a 'reply-then' when it's running before the mes
 
 // --------------------------------------------------------------------------------------------------------------------
 
+test("a queue receiver can send a response when the message is sent before the receiver is running", async () => {
+    const queueName = "/some/queue";
+    const messageBody = { test: "foo" };
+    const expectedResponseBody = { response: "ACK" };
+
+    // given the message is sent before the receiver is running
+    const deferredResponse = messageService.send(queueName, messageBody);
+
+    // when the receiver connects
+    messageService.receive(queueName)
+        .then((message: JsmsMessage) => {
+            return expectedResponseBody;
+        });
+
+    // then the sender should have received the response
+    const response = await deferredResponse.promise;
+    expect(response.body).toEqual(expectedResponseBody);
+});
+
+// --------------------------------------------------------------------------------------------------------------------
+
+test("a deferred response gets resolved with an empty body when the receiver doesn't send a response", async () => {
+    const queueName = "/some/queue";
+    const messageBody = { test: "foo" };
+    const expectedResponseBody = {};
+
+    // given a receiver is already running and won't reply the next message
+    messageService.receive(queueName);
+
+    // when the message is send and awaited to be delivered
+    const deferredResponse = messageService.send(queueName, messageBody);
+    const response = await deferredResponse.promise;
+
+    // then the response deferred should be resolved
+    expect(response.body).toEqual(expectedResponseBody);
+});
+
+// --------------------------------------------------------------------------------------------------------------------
+
 test("JsMessageProducer catches errors thrown by message listeners that were already running before sending and rejects the promise", async () => {
     const queueName = "/some/queue";
     const messageBody = { test: "foo" };
@@ -239,27 +278,6 @@ test("JsMessageProducer catches errors thrown by message listeners that run only
 
     // and the error should have been propagated to the sender
     expect(actualError).toEqual(expectedError);
-});
-
-// --------------------------------------------------------------------------------------------------------------------
-
-test("a queue receiver can send a response when the message is sent before the receiver is running", async () => {
-    const queueName = "/some/queue";
-    const messageBody = { test: "foo" };
-    const expectedResponseBody = { response: "ACK" };
-
-    // given the message is sent before the receiver is running
-    const deferredResponse = messageService.send(queueName, messageBody);
-
-    // when the receiver connects
-    messageService.receive(queueName)
-        .then((message: JsmsMessage) => {
-            return expectedResponseBody;
-        });
-
-    // then the sender should have received the response
-    const response = await deferredResponse.promise;
-    expect(response.body).toEqual(expectedResponseBody);
 });
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -367,18 +385,64 @@ test("a queue doesn't add the same expired listener twice", async () => {
 
 // --------------------------------------------------------------------------------------------------------------------
 
-test("a queue retries delivering a message until the producer is ready or the message expires", () => {
+test("message service retries delivering a message until the producer is ready or the message expires", async () => {
     const queueName = "/some/queue";
+    const messageBody = { request: "PING" };
+    const expectedResponseBody = { response: "PONG" };
 
-    // given custom connection with an unready producer
+    // given custom connection which will become available only after 3 seconds
     const connection = new FakeConnection();
-    // const queue = connection.createQueueWithDelayedClient(queueName);
-    // const customQueueReceiver = connection.getConsumer(queue) as JsQueueReceiver;
+    connection.simulateDelayedAvailability(3000);
+    messageService.createQueue(queueName, connection);
 
+    // when sending a message and awaiting a response
+    const deferredResponse = messageService.send(queueName, messageBody);
+    const actualResponse = await deferredResponse.promise;
+
+    // then the expected response should be received
+    expect(actualResponse.body).toEqual(expectedResponseBody);
+
+    messageService.close();
 });
 
 // --------------------------------------------------------------------------------------------------------------------
-// TODO
-// test("a queue retries receiving a message until the producer is ready or the message expires", () => {
-//     expect(false).toBeTruthy();
-// });
+
+test("message service stops retrying to deliver a message when the message expires", async () => {
+    const queueName = "/some/queue";
+    const messageBody = { request: "PING" };
+
+    // given custom connection which will become available only after 5 seconds
+    const connection = new FakeConnection();
+    connection.simulateDelayedAvailability(5000);
+    messageService.createQueue(queueName, connection);
+
+    // when sending a message that expires after 3 seconds and awaiting a response
+    const deferredResponse = messageService.send(queueName, messageBody, 3000);
+
+    // then the request should be rejected
+    await expect(deferredResponse.promise).rejects.toEqual("message expired");
+
+    messageService.close();
+}, 10000);
+
+// --------------------------------------------------------------------------------------------------------------------
+
+test("message service stops retrying to deliver a message when max retry count is reached", async () => {
+    const queueName = "/some/queue";
+    const messageBody = { request: "PING" };
+
+    // given custom connection which will become available only after 1 minute
+    const connection = new FakeConnection();
+    connection.simulateDelayedAvailability(60000);
+    messageService.createQueue(queueName, connection);
+
+    // when sending a message without expiration and awaiting a response
+    const deferredResponse = messageService.send(queueName, messageBody);
+
+    // then the request should be rejected
+    await expect(deferredResponse.promise).rejects.toEqual("exceeded max retries");
+
+    messageService.close();
+}, 60000);
+
+// --------------------------------------------------------------------------------------------------------------------
