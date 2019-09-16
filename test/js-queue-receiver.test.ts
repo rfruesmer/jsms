@@ -1,8 +1,8 @@
-import { JsQueueReceiver } from "@/internal/js-queue-receiver";
-import { JsmsMessage } from "@/jsms-message";
-import { JsmsQueue } from "@/jsms-queue";
+import { JsQueueReceiver } from "../src/internal/js-queue-receiver";
+import { JsmsMessage } from "../src/jsms-message";
+import { JsmsQueue } from "../src/jsms-queue";
 import { FakeConnection } from "./fake-connection";
-import { JsmsService } from "@/jsms-service";
+import { JsmsService } from "../src/jsms-service";
 
 let messageService: JsmsService;
 

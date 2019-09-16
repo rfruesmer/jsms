@@ -1,7 +1,7 @@
-import { JsQueueReceiver } from "@/internal/js-queue-receiver";
-import { JsmsMessage } from "@/jsms-message";
-import { JsmsQueue } from "@/jsms-queue";
-import { JsmsService } from "@/jsms-service";
+import { JsQueueReceiver } from "../src/internal/js-queue-receiver";
+import { JsmsMessage } from "../src/jsms-message";
+import { JsmsQueue } from "../src/jsms-queue";
+import { JsmsService } from "../src/jsms-service";
 import { FakeConnection } from "./fake-connection";
 import { FakeCustomMessage } from "./fake-custom-message";
 

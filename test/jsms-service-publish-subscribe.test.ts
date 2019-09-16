@@ -1,6 +1,6 @@
-import { JsTopicSubscriber } from "@/internal/js-topic-subscriber";
-import { JsmsMessage } from "@/jsms-message";
-import { JsmsService } from "@/jsms-service";
+import { JsTopicSubscriber } from "../src/internal/js-topic-subscriber";
+import { JsmsMessage } from "../src/jsms-message";
+import { JsmsService } from "../src/jsms-service";
 import { getLogger } from "@log4js-node/log4js-api";
 import { FakeConnection } from "./fake-connection";
 import { FakeCustomMessage } from "./fake-custom-message";

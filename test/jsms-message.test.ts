@@ -1,4 +1,4 @@
-import { JsmsMessage } from "@/jsms-message";
+import { JsmsMessage } from "../src/jsms-message";
 
 
 // --------------------------------------------------------------------------------------------------------------------

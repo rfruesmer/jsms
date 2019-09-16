@@ -1,4 +1,4 @@
-import { JsmsDeferred } from "@/jsms-deferred";
+import { JsmsDeferred } from "../src/jsms-deferred";
 import { getLogger, Logger } from "@log4js-node/log4js-api";
 
 let logger: Logger;

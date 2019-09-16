@@ -1,10 +1,10 @@
-import { JsQueueReceiver } from "@/internal/js-queue-receiver";
-import { JsTopicSubscriber } from "@/internal/js-topic-subscriber";
-import { JsmsConnection } from "@/jsms-connection";
-import { JsmsDeferred } from "@/jsms-deferred";
-import { JsmsMessage } from "@/jsms-message";
-import { JsmsQueue } from "@/jsms-queue";
-import { JsmsTopic } from "@/jsms-topic";
+import { JsQueueReceiver } from "../src/internal/js-queue-receiver";
+import { JsTopicSubscriber } from "../src/internal/js-topic-subscriber";
+import { JsmsConnection } from "../src/jsms-connection";
+import { JsmsDeferred } from "../src/jsms-deferred";
+import { JsmsMessage } from "../src/jsms-message";
+import { JsmsQueue } from "../src/jsms-queue";
+import { JsmsTopic } from "../src/jsms-topic";
 import { FakeCustomMessage } from "./fake-custom-message";
 import { FakeQueueSender } from "./fake-queue-sender";
 import { FakeTopicPublisher } from "./fake-topic-publisher";

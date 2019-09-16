@@ -1,5 +1,5 @@
-import { JsmsService } from "@/jsms-service";
-import { JsmsMessage } from "@/jsms-message";
+import { JsmsService } from "../src/jsms-service";
+import { JsmsMessage } from "../src/jsms-message";
 import { FakeConnection } from "./fake-connection";
 
 let messageService: JsmsService;

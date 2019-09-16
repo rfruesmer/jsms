@@ -1,6 +1,6 @@
-import { JsTopicPublisher } from "@/internal/js-topic-publisher";
-import { JsmsMessage } from "@/jsms-message";
-import { JsmsDeferred } from "@/jsms-deferred";
+import { JsTopicPublisher } from "../src/internal/js-topic-publisher";
+import { JsmsMessage } from "../src/jsms-message";
+import { JsmsDeferred } from "../src/jsms-deferred";
 
 export class FakeTopicPublisher extends JsTopicPublisher {
     private lastMessage!: JsmsMessage;

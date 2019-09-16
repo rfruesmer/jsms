@@ -28,7 +28,16 @@ It can be used right out of the box in terms of an in-process mediator/event bus
 
 ## Compatibility
 
-It should be working fine in recent versions of Node.js and ES6-compatible browsers.
+<table>
+    <tr>
+        <td>Node.js</td>
+        <td>10.x or later (using CommonJS module format)</td>
+    </tr>
+    <tr>
+        <td>Browsers</td>
+        <td>any ES6-compatible, tested with Chrome 76 and Firefox 68</td>
+    </tr>
+</table>
 
 ## Models
 
@@ -37,13 +46,15 @@ The JSMS API supports both models:
 - Point-to-point
 - Publish/Subscribe
 
+### Prerequisites
+
+JSMS makes use of [log4js-api](https://www.npmjs.com/package/@log4js-node/log4js-api), which enables you to optionally attach any log4js compliant framework - but it doesn't come with a bundled log4js dependency, so logging is disabled by default.
+
+**Important note for webpack users**: if you don't intend to use log4js, it must be excluded via [module.noParse](https://webpack.js.org/configuration/module/#modulenoparse), otherwise you will get an unresolved module dependency error.
+
 ## Usage
 
 Coming soon ... please refer to the JSDoc comments and the annotated tests for now.
-
-### Logging
-
-JSMS makes use of [log4js-api](https://www.npmjs.com/package/@log4js-node/log4js-api), so you should be able to attach any log4js compliant framework, like [log4js-node](https://www.npmjs.com/package/log4js) for node-base applications or the default [log4js](https://github.com/stritti/log4js) when working in a browser environment.
 
 ## Contribution
 

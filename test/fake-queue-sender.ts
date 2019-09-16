@@ -1,7 +1,7 @@
-import { JsQueueSender } from "@/internal/js-queue-sender";
-import { JsmsMessage } from "@/jsms-message";
+import { JsQueueSender } from "../src/internal/js-queue-sender";
+import { JsmsMessage } from "../src/jsms-message";
 import { FakeConnection } from "./fake-connection";
-import { JsmsDeferred } from "@/jsms-deferred";
+import { JsmsDeferred } from "../src/jsms-deferred";
 
 export class FakeQueueSender extends JsQueueSender {
 
