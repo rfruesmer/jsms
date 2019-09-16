@@ -15,7 +15,7 @@ export class JsmsDeferred<D> {
     private rejectPromise: any;
     private resolveDeferred!: JsmsDeferred<D>;
     private thenCallback!: ThenCallback<D>;
-    private thenDeferred!: JsmsDeferred<any>;
+    private thenDeferred!: JsmsDeferred<any> | undefined;
     private catchCallback!: CatchCallback<D>;
 
     constructor() {
@@ -71,6 +71,7 @@ export class JsmsDeferred<D> {
      *               thenable not supported (yet).
      */
     public resolve(value: D): JsmsDeferred<D> {
+        // console.log("Resolving: #" + this.debugId);
         this.resolvePromise(value);
         this.resolveDeferred = new JsmsDeferred<D>();
         return this.resolveDeferred;
@@ -91,6 +92,7 @@ export class JsmsDeferred<D> {
      *  @param callback the function to call when the promise is fullfilled
      */
     public then(callback: ThenCallback<D>): JsmsDeferred<D> {
+        // console.log("Chaining: #" + this.debugId);
         this.thenCallback = callback;
         this.thenDeferred = new JsmsDeferred<D>();
         return this.thenDeferred;
@@ -104,5 +106,11 @@ export class JsmsDeferred<D> {
      */
     public catch(callback: CatchCallback<D>): void {
         this.catchCallback = callback;
+    }
+
+    public intercept(): JsmsDeferred<D> | undefined {
+        const thenDeferred = this.thenDeferred;
+        this.thenDeferred = undefined;
+        return thenDeferred;
     }
 }

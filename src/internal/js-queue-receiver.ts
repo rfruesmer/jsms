@@ -46,12 +46,28 @@ export class JsQueueReceiver extends JsmsMessageConsumer {
     private deliverTo(deferredDelivery: JsmsDeferred<JsmsMessage>, 
                       message: JsmsMessage, 
                       deferredResponse: JsmsDeferred<JsmsMessage>): void {
+        const interceptedDeliverySuccessor = deferredDelivery.intercept();
         deferredDelivery.resolve(message)
             .then((responseBody: object) => {
-                deferredResponse.resolve(JsmsMessage.createResponse(message, responseBody ? responseBody : {}));
+                const response = JsmsMessage.createResponse(message, responseBody ? responseBody : {});
+                this.resolve(deferredResponse, response, interceptedDeliverySuccessor);
             })
             .catch((reason: any) => {
                 deferredResponse.reject(reason);
+            });
+    }
+    
+    private resolve(deferredResponse: JsmsDeferred<JsmsMessage>, 
+                    response: JsmsMessage, 
+                    interceptedDeliverySuccessor: JsmsDeferred<JsmsMessage> | undefined): void {
+        const interceptedResponseSuccessor = deferredResponse.intercept();
+        deferredResponse.resolve(response)
+            .then((nextResponseBody: object) => {
+                if (interceptedDeliverySuccessor
+                        && interceptedResponseSuccessor) {
+                    const nextResponse = JsmsMessage.createResponse(response, nextResponseBody ? nextResponseBody : {});
+                    this.deliverTo(interceptedDeliverySuccessor, nextResponse, interceptedResponseSuccessor);
+                }
             });
     }
 
