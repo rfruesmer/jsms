@@ -8,7 +8,7 @@
     "clean": "rimraf ./dist/**/*",
     "compile": "tsc",
     "doc": "rimraf ./doc && typedoc --exclude \"+(node_modules|test|index.d.ts)\" --excludeNotExported --excludePrivate --excludeProtected --module commonjs --target ES6  --out ./doc .",
-    "prepare-dist": "npm run rollup && rimraf ./dist/test && rimraf ./dist/src/**/*.js && move-cli ./dist/src/ ./dist/types/ && cp-cli index.d.ts ./dist/index.d.ts ",
+    "prepare-dist": "npm run rollup && rimraf ./dist/test && rimraf ./dist/src/**/*.js && move-cli ./dist/src/ ./dist/types/",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
     "lint": "tslint -p tsconfig.json",
     "prepublishOnly": "npm run build",
@@ -41,7 +41,6 @@
   "devDependencies": {
     "@types/jest": "^24.0.18",
     "@types/uuid": "^3.4.5",
-    "cp-cli": "^2.0.0",
     "jest": "^24.9.0",
     "log4js": "^5.1.0",
     "move-cli": "^1.2.1",
