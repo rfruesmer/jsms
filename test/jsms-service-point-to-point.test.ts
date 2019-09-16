@@ -290,13 +290,15 @@ test("queue is open for extension via custom queue receiver", async () => {
     const connection = new FakeConnection();
     const queue = connection.createQueue(queueName);
     const customQueueReceiver = connection.getConsumer(queue) as JsQueueReceiver;
-    const promise = customQueueReceiver.receive().promise;
 
     // when receiving a custom message
+    const deferredDelivery = customQueueReceiver.receive();
+
+    // and a custom message enters the connection
     connection.onCustomMessageReceived(new FakeCustomMessage(queueName, expectedMessageBody));
 
     // then the message should be sent to the custom queue receiver
-    const actualMessage = await promise;
+    const actualMessage = await deferredDelivery.promise;
     expect(actualMessage.body).toEqual(expectedMessageBody);
 
     queue.close();
@@ -311,13 +313,15 @@ test("message service integrates with custom queue receiver", async () => {
     // given custom queue receiver for a given queue name
     const connection = new FakeConnection();
     const queue = messageService.createQueue(queueName, connection);
-    const promise = messageService.receive(queueName).promise;
 
     // when receiving a custom message
+    const deferredDelivery = messageService.receive(queueName);
+
+    // and a custom message enters the connection
     connection.onCustomMessageReceived(new FakeCustomMessage(queueName, expectedMessageBody));
 
     // then the message should be sent to the custom queue receiver
-    const actualMessage = await promise;
+    const actualMessage = await deferredDelivery.promise;
     expect(actualMessage.body).toEqual(expectedMessageBody);
 
     queue.close();
