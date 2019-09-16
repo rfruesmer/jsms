@@ -56,6 +56,12 @@ JSMS makes use of [log4js-api](https://www.npmjs.com/package/@log4js-node/log4js
 
 Coming soon ... please refer to the JSDoc comments and the annotated tests for now.
 
+For help with integrating JSMS into your project, please refer to the following bare-bones examples:
+
+- [jsms-web-example](https://github.com/rfruesmer/jsms-web-example)
+
+- [jsms-node-example](https://github.com/rfruesmer/jsms-node-example)
+
 ## Contribution
 
 Please keep in mind that this project is still in alpha state, but if you find something important missing or not working right in your use case, don't hesitate and feel free to open an issue or to send me a pull request.
