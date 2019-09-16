@@ -58,9 +58,10 @@
     "uuid": "^3.3.3"
   },
   "files": [
-    "dist/**/*"
+    "dist/**/*",
+    "index.d.ts"
   ],
-  "types": "dist/index.d.ts",
+  "types": "index.d.ts",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
   "browser": "dist/index.umd.js"
