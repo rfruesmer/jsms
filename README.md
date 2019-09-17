@@ -8,21 +8,21 @@ A lightweight implementation of a messaging framework for JavaScript/TypeScript 
 
 ## Introduction
 
-The purpose of this module is to act as an extensible platform for adding providers for different protocols into an integrated solution - it's not intended to be a complete, full-fledged message service implementation (!)
+The purpose of this module is to act as an extensible platform for adding providers for different protocols into an integrated solution and therefore can be used to build clients, servers and even message brokers using a consistent API - it's not intended to be a complete, full-fledged message service implementation (!). 
 
 The original use case for this project was the need to combine two partly redundant messaging solutions - one being a mediator and the other being an embedded Chromium browser - into one centralized messaging service.
 
-It can be used right out of the box in terms of an in-process mediator/event bus, but for using protocols/transports like STOMP over WebSocket for example, you have to integrate your own or other (3rd-party) communication implementations by creating a custom JSMS connection class (see below).
+It can be used right out of the box in terms of an in-process mediator/event bus, but for using protocols/transports like STOMP over WebSocket, you have to integrate your own or other (3rd-party) communication implementations by creating a derived connection class - see the HTTP-based sample implementation inside the examples folder for a starting point.
 
 ## Major differences compared to JMS
 
-- JSMS is built client-first, but can be run on a server as well - e. g. as a Node.js application - it just doesn't come with any concrete server-side messaging implementations built-in, like other *MQ implementations do
+- jsms is built client-first, but can be run on a server as well - e. g. as a Node.js application - it just doesn't come with any concrete server-side messaging implementations built-in, like other *MQ implementations do
   
-- JSMS is not - and most probably never will be - a fully compliant implementation of the Java Message Service API specs, since JSMS targets a simplified and more lightweight approach
+- jsms is not - and most probably never will be - a fully compliant implementation of the Java Message Service API specs, since jsms targets a simplified and more lightweight approach
   
 - There is no Session object - it's concept was flattened into the Connection object where appropriate
   
-- JSMS doesn't target any threading/worker model (at least not for now), therefore all receive functions are asynchronous by nature using ECMAScript promises
+- jsms doesn't target any threading/worker model (at least not for now), therefore all receive functions are asynchronous by nature using ECMAScript promises
   
 - Replying to a message is facilitated by using a simple return statement - no need for temporary queues or similar
 
@@ -41,22 +41,22 @@ It can be used right out of the box in terms of an in-process mediator/event bus
 
 ## Models
 
-The JSMS API supports both models:
+The jsms API supports both models:
 
 - Point-to-point
 - Publish/Subscribe
 
 ### Prerequisites
 
-JSMS makes use of [log4js-api](https://www.npmjs.com/package/@log4js-node/log4js-api), which enables you to optionally attach any log4js compliant framework - but it doesn't come with a bundled log4js dependency, so logging is disabled by default.
+jsms makes use of [log4js-api](https://www.npmjs.com/package/@log4js-node/log4js-api), which enables you to optionally attach any log4js compliant framework - but it doesn't come with a bundled log4js dependency, so logging is disabled by default.
 
 **Important note for webpack users**: if you don't intend to use log4js, it must be excluded via [module.noParse](https://webpack.js.org/configuration/module/#modulenoparse), otherwise you will get an unresolved module dependency error.
 
 ## Usage
 
-Coming soon ... please refer to the JSDoc comments and the annotated tests for now.
+Coming soon ... please refer to the JSDoc comments, annotated tests and the example (inside the examples folder) for now.
 
-For help with integrating JSMS into your project, please refer to the following bare-bones examples:
+For help with integrating jsms into your project, please refer to the following bare-bones examples:
 
 - [jsms-web-example](https://github.com/rfruesmer/jsms-web-example)
 
