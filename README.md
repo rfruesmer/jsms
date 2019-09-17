@@ -65,12 +65,12 @@ For help with integrating jsms into your project, please refer the bare-bones ex
 const messageService = new JsmsService();
 
 messageService.send("/some/queue", {abc: "xyz"}) // can be any arbitrary object literal
-    .then((response) => {
+    .then(response => {
         console.log(response.body); // expected output: {xyz: "abc"}
     });
 
 messageService.receive("/some/queue")
-    .then((message) => {
+    .then(message => {
         console.log(message.body); // expected output: {abc: "xyz"}
         return {xyz: "abc"}; // can be any arbitrary object literal
     });
