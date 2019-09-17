@@ -459,54 +459,54 @@ test("message queue supports reply/request chaining of deferreds", async () => {
 
     const promise = new Promise<void>((resolve) => {
         messageService.receive(queueName)
-            .then((actualRequest: JsmsMessage) => {
+            .then(actualRequest => {
                 expect(actualRequest.body).toEqual({request: "PING1"});
                 receivedRequests.push(actualRequest.body);
                 return {response: "PONG1"};
             })
-            .then((actualRequest: JsmsMessage) => {
+            .then(actualRequest => {
                 expect(actualRequest.body).toEqual({request: "PING2"});
                 receivedRequests.push(actualRequest.body);
                 return {response: "PONG2"};
             })
-            .then((actualRequest: JsmsMessage) => {
+            .then(actualRequest => {
                 expect(actualRequest.body).toEqual({request: "PING3"});
                 receivedRequests.push(actualRequest.body);
                 return {response: "PONG3"};
             })
-            .then((actualRequest: JsmsMessage) => {
+            .then(actualRequest => {
                 expect(actualRequest.body).toEqual({request: "PING4"});
                 receivedRequests.push(actualRequest.body);
                 return {response: "PONG4"};
             })
-            .then((actualRequest: JsmsMessage) => {
+            .then(actualRequest => {
                 expect(actualRequest.body).toEqual({request: "PING5"});
                 receivedRequests.push(actualRequest.body);
                 return {response: "PONG5"};
             });
         
         messageService.send(queueName, {request: "PING1"})
-            .then((actualResponse: JsmsMessage) => {
+            .then(actualResponse => {
                 expect(actualResponse.body).toEqual({response: "PONG1"});
                 receivedResponses.push(actualResponse.body);
                 return {request: "PING2"};
             })
-            .then((actualResponse: JsmsMessage) => {
+            .then(actualResponse => {
                 expect(actualResponse.body).toEqual({response: "PONG2"});
                 receivedResponses.push(actualResponse.body);
                 return {request: "PING3"};
             })
-            .then((actualResponse: JsmsMessage) => {
+            .then(actualResponse => {
                 expect(actualResponse.body).toEqual({response: "PONG3"});
                 receivedResponses.push(actualResponse.body);
                 return {request: "PING4"};
             })
-            .then((actualResponse: JsmsMessage) => {
+            .then(actualResponse => {
                 expect(actualResponse.body).toEqual({response: "PONG4"});
                 receivedResponses.push(actualResponse.body);
                 return {request: "PING5"};
             })
-            .then((actualResponse: JsmsMessage) => {
+            .then(actualResponse => {
                 expect(actualResponse.body).toEqual({response: "PONG5"});
                 receivedResponses.push(actualResponse.body);
                 resolve();

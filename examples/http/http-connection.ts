@@ -99,6 +99,7 @@ export class HttpConnection extends JsmsConnection {
             const { statusCode } = response;
             if (statusCode && statusCode >= 300) {
                 deferredResponse.reject(new Error(response.statusMessage));
+                this.deferredResponses.delete(message.header.id);
             }
 
             const chunks: any = [];
@@ -108,6 +109,7 @@ export class HttpConnection extends JsmsConnection {
             .on("end", () => {
                 const result = JSON.parse(Buffer.concat(chunks).toString());
                 deferredResponse.resolve(result);
+                this.deferredResponses.delete(message.header.id);
             });
         });
 

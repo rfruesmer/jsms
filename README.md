@@ -39,28 +39,84 @@ It can be used right out of the box in terms of an in-process mediator/event bus
     </tr>
 </table>
 
-## Models
+## Installation
 
-The jsms API supports both models:
+In your project root:
 
-- Point-to-point
-- Publish/Subscribe
+```
+$ npm install jsms
+```
 
-### Prerequisites
+To enable logging, you have to include a log4js compliant framework like [log4js-node](https://www.npmjs.com/package/log4js) - if no version of log4js can be found, then jsms simply does not output anything.
 
-jsms makes use of [log4js-api](https://www.npmjs.com/package/@log4js-node/log4js-api), which enables you to optionally attach any log4js compliant framework - but it doesn't come with a bundled log4js dependency, so logging is disabled by default.
+**Important note for webpack users**: if you don't use log4js, it must be excluded via [module.noParse](https://webpack.js.org/configuration/module/#modulenoparse), otherwise you will run into an unresolved module dependency error.
 
-**Important note for webpack users**: if you don't intend to use log4js, it must be excluded via [module.noParse](https://webpack.js.org/configuration/module/#modulenoparse), otherwise you will get an unresolved module dependency error.
-
-## Usage
-
-Coming soon ... please refer to the JSDoc comments, annotated tests and the example (inside the examples folder) for now.
-
-For help with integrating jsms into your project, please refer to the following bare-bones examples:
+For help with integrating jsms into your project, please refer the bare-bones examples in the following repos:
 
 - [jsms-web-example](https://github.com/rfruesmer/jsms-web-example)
 
 - [jsms-node-example](https://github.com/rfruesmer/jsms-node-example)
+
+## Getting Started / Basic Usage
+
+### Point-to-Point Messaging
+
+```js
+const messageService = new JsmsService();
+
+messageService.send("/some/queue", {abc: "xyz"}) // can be any arbitrary object literal
+    .then((response) => {
+        console.log(response.body); // expected output: {xyz: "abc"}
+    });
+
+messageService.receive("/some/queue")
+    .then((message) => {
+        console.log(message.body); // expected output: {abc: "xyz"}
+        return {xyz: "abc"}; // can be any arbitrary object literal
+    });
+```
+
+### Publish/Subscribe
+
+```js
+const messageService = new JsmsService();
+
+messageService.subscribe("/some/topic", message => {
+    console.log(message.body); // expected output: {xyz: "abc"}
+});
+
+messageService.publish("/some/topic", {xyz: "abc"});  // can be any arbitrary object literal
+
+```
+
+### Intercepted Chaining of Deferreds
+
+JsmsService intercepts chained thens for sends/receives to provide a more logical flow. This shouldn't encourage anybody to create fine-grained chatty interfaces, but might be useful sometimes and definitely is something notable since it differs from the expected default promise behavior:
+
+```js
+const messageService = new JsmsService();
+
+messageService.send(queueName, {request: "PING1"})
+    .then(response => {
+        console.log(request); // expected output: {request: "PONG1"}
+        return {request: "PING2"};
+    })
+    .then(response => {
+        console.log(request); // expected output: {request: "PONG2"}
+    });
+
+messageService.receive(queueName)
+    .then(request => {
+        console.log(request); // expected output: {request: "PING1"}
+        return {response: "PONG1"};
+    })
+    .then(request => {
+        console.log(request); // expected output: {request: "PING2"}
+        return {response: "PONG2"};
+    });
+```
+
+For further information, please refer to the JSDoc comments, annotated tests and the examples folder.
 
 ## Contribution
 
