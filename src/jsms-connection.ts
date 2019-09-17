@@ -1,9 +1,11 @@
+import { checkArgument, checkState } from "./internal/preconditions";
+import { JsmsDeferred } from "./jsms-deferred";
 import { JsmsDestination } from "./jsms-destination";
+import { JsmsMessage } from "./jsms-message";
 import { JsmsMessageConsumer } from "./jsms-message-consumer";
 import { JsmsMessageProducer } from "./jsms-message-producer";
 import { JsmsQueue } from "./jsms-queue";
 import { JsmsTopic } from "./jsms-topic";
-import { checkArgument, checkState } from "./internal/preconditions";
 
 /**
  *  A Connection object is a client's active connection to its JSMS provider
@@ -15,14 +17,21 @@ export abstract class JsmsConnection {
     protected consumers = new Map<JsmsDestination, JsmsMessageConsumer>();
 
     /**
-     * Creates a queue with the given name.
+     *  Creates a queue with the given name.
      */
     public abstract createQueue(queueName: string): JsmsQueue;
 
     /**
-     * Creates a topic with the given name.
+     *  Creates a topic with the given name.
      */
     public abstract createTopic(topicName: string): JsmsTopic;
+
+    /**
+     *  Override to implement provider-specific transport.
+     * 
+     *  @param message the message to send
+     */
+    public abstract send(message: JsmsMessage): JsmsDeferred<JsmsMessage>;
 
     protected addQueue(queue: JsmsQueue, producer: JsmsMessageProducer, consumer: JsmsMessageConsumer): void {
         checkState(!this.queues.has(queue.getName()), "A queue with the same name is already registered");

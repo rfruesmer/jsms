@@ -1,8 +1,8 @@
 import { JsQueueReceiver } from "../src/internal/js-queue-receiver";
 import { JsmsMessage } from "../src/jsms-message";
 import { JsmsQueue } from "../src/jsms-queue";
-import { FakeConnection } from "./fake-connection";
 import { JsmsService } from "../src/jsms-service";
+import { FakeConnection } from "./fake-connection";
 
 let messageService: JsmsService;
 
@@ -25,7 +25,7 @@ test("a queue receiver dispatches non-expired messages with valid channel name",
     const queue = new JsmsQueue("/some/queue");
     const connection = new FakeConnection();
     const queueReceiver = new JsQueueReceiver(connection, queue);
-    const expectedMessage = JsmsMessage.create("/some/queue", {test: "foo"}, 0);
+    const expectedMessage = JsmsMessage.create("/some/queue", {test: "foo"});
     let actualMessage = JsmsMessage.create("", {});
 
     // given queue receiver

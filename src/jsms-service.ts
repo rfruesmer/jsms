@@ -32,12 +32,16 @@ export class JsmsService {
      *  Note: if the queue doesn't exist yet, a new queue using the default 
      *  JsConnection will be created.
      * 
+     *  @param queueName the name of the destination queue
+     *  @param messageBody user-defined message data (payload)
+     *  @param timeToLive time in milliseconds before the message expires
+     * 
      *  @returns a deferred promise that represents the response. If the 
      *           listener doen't reply, the response body will be empty.
      *           If the message is invalid (e.g. expired) the promise will be 
      *           rejected.
      */
-    public send(queueName: string, messageBody: object = {}, timeToLive: number = 0): JsmsDeferred<JsmsMessage> {
+    public send(queueName: string, messageBody: object = {}, timeToLive: number = -1): JsmsDeferred<JsmsMessage> {
         const queue = this.getQueue(queueName);
         const connection = this.getConnection(queue);
         const producer = connection.getProducer(queue);

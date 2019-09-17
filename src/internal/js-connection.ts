@@ -1,3 +1,5 @@
+import { JsmsDeferred } from "src/jsms-deferred";
+import { JsmsMessage } from "src/jsms-message";
 import { JsmsConnection } from "../jsms-connection";
 import { JsmsQueue } from "../jsms-queue";
 import { JsmsTopic } from "../jsms-topic";
@@ -21,5 +23,12 @@ export class JsConnection extends JsmsConnection {
         const topic = new JsmsTopic(topicName);
         super.addTopic(topic, new JsTopicPublisher(this, topic), new JsTopicSubscriber(this, topic));
         return topic;
+    }
+
+    public send(message: JsmsMessage): JsmsDeferred<JsmsMessage> {
+        const queue = this.getDestinationFor(message.header.channel);
+        const producer = this.getProducer(queue) as JsQueueSender;
+
+        return producer.dispatchInProcess(message);
     }
 }

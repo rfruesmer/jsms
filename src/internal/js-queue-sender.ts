@@ -3,7 +3,6 @@ import { JsmsDeferred } from "../jsms-deferred";
 import { JsmsDestination } from "../jsms-destination";
 import { JsmsMessage } from "../jsms-message";
 import { JsmsMessageProducer } from "../jsms-message-producer";
-import { JsmsQueue } from "../jsms-queue";
 
 export class JsQueueSender extends JsmsMessageProducer {
     constructor(connection: JsmsConnection, destination: JsmsDestination) {
@@ -11,7 +10,13 @@ export class JsQueueSender extends JsmsMessageProducer {
     }
 
     public send(message: JsmsMessage): JsmsDeferred<JsmsMessage> {
-        // since this an in-process producer, it can directly dispatch to the consumer
+        return this.getConnection().send(message);
+    }
+
+    /**
+     *  Only used for JS-/in-process transport.
+     */
+    public dispatchInProcess(message: JsmsMessage): JsmsDeferred<JsmsMessage> {
         const destination = this.getDestination();
         const consumer = this.getConnection().getConsumer(destination);
 
