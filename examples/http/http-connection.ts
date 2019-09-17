@@ -75,7 +75,9 @@ export class HttpConnection extends JsmsConnection {
         const deferredResponse = this.sendRequest(message);
 
         if (message.header.expiration > 0) {
-            const timeToLive = message.header.expiration - new Date().getTime();
+            let timeToLive = message.header.expiration - new Date().getTime();
+            timeToLive = Math.max(0, timeToLive);
+
             setTimeout(() => {
                 this.deferredResponses.delete(message.header.id);
                 deferredResponse.reject("message expired");
