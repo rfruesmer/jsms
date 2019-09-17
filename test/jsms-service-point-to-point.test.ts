@@ -1,6 +1,6 @@
-import { JsQueueReceiver } from "../src/internal/js-queue-receiver";
 import { JsmsMessage } from "../src/jsms-message";
 import { JsmsQueue } from "../src/jsms-queue";
+import { JsmsQueueReceiver } from "../src/jsms-queue-receiver";
 import { JsmsService } from "../src/jsms-service";
 import { FakeConnection } from "./fake-connection";
 import { FakeCustomMessage } from "./fake-custom-message";
@@ -14,7 +14,7 @@ function expectConsumerToBeEmpty(queueName: string): void {
     const queue = messageService.getQueue(queueName);
     const connection = messageService.getConnection(queue);
     const consumer = connection.getConsumer(queue);
-    expect((consumer as JsQueueReceiver).isEmpty()).toBeTruthy();
+    expect((consumer as JsmsQueueReceiver).isEmpty()).toBeTruthy();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -289,7 +289,7 @@ test("queue is open for extension via custom queue receiver", async () => {
     // given custom queue receiver for a given queue name
     const connection = new FakeConnection();
     const queue = connection.createQueue(queueName);
-    const customQueueReceiver = connection.getConsumer(queue) as JsQueueReceiver;
+    const customQueueReceiver = connection.getConsumer(queue) as JsmsQueueReceiver;
 
     // when receiving a custom message
     const deferredDelivery = customQueueReceiver.receive();

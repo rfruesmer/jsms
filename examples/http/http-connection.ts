@@ -1,12 +1,8 @@
 import { getLogger } from "@log4js-node/log4js-api";
 import { createServer, IncomingMessage, request as createRequest, RequestOptions } from "http";
-import { JsQueueReceiver } from "../../src/internal/js-queue-receiver";
-import { JsQueueSender } from "../../src/internal/js-queue-sender";
 import { JsmsConnection } from "../../src/jsms-connection";
 import { JsmsDeferred } from "../../src/jsms-deferred";
 import { JsmsMessage } from "../../src/jsms-message";
-import { JsmsQueue } from "../../src/jsms-queue";
-import { JsmsTopic } from "../../src/jsms-topic";
 
 const logger = getLogger("HttpConnection");
 logger.level = "debug";
@@ -75,14 +71,6 @@ export class HttpConnection extends JsmsConnection {
         return consumer.onMessage(message);
     }
 
-    // TODO: pull-up
-    public createQueue(queueName: string): JsmsQueue {
-        const queue = new JsmsQueue(queueName);
-        super.addQueue(queue, new JsQueueSender(this, queue), new JsQueueReceiver(this, queue));
-        
-        return queue;
-    }    
-
     public send(message: JsmsMessage): JsmsDeferred<JsmsMessage> {
         const deferredResponse = this.sendRequest(message);
 
@@ -130,10 +118,5 @@ export class HttpConnection extends JsmsConnection {
         request.end();
 
         return deferredResponse;
-    }
- 
-    // TODO: pull-up
-    public createTopic(topicName: string): JsmsTopic {
-        throw new Error("Method not implemented.");
     }
 }

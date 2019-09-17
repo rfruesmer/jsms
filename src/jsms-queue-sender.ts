@@ -1,10 +1,10 @@
-import { JsmsConnection } from "../jsms-connection";
-import { JsmsDeferred } from "../jsms-deferred";
-import { JsmsDestination } from "../jsms-destination";
-import { JsmsMessage } from "../jsms-message";
-import { JsmsMessageProducer } from "../jsms-message-producer";
+import { JsmsConnection } from "./jsms-connection";
+import { JsmsDeferred } from "./jsms-deferred";
+import { JsmsDestination } from "./jsms-destination";
+import { JsmsMessage } from "./jsms-message";
+import { JsmsMessageProducer } from "./jsms-message-producer";
 
-export class JsQueueSender extends JsmsMessageProducer {
+export class JsmsQueueSender extends JsmsMessageProducer {
     constructor(connection: JsmsConnection, destination: JsmsDestination) {
         super(connection, destination);
     }

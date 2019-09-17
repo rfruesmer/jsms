@@ -5,7 +5,11 @@ import { JsmsMessage } from "./jsms-message";
 import { JsmsMessageConsumer } from "./jsms-message-consumer";
 import { JsmsMessageProducer } from "./jsms-message-producer";
 import { JsmsQueue } from "./jsms-queue";
+import { JsmsQueueReceiver } from "./jsms-queue-receiver";
+import { JsmsQueueSender } from "./jsms-queue-sender";
 import { JsmsTopic } from "./jsms-topic";
+import { JsmsTopicPublisher } from "./jsms-topic-publisher";
+import { JsmsTopicSubscriber } from "./jsms-topic-subscriber";
 
 /**
  *  A Connection object is a client's active connection to its JSMS provider
@@ -19,12 +23,21 @@ export abstract class JsmsConnection {
     /**
      *  Creates a queue with the given name.
      */
-    public abstract createQueue(queueName: string): JsmsQueue;
+    public createQueue(queueName: string): JsmsQueue {
+        const queue = new JsmsQueue(queueName);
+        this.addQueue(queue, new JsmsQueueSender(this, queue), new JsmsQueueReceiver(this, queue));
+        
+        return queue;
+    }
 
     /**
      *  Creates a topic with the given name.
      */
-    public abstract createTopic(topicName: string): JsmsTopic;
+    public createTopic(topicName: string): JsmsTopic {
+        const topic = new JsmsTopic(topicName);
+        this.addTopic(topic, new JsmsTopicPublisher(this, topic), new JsmsTopicSubscriber(this, topic));
+        return topic;
+    }
 
     /**
      *  Override to implement provider-specific transport.

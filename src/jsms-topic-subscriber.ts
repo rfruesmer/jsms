@@ -1,11 +1,11 @@
-import { JsmsConnection } from "../jsms-connection";
-import { JsmsDeferred } from "../jsms-deferred";
-import { JsmsDestination } from "../jsms-destination";
-import { JsmsMessage } from "../jsms-message";
-import { JsmsMessageConsumer } from "../jsms-message-consumer";
-import { JsmsTopic } from "../jsms-topic";
+import { JsmsConnection } from "./jsms-connection";
+import { JsmsDeferred } from "./jsms-deferred";
+import { JsmsDestination } from "./jsms-destination";
+import { JsmsMessage } from "./jsms-message";
+import { JsmsMessageConsumer } from "./jsms-message-consumer";
+import { JsmsTopic } from "./jsms-topic";
 
-export class JsTopicSubscriber extends JsmsMessageConsumer {
+export class JsmsTopicSubscriber extends JsmsMessageConsumer {
     constructor(connection: JsmsConnection, destination: JsmsDestination) {
         super(connection, destination);
     }

@@ -1,12 +1,12 @@
-import { JsmsConnection } from "../jsms-connection";
-import { JsmsDeferred } from "../jsms-deferred";
-import { JsmsDestination } from "../jsms-destination";
-import { JsmsMessage } from "../jsms-message";
-import { JsmsMessageProducer } from "../jsms-message-producer";
-import { JsmsTopic } from "../jsms-topic";
 import { getLogger } from "@log4js-node/log4js-api";
+import { JsmsConnection } from "./jsms-connection";
+import { JsmsDeferred } from "./jsms-deferred";
+import { JsmsDestination } from "./jsms-destination";
+import { JsmsMessage } from "./jsms-message";
+import { JsmsMessageProducer } from "./jsms-message-producer";
+import { JsmsTopic } from "./jsms-topic";
 
-export class JsTopicPublisher extends JsmsMessageProducer {
+export class JsmsTopicPublisher extends JsmsMessageProducer {
     private logger = getLogger("jsms");
     
     constructor(connection: JsmsConnection, destination: JsmsDestination) {

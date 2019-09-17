@@ -1,10 +1,10 @@
-import { JsQueueReceiver } from "../src/internal/js-queue-receiver";
-import { JsTopicSubscriber } from "../src/internal/js-topic-subscriber";
 import { JsmsConnection } from "../src/jsms-connection";
 import { JsmsDeferred } from "../src/jsms-deferred";
 import { JsmsMessage } from "../src/jsms-message";
 import { JsmsQueue } from "../src/jsms-queue";
+import { JsmsQueueReceiver } from "../src/jsms-queue-receiver";
 import { JsmsTopic } from "../src/jsms-topic";
+import { JsmsTopicSubscriber } from "../src/jsms-topic-subscriber";
 import { FakeCustomMessage } from "./fake-custom-message";
 import { FakeQueueSender } from "./fake-queue-sender";
 import { FakeTopicPublisher } from "./fake-topic-publisher";
@@ -18,14 +18,14 @@ export class FakeConnection extends JsmsConnection {
 
     public createQueue(queueName: string): JsmsQueue {
         const queue = new JsmsQueue(queueName);
-        super.addQueue(queue, new FakeQueueSender(this, queue), new JsQueueReceiver(this, queue));
+        super.addQueue(queue, new FakeQueueSender(this, queue), new JsmsQueueReceiver(this, queue));
         
         return queue;
     }
 
     public createTopic(topicName: string): JsmsTopic {
         const topic = new JsmsTopic(topicName);
-        super.addTopic(topic, new FakeTopicPublisher(this, topic), new JsTopicSubscriber(this, topic));
+        super.addTopic(topic, new FakeTopicPublisher(this, topic), new JsmsTopicSubscriber(this, topic));
         
         return topic;
     }

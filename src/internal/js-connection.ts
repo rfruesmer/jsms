@@ -1,33 +1,17 @@
 import { JsmsDeferred } from "src/jsms-deferred";
 import { JsmsMessage } from "src/jsms-message";
 import { JsmsConnection } from "../jsms-connection";
-import { JsmsQueue } from "../jsms-queue";
-import { JsmsTopic } from "../jsms-topic";
-import { JsQueueReceiver } from "./js-queue-receiver";
-import { JsQueueSender } from "./js-queue-sender";
-import { JsTopicPublisher } from "./js-topic-publisher";
-import { JsTopicSubscriber } from "./js-topic-subscriber";
+import { JsmsQueueSender } from "../jsms-queue-sender";
 
 /**
  * The JsConnection allows clients to connect to each other inside the 
  * JavaScript environment without the overhead of network communication. 
  */
 export class JsConnection extends JsmsConnection {
-    public createQueue(queueName: string): JsmsQueue {
-        const queue = new JsmsQueue(queueName);
-        super.addQueue(queue, new JsQueueSender(this, queue), new JsQueueReceiver(this, queue));
-        return queue;
-    }
-
-    public createTopic(topicName: string): JsmsTopic {
-        const topic = new JsmsTopic(topicName);
-        super.addTopic(topic, new JsTopicPublisher(this, topic), new JsTopicSubscriber(this, topic));
-        return topic;
-    }
 
     public send(message: JsmsMessage): JsmsDeferred<JsmsMessage> {
         const queue = this.getDestinationFor(message.header.channel);
-        const producer = this.getProducer(queue) as JsQueueSender;
+        const producer = this.getProducer(queue) as JsmsQueueSender;
 
         return producer.dispatchInProcess(message);
     }
