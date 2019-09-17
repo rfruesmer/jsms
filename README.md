@@ -51,7 +51,7 @@ To enable logging, you have to include a log4js compliant framework like [log4js
 
 **Important note for webpack users**: if you don't use log4js, it must be excluded via [module.noParse](https://webpack.js.org/configuration/module/#modulenoparse), otherwise you will run into an unresolved module dependency error.
 
-For help with integrating jsms into your project, please refer the bare-bones examples in the following repos:
+For help with integrating jsms into your project, please refer to the bare-bones examples in the following repos:
 
 - [jsms-web-example](https://github.com/rfruesmer/jsms-web-example)
 
@@ -64,7 +64,7 @@ For help with integrating jsms into your project, please refer the bare-bones ex
 ```js
 const messageService = new JsmsService();
 
-messageService.send("/some/queue", {abc: "xyz"}) // can be any arbitrary object literal
+messageService.send("/some/queue", {abc: "xyz"})
     .then(response => {
         console.log(response.body); // expected output: {xyz: "abc"}
     });
@@ -72,7 +72,7 @@ messageService.send("/some/queue", {abc: "xyz"}) // can be any arbitrary object 
 messageService.receive("/some/queue")
     .then(message => {
         console.log(message.body); // expected output: {abc: "xyz"}
-        return {xyz: "abc"}; // can be any arbitrary object literal
+        return {xyz: "abc"};
     });
 ```
 
@@ -85,13 +85,12 @@ messageService.subscribe("/some/topic", message => {
     console.log(message.body); // expected output: {xyz: "abc"}
 });
 
-messageService.publish("/some/topic", {xyz: "abc"});  // can be any arbitrary object literal
-
+messageService.publish("/some/topic", {xyz: "abc"});
 ```
 
 ### Intercepted Chaining of Deferreds
 
-JsmsService intercepts chained thens for sends/receives to provide a more logical flow. This shouldn't encourage anybody to create fine-grained chatty interfaces, but might be useful sometimes and definitely is something notable since it differs from the expected default promise behavior:
+JsmsService intercepts chained thens for sends/receives to provide a more logical flow. This shouldn't encourage anybody to create fine-grained chatty interfaces, but might be useful sometimes and definitely is something notable since it differs from the expected promise default behavior:
 
 ```js
 const messageService = new JsmsService();
