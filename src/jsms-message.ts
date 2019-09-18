@@ -46,11 +46,16 @@ export class JsmsMessage {
     }
 
     /**
-     *  Convenience factory method for converting a JSON string to a message.
+     *  Convenience method for converting a JSON string into a JsmsMessage.
      */
     public static fromString(jsonString: string): JsmsMessage {
-        const jsonObject = JSON.parse(jsonString);
-        
+        return this.fromJSON(JSON.parse(jsonString));
+    }
+
+    /**
+     *  Convenience method for converting a JSON object into a JsmsMessage.
+     */
+    public static fromJSON(jsonObject: any): JsmsMessage {
         const header = new JsmsMessageHeader(
             jsonObject.header.id, 
             jsonObject.header.destination, 
@@ -61,7 +66,7 @@ export class JsmsMessage {
     }
 
     /**
-     *  Convenience method for converting message to a JSON string - counterpart to fromString().
+     *  Convenience method for converting message into a JSON string - counterpart to fromString().
      */
     public toString(): string {
         return JSON.stringify(this);
