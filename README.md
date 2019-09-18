@@ -25,7 +25,7 @@ A lightweight implementation of a messaging framework for JavaScript/TypeScript 
   - [Point-to-Point Messaging](#point-to-point-messaging)
     - [Chaining](#chaining)
   - [Publish/Subscribe](#publishsubscribe)
-- [Contribution](#contribution)
+- [Contributing](#contributing)
 - [Credits](#credits)
 - [License](#license)
 
@@ -198,7 +198,7 @@ messageService.subscribe("/some/topic", message => {
 messageService.publish("/some/topic", {xyz: "abc"});
 ```
 
-## Contribution
+## Contributing
 
 Please keep in mind that this project is still in alpha state, but if you find something important missing or not working right in your use case, don't hesitate and feel free to open an issue or to send me a pull request.
 
