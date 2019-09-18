@@ -5,8 +5,8 @@
 <a href="https://www.npmjs.com/package/jsms"><img alt="npm Version" src="https://img.shields.io/npm/v/jsms.svg"></a>
 <a href="https://travis-ci.org/rfruesmer/jsms"><img alt="Build Status" src="https://travis-ci.org/rfruesmer/jsms.svg?branch=master"></a>
 <a href="https://codecov.io/gh/rfruesmer/jsms"><img alt="Coverage Status" src="https://codecov.io/gh/rfruesmer/jsms/master.svg"></a>
-<img alt="LGTM Alerts" src="https://img.shields.io/lgtm/alerts/github/rfruesmer/jsms">
-<img alt="LGTM Grade" src="https://img.shields.io/lgtm/grade/javascript/github/rfruesmer/jsms">
+<a href="https://lgtm.com/projects/g/rfruesmer/jsms/alerts/"><img alt="Total alerts" src="https://img.shields.io/lgtm/alerts/g/rfruesmer/jsms.svg?logo=lgtm&logoWidth=18"/></a>
+<a href="https://lgtm.com/projects/g/rfruesmer/jsms/context:javascript"><img alt="Language grade: JavaScript" src="https://img.shields.io/lgtm/grade/javascript/g/rfruesmer/jsms.svg?logo=lgtm&logoWidth=18"/></a>
 
 A lightweight implementation of a messaging framework for JavaScript/TypeScript - inspired by the Java™ Message Service API.
 
