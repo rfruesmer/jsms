@@ -168,11 +168,11 @@ const messageService = new JsmsService();
 
 messageService.send(queueName, {request: "PING1"})
     .then(response => {
-        console.log(request); // expected output: {request: "PONG1"}
+        console.log(request); // expected output: {response: "PONG1"}
         return {request: "PING2"};
     })
     .then(response => {
-        console.log(request); // expected output: {request: "PONG2"}
+        console.log(request); // expected output: {response: "PONG2"}
     });
 
 messageService.receive(queueName)
