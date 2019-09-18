@@ -76,7 +76,7 @@ jsms messages are composed of the following parts:
 
 ## Messaging domains
 
-jsms supports both major styles of messaging Point-to-point (PTP) and Publish and subscribe (pub/sub).
+jsms supports both major styles of messaging: Point-to-point (PTP) and Publish/subscribe (pub/sub).
 
 ### Point-to-point model
 
