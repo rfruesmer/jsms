@@ -1,3 +1,5 @@
+
+
 # JavaScript Message Service
 
 <a href="https://www.npmjs.com/package/jsms"><img alt="npm Version" src="https://img.shields.io/npm/v/jsms.svg"></a>
@@ -6,25 +8,105 @@
 
 A lightweight implementation of a messaging framework for JavaScript/TypeScript - inspired by the Java™ Message Service API.
 
+
+## Contents
+
+- [JavaScript Message Service](#javascript-message-service)
+  - [Contents](#contents)
+  - [Introduction](#introduction)
+    - [Overview of jsms](#overview-of-jsms)
+    - [What jsms does not include](#what-jsms-does-not-include)
+  - [Messages](#messages)
+  - [Message header fields](#message-header-fields)
+  - [Messaging domains](#messaging-domains)
+    - [Point-to-point model](#point-to-point-model)
+    - [Publish/subscribe model](#publishsubscribe-model)
+  - [Compatibility](#compatibility)
+  - [Installation](#installation)
+  - [Examples (using the simplified API)](#examples-using-the-simplified-api)
+    - [Point-to-Point Messaging](#point-to-point-messaging)
+      - [Chaining](#chaining)
+    - [Publish/Subscribe](#publishsubscribe)
+  - [Contribution](#contribution)
+  - [Credits](#credits)
+  - [License](#license)
+
 ## Introduction
 
-The purpose of this module is to act as an extensible platform for adding providers for different protocols into an integrated solution and therefore can be used to build clients, servers and even message brokers using a consistent API - it's not intended to be a complete, full-fledged message service implementation (!). 
+### Overview of jsms
 
-The original use case for this project was the need to combine two partly redundant messaging solutions - one being a mediator and the other being an embedded Chromium browser - into one centralized messaging service.
+jsms provides a common way for JavaScript programs to create, send and receive messages. It defines some messaging semantics and a corresponding set of JavaScript classes to build clients, servers and even message brokers using a single, unified message API. It was initially developed to eliminate boilerplate code by combining two partly redundant messaging solutions into one.
 
-It can be used right out of the box in terms of an in-process mediator/event bus, but for using protocols/transports like STOMP over WebSocket, you have to integrate your own or other (3rd-party) communication implementations by creating a derived connection class - see the HTTP-based sample implementation inside the examples folder for a starting point.
+It can be used right out of the box in terms of an in-process mediator/event bus, but for connecting to a JMS broker or for using protocols/transports like for example STOMP over WebSocket, you can do so by supplying a custom connection class that integrates your own or other (3rd-party) communication implementations - see the simple HTTP-based sample implementation inside the examples folder for a starting point.
 
-## Major differences compared to JMS
+### What jsms does not include
 
-- jsms is built client-first, but can be run on a server as well - e. g. as a Node.js application - it just doesn't come with any concrete server-side messaging implementations built-in, like other *MQ implementations do
+- Specific communication protocols 
+
+- A complete implementation of the Java™ Message Service API specs, since jsms targets a simplified and more lightweight approach
+
+- A threading/worker model (at least not for now) - therefore all send/receive functions are asynchronous by nature (using promises)
+
+## Messages
+
+jsms messages are composed of the following parts:
+
+- Header - contains values used by both clients and providers to identify and route   
   
-- jsms is not - and most probably never will be - a fully compliant implementation of the Java Message Service API specs, since jsms targets a simplified and more lightweight approach
-  
-- There is no Session object - it's concept was flattened into the Connection object where appropriate
-  
-- jsms doesn't target any threading/worker model (at least not for now), therefore all receive functions are asynchronous by nature using ECMAScript promises
-  
-- Replying to a message is facilitated by using a simple return statement - no need for temporary queues or similar
+- Body - jsms defines only one type being any custom object literal
+
+## Message header fields
+
+<table>
+    <tr>
+        <td>id</td>
+        <td>the id header field contains a value that uniquely identifies each message (uuid)</td>
+    </tr>
+    <tr>
+        <td>destination</td>
+        <td>the topic or queue name</td>
+    </tr>
+    <tr>
+        <td>expiration</td>
+        <td>the time in milliseconds when this message will expire or zero if the message shouldn't expire</td>
+    </tr>
+    <tr>
+        <td>correlationID</td>
+        <td>used for matching replies/responses to original message</td>
+    </tr>
+</table>
+
+## Messaging domains
+
+jsms supports both major styles of messaging Point-to-point (PTP) and Publish and subscribe (pub/sub).
+
+### Point-to-point model
+
+Use PTP messaging when every message you send must be processed successfully by one consumer:
+
+- Each queue/message has only one consumer.
+
+- A sender and a receiver of a message have no timing dependencies. The receiver can fetch the message whether or not it was running when the client sent the message.
+
+- Queues retain all (up to maxSize) messages sent to them until the messages are consumed, the message expires or the queue is closed - messages aren't persisted.
+
+An application may send messages to a queue by using a connection's QueueSender object. Messages can be consumed from a queue by using a connection's QueueReceiver object.
+
+The JsmsService facade class provides a simplified API for both send and receive operations.
+
+### Publish/subscribe model
+
+Topics take care of distributing the messages arriving from multiple publishers to its multiple subscribers:
+
+- Topics retain messages only as long as it takes to distribute them to current subscribers.
+
+- Each message may have multiple consumers.
+
+- Publishers and subscribers have a timing dependency. A client that subscribes to a topic can consume only messages published after the client has created a subscription.
+
+An application may send messages to a topic by using a connection's TopicPublisher object. Messages can be consumed from a topic by using a connection's TopicSubscriber object.
+
+The JsmsService facade class provides a simplified API for both publish and subscribe operations.
 
 ## Compatibility
 
@@ -57,7 +139,10 @@ For help with integrating jsms into your project, please refer to the bare-bones
 
 - [jsms-node-example](https://github.com/rfruesmer/jsms-node-example)
 
-## Getting Started / Basic Usage
+
+## Examples (using the simplified API)
+
+These are just a few simple examples to give you a quickstart. For further information, please refer to the JSDoc comments, annotated tests and the examples folder.
 
 ### Point-to-Point Messaging
 
@@ -76,21 +161,9 @@ messageService.receive("/some/queue")
     });
 ```
 
-### Publish/Subscribe
+#### Chaining
 
-```js
-const messageService = new JsmsService();
-
-messageService.subscribe("/some/topic", message => {
-    console.log(message.body); // expected output: {xyz: "abc"}
-});
-
-messageService.publish("/some/topic", {xyz: "abc"});
-```
-
-### Intercepted Chaining of Deferreds
-
-JsmsService intercepts chained thens for sends/receives to provide a more logical flow. This shouldn't encourage anybody to create fine-grained chatty interfaces, but might be useful sometimes and definitely is something notable since it differs from the expected promise default behavior:
+JsmsService intercepts chained thens for point-to-point sends/receives to provide a more logical flow. This shouldn't encourage anybody to create fine-grained chatty interfaces, but might be useful sometimes and definitely is something notable since it differs from the expected promise default behavior:
 
 ```js
 const messageService = new JsmsService();
@@ -115,7 +188,17 @@ messageService.receive(queueName)
     });
 ```
 
-For further information, please refer to the JSDoc comments, annotated tests and the examples folder.
+### Publish/Subscribe
+
+```js
+const messageService = new JsmsService();
+
+messageService.subscribe("/some/topic", message => {
+    console.log(message.body); // expected output: {xyz: "abc"}
+});
+
+messageService.publish("/some/topic", {xyz: "abc"});
+```
 
 ## Contribution
 
