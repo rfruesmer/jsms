@@ -49,7 +49,7 @@ It can be used right out of the box in terms of an in-process mediator/event bus
 
 jsms messages are composed of the following parts:
 
-- Header - contains values used by both clients and providers to identify and route   
+- Header - contains values used by both clients and providers to identify and route messages   
   
 - Body - jsms defines only one type being any custom object literal
 
