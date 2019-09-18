@@ -62,12 +62,12 @@ export abstract class JsmsConnection {
         this.consumers.set(topic, consumer);
     }
 
-    protected getDestinationFor(channel: string): JsmsDestination {
-        let destination = this.queues.get(channel) as JsmsDestination | undefined;
+    protected getDestinationFor(name: string): JsmsDestination {
+        let destination = this.queues.get(name) as JsmsDestination | undefined;
         if (!destination) {
-            destination = this.topics.get(channel);
+            destination = this.topics.get(name);
         }
-        checkState(!!destination, "Unknown channel: " + channel);
+        checkState(!!destination, "Unknown destination: " + name);
         // @ts-ignore: check for undefined already done before via checkState
         return destination;
     }

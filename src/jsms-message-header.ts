@@ -6,20 +6,20 @@ import { v4 } from "uuid";
  */
 export class JsmsMessageHeader {
     public readonly id: string;
-    public readonly channel: string;
+    public readonly destination: string;
     public readonly expiration: number;
     public readonly correlationID: string;
 
     /**
      * @param id            This message's unique id
-     * @param channel       The topic or queue name.
+     * @param destination   The topic or queue name.
      * @param expiration    The time in milliseconds when this message will expire
      *                      or 0 if the message shouldn't expire.
      * @param correlationID Used for matching replies/responses to original message.
      */
-    constructor(id: string, channel: string, expiration: number, correlationID: string) {
+    constructor(id: string, destination: string, expiration: number, correlationID: string) {
         this.id = id;
-        this.channel = channel;
+        this.destination = destination;
         this.expiration = expiration;
         this.correlationID = correlationID;
     }

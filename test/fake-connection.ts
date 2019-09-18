@@ -42,11 +42,11 @@ export class FakeConnection extends JsmsConnection {
         this.lastSentMessage = message;
 
         if (!this.available) {
-            this.lastQueueName = message.header.channel;
+            this.lastQueueName = message.header.destination;
             throw new Error("connection unavailable");
         }
 
-        const destination = super.getDestinationFor(message.header.channel);
+        const destination = super.getDestinationFor(message.header.destination);
         const consumer = super.getConsumer(destination);
         return consumer.onMessage(message);
     }

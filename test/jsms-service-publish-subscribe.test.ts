@@ -68,7 +68,7 @@ test("errors thrown by topic subscribers are caught by JsMessageConsumer", async
     const result = await connection.onCustomMessageReceived(customMessage).promise;
     
     // then the dispatch should have caught the exception and resolved the promise
-    expect(result.header.channel).toEqual(customMessage.id);
+    expect(result.header.destination).toEqual(customMessage.id);
     expect(result.body).toEqual(customMessage.data);
 
     topic.close();

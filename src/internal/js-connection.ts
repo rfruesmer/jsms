@@ -10,7 +10,7 @@ import { JsmsQueueSender } from "../jsms-queue-sender";
 export class JsConnection extends JsmsConnection {
 
     public send(message: JsmsMessage): JsmsDeferred<JsmsMessage> {
-        const queue = this.getDestinationFor(message.header.channel);
+        const queue = this.getDestinationFor(message.header.destination);
         const producer = this.getProducer(queue) as JsmsQueueSender;
 
         return producer.dispatchInProcess(message);

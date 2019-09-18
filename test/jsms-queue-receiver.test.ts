@@ -21,7 +21,7 @@ afterEach(() => {
 
 // --------------------------------------------------------------------------------------------------------------------
 
-test("a queue receiver dispatches non-expired messages with valid channel name", async () => {
+test("a queue receiver dispatches non-expired messages with valid destination name", async () => {
     const queue = new JsmsQueue("/some/queue");
     const connection = new FakeConnection();
     const queueReceiver = new JsmsQueueReceiver(connection, queue);
@@ -84,7 +84,7 @@ test("a queue receiver doesn't dispatch expired messages and rejects the promise
 
 // --------------------------------------------------------------------------------------------------------------------
 
-test("a queue receiver doesn't dispatch messages with a different channel name", async () => {
+test("a queue receiver doesn't dispatch messages with a different destination name", async () => {
     const queue = new JsmsQueue("/some/queue");
     const connection = new FakeConnection();
     const queueReceiver = new JsmsQueueReceiver(connection, queue);
@@ -102,7 +102,7 @@ test("a queue receiver doesn't dispatch messages with a different channel name",
     const deferredResponse = queueReceiver.onMessage(uninterestingMessage);
     
     // then the promise should be rejected
-    await expect(deferredResponse.promise).rejects.toEqual("invalid channel");
+    await expect(deferredResponse.promise).rejects.toEqual("invalid destination");
 
     // and the message mustn't be delivered
     expect(actualMessage).toBeNull();

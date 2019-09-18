@@ -65,7 +65,7 @@ export class HttpConnection extends JsmsConnection {
     }
 
     private onMessage(message: JsmsMessage): JsmsDeferred<JsmsMessage> {
-        const destination = super.getDestinationFor(message.header.channel);
+        const destination = super.getDestinationFor(message.header.destination);
         const consumer = super.getConsumer(destination);
 
         return consumer.onMessage(message);

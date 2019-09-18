@@ -16,24 +16,24 @@ export class JsmsMessage {
     /**
      * Convenience factory method for creation of JSMS messages.
      *
-     * @param channel       The topic or queue name.
+     * @param destination   The topic or queue name.
      * @param body          The message's JSON payload 
      * @param timeToLive    The time in milliseconds (from now) until this message will be discarded 
      *                      or -1 if the message shouldn't expire.
      * @param correlationID Used for matching replies/responses to original message.
      */
-    public static create(channel: string, 
+    public static create(destination: string, 
                          body: object = {}, 
                          timeToLive: number = -1, 
                          correlationID: string = v4()): JsmsMessage {
         const expiration = timeToLive > -1 ? new Date().getTime() + timeToLive : 0;
-        return new JsmsMessage(new JsmsMessageHeader(v4(), channel, expiration, correlationID), body);
+        return new JsmsMessage(new JsmsMessageHeader(v4(), destination, expiration, correlationID), body);
     }
 
     /**
      * Convenience factory method for creating a response.
      *
-     * @param channel The topic or queue name.
+     * @param destination The topic or queue name.
      * @param body The message's payload.
      * @param timeToLive The time in milliseconds (from now) until this message will be discarded.
      * @param correlationID Used for matching replies/responses to original message.
@@ -41,7 +41,7 @@ export class JsmsMessage {
     public static createResponse(originalMessage: JsmsMessage, 
                                  responseBody: object = {}, 
                                  timeToLive: number = -1): JsmsMessage {
-        return JsmsMessage.create(originalMessage.header.channel, responseBody, 
+        return JsmsMessage.create(originalMessage.header.destination, responseBody, 
             timeToLive, originalMessage.header.correlationID);
     }
 
@@ -53,7 +53,7 @@ export class JsmsMessage {
         
         const header = new JsmsMessageHeader(
             jsonObject.header.id, 
-            jsonObject.header.channel, 
+            jsonObject.header.destination, 
             jsonObject.header.expiration, 
             jsonObject.header.correlationID);
         

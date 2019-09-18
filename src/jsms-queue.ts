@@ -44,7 +44,7 @@ export class JsmsQueue extends JsmsDestination {
     }
 
     public enqueue(message: JsmsMessage): void {
-        checkArgument(message.header.channel === this.getName());
+        checkArgument(message.header.destination === this.getName());
         this.entries.push(message);
     }
 

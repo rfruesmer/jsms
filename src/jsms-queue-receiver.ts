@@ -93,8 +93,8 @@ export class JsmsQueueReceiver extends JsmsMessageConsumer {
     }
     
     private validate(message: JsmsMessage, deferredResponse: JsmsDeferred<JsmsMessage>): boolean {
-        if (message.header.channel !== this.getDestination().getName()) {
-            deferredResponse.reject("invalid channel");
+        if (message.header.destination !== this.getDestination().getName()) {
+            deferredResponse.reject("invalid destination");
             return false;
         }
         
