@@ -1,4 +1,3 @@
-import { v4 } from "uuid";
 
 /**
  *  Header fields contain values used by both clients and providers to identify 

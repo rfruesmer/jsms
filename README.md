@@ -5,29 +5,33 @@
 <a href="https://www.npmjs.com/package/jsms"><img alt="npm Version" src="https://img.shields.io/npm/v/jsms.svg"></a>
 <a href="https://travis-ci.org/rfruesmer/jsms"><img alt="Build Status" src="https://travis-ci.org/rfruesmer/jsms.svg?branch=master"></a>
 <a href="https://codecov.io/gh/rfruesmer/jsms"><img alt="Coverage Status" src="https://codecov.io/gh/rfruesmer/jsms/master.svg"></a>
+<img alt="LGTM Alerts" src="https://img.shields.io/lgtm/alerts/github/rfruesmer/jsms">
+<img alt="LGTM Grade" src="https://img.shields.io/lgtm/grade/javascript/github/rfruesmer/jsms">
 
 A lightweight implementation of a messaging framework for JavaScript/TypeScript - inspired by the Java™ Message Service API.
 
 
 ## Contents
 
-- [Introduction](#introduction)
-  - [Overview of jsms](#overview-of-jsms)
-  - [What jsms does not include](#what-jsms-does-not-include)
-- [Messages](#messages)
-- [Message header fields](#message-header-fields)
-- [Messaging domains](#messaging-domains)
-  - [Point-to-point model](#point-to-point-model)
-  - [Publish/subscribe model](#publishsubscribe-model)
-- [Compatibility](#compatibility)
-- [Installation](#installation)
-- [Examples (using the simplified API)](#examples-using-the-simplified-api)
-  - [Point-to-Point Messaging](#point-to-point-messaging)
-    - [Chaining](#chaining)
-  - [Publish/Subscribe](#publishsubscribe)
-- [Contributing](#contributing)
-- [Credits](#credits)
-- [License](#license)
+- [JavaScript Message Service](#javascript-message-service)
+  - [Contents](#contents)
+  - [Introduction](#introduction)
+    - [Overview of jsms](#overview-of-jsms)
+    - [What jsms does not include](#what-jsms-does-not-include)
+  - [Messages](#messages)
+  - [Message header fields](#message-header-fields)
+  - [Messaging domains](#messaging-domains)
+    - [Point-to-point model](#point-to-point-model)
+    - [Publish/subscribe model](#publishsubscribe-model)
+  - [Compatibility](#compatibility)
+  - [Installation](#installation)
+  - [Examples (using the simplified API)](#examples-using-the-simplified-api)
+    - [Point-to-Point Messaging](#point-to-point-messaging)
+      - [Chaining](#chaining)
+    - [Publish/Subscribe](#publishsubscribe)
+  - [Contributing](#contributing)
+  - [Credits](#credits)
+  - [License](#license)
 
 ## Introduction
 
