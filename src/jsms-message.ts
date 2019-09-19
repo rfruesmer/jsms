@@ -1,6 +1,5 @@
 import { v4 } from "uuid";
 import { JsmsMessageHeader } from "./jsms-message-header";
-import { checkArgument } from "./internal/preconditions";
 
 /**
  *  A generic message class with a JSON body/payload.
