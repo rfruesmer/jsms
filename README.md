@@ -172,7 +172,7 @@ JsmsService intercepts chained thens for point-to-point sends/receives to provid
 ```js
 const messageService = new JsmsService();
 
-messageService.send(queueName, {request: "PING1"})
+messageService.send("/some/queue", {request: "PING1"})
     .then(response => {
         console.log(response); // expected output: {response: "PONG1"}
         return {request: "PING2"};
@@ -181,7 +181,7 @@ messageService.send(queueName, {request: "PING1"})
         console.log(response); // expected output: {response: "PONG2"}
     });
 
-messageService.receive(queueName)
+messageService.receive("/some/queue")
     .then(request => {
         console.log(request); // expected output: {request: "PING1"}
         return {response: "PONG1"};
