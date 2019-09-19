@@ -16,26 +16,28 @@ A lightweight implementation of a messaging framework for JavaScript/TypeScript 
 - [JavaScript Message Service](#javascript-message-service)
   - [Contents](#contents)
   - [Introduction](#introduction)
-    - [Overview of jsms](#overview-of-jsms)
+    - [Overview](#overview)
     - [What jsms does not include](#what-jsms-does-not-include)
-  - [Messages](#messages)
-  - [Message header fields](#message-header-fields)
+  - [Message Model](#message-model)
+    - [Messages](#messages)
+    - [Message header fields](#message-header-fields)
   - [Messaging domains](#messaging-domains)
     - [Point-to-point model](#point-to-point-model)
     - [Publish/subscribe model](#publishsubscribe-model)
   - [Compatibility](#compatibility)
   - [Installation](#installation)
-  - [Examples (using the simplified API)](#examples-using-the-simplified-api)
-    - [Point-to-Point Messaging](#point-to-point-messaging)
+  - [Examples using the simplified API](#examples-using-the-simplified-api)
+    - [Point-to-Point](#point-to-point)
       - [Chaining](#chaining)
     - [Publish/Subscribe](#publishsubscribe)
   - [Contributing](#contributing)
   - [Credits](#credits)
   - [License](#license)
 
+
 ## Introduction
 
-### Overview of jsms
+### Overview
 
 jsms provides a common way for JavaScript programs to create, send and receive messages. It defines some messaging semantics and a corresponding set of JavaScript classes to build clients, servers and even message brokers using a single, unified message API. It was initially developed to eliminate boilerplate code by combining two partly redundant messaging solutions into one.
 
@@ -49,7 +51,9 @@ It can be used right out of the box in terms of an in-process mediator/event bus
 
 - A threading/worker model (at least not for now) - therefore all send/receive functions are asynchronous by nature (using promises)
 
-## Messages
+## Message Model
+
+### Messages
 
 jsms messages are composed of the following parts:
 
@@ -57,7 +61,7 @@ jsms messages are composed of the following parts:
   
 - Body - jsms defines only one type being any custom object literal
 
-## Message header fields
+### Message header fields
 
 <table>
     <tr>
@@ -142,11 +146,11 @@ For help with integrating jsms into your project, please refer to the bare-bones
 - [jsms-node-example](https://github.com/rfruesmer/jsms-node-example)
 
 
-## Examples (using the simplified API)
+## Examples using the simplified API
 
 These are just a few simple examples to give you a quickstart. For further information, please refer to the JSDoc comments, annotated tests and the examples folder.
 
-### Point-to-Point Messaging
+### Point-to-Point
 
 ```js
 const messageService = new JsmsService();
