@@ -1,14 +1,16 @@
 import { v4 } from "uuid";
 import { JsmsMessageHeader } from "./jsms-message-header";
+import { checkArgument } from "./internal/preconditions";
 
 /**
  *  A generic message class with a JSON body/payload.
  */
 export class JsmsMessage {
     public readonly header: JsmsMessageHeader;
-    public readonly body: object;
+    public readonly body: any;
 
-    constructor(header: JsmsMessageHeader, body: object) {
+    constructor(header: JsmsMessageHeader, body: any) {
+        checkArgument(body instanceof Object);
         this.header = header;
         this.body = body;
     }
@@ -23,9 +25,10 @@ export class JsmsMessage {
      * @param correlationID Used for matching replies/responses to original message.
      */
     public static create(destination: string, 
-                         body: object = {}, 
+                         body: any = {}, 
                          timeToLive: number = -1, 
                          correlationID: string = v4()): JsmsMessage {
+        checkArgument(body instanceof Object);
         const expiration = timeToLive > -1 ? new Date().getTime() + timeToLive : 0;
         return new JsmsMessage(new JsmsMessageHeader(v4(), destination, expiration, correlationID), body);
     }
@@ -39,8 +42,9 @@ export class JsmsMessage {
      * @param correlationID Used for matching replies/responses to original message.
      */
     public static createResponse(originalMessage: JsmsMessage, 
-                                 responseBody: object = {}, 
+                                 responseBody: any = {}, 
                                  timeToLive: number = -1): JsmsMessage {
+        checkArgument(responseBody instanceof Object);
         return JsmsMessage.create(originalMessage.header.destination, responseBody, 
             timeToLive, originalMessage.header.correlationID);
     }
@@ -56,6 +60,7 @@ export class JsmsMessage {
      *  Convenience method for converting a JSON object into a JsmsMessage.
      */
     public static fromJSON(jsonObject: any): JsmsMessage {
+        checkArgument(jsonObject instanceof Object);
         const header = new JsmsMessageHeader(
             jsonObject.header.id, 
             jsonObject.header.destination, 
