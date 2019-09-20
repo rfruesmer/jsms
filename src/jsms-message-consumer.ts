@@ -5,7 +5,7 @@ import { JsmsMessage } from "./jsms-message";
 import { JsmsMessageListener } from "./jsms-message-listener";
 
 /**
- * A client uses a MessageConsumer object to receive messages from a destination.
+ *  A client uses a MessageConsumer object to receive messages from a destination.
  */
 export abstract class JsmsMessageConsumer implements JsmsMessageListener {
     private connection: JsmsConnection;
@@ -21,14 +21,14 @@ export abstract class JsmsMessageConsumer implements JsmsMessageListener {
     }
 
     /**
-     * Receives the next message produced for this message consumer.
+     *  Receives the next message produced for this message consumer.
      *
-     * This call is run asynchronuos and therefore doesn't block.
+     *  This call is run asynchronuos and therefore doesn't block.
      */
     public abstract receive(): JsmsDeferred<JsmsMessage>;
 
     /**
-     * @see JsmsMessageListener
+     *  Dispatches the given message to attached listeners.
      */
     public abstract onMessage(message: JsmsMessage): JsmsDeferred<JsmsMessage>;
 }
