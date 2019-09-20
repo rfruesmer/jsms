@@ -174,20 +174,20 @@ const messageService = new JsmsService();
 
 messageService.send("/some/queue", {request: "PING1"})
     .then(response => {
-        console.log(response); // expected output: {response: "PONG1"}
+        console.log(response.body); // expected output: {response: "PONG1"}
         return {request: "PING2"};
     })
     .then(response => {
-        console.log(response); // expected output: {response: "PONG2"}
+        console.log(response.body); // expected output: {response: "PONG2"}
     });
 
 messageService.receive("/some/queue")
     .then(request => {
-        console.log(request); // expected output: {request: "PING1"}
+        console.log(request.body); // expected output: {request: "PING1"}
         return {response: "PONG1"};
     })
     .then(request => {
-        console.log(request); // expected output: {request: "PING2"}
+        console.log(request.body); // expected output: {request: "PING2"}
         return {response: "PONG2"};
     });
 ```
