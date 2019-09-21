@@ -18,14 +18,14 @@ export class FakeConnection extends JsmsConnection {
 
     public createQueue(queueName: string): JsmsQueue {
         const queue = new JsmsQueue(queueName);
-        super.addQueue(queue, new FakeQueueSender(this, queue), new JsmsQueueReceiver(this, queue));
+        super.addQueue(queue, new FakeQueueSender(this, queue), new JsmsQueueReceiver(queue));
         
         return queue;
     }
 
     public createTopic(topicName: string): JsmsTopic {
         const topic = new JsmsTopic(topicName);
-        super.addTopic(topic, new FakeTopicPublisher(this, topic), new JsmsTopicSubscriber(this, topic));
+        super.addTopic(topic, new FakeTopicPublisher(topic), new JsmsTopicSubscriber(topic));
         
         return topic;
     }

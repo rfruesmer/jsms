@@ -13,7 +13,7 @@ beforeEach(() => {
 });
 
 // --------------------------------------------------------------------------------------------------------------------
-
+    
 afterEach(() => {
     // release resources
     messageService.close();
@@ -24,7 +24,7 @@ afterEach(() => {
 test("a queue receiver dispatches non-expired messages with valid destination name", async () => {
     const queue = new JsmsQueue("/some/queue");
     const connection = new FakeConnection();
-    const queueReceiver = new JsmsQueueReceiver(connection, queue);
+    const queueReceiver = new JsmsQueueReceiver(queue);
     const expectedMessage = JsmsMessage.create("/some/queue", {test: "foo"});
     let actualMessage = JsmsMessage.create("", {});
 
@@ -51,7 +51,7 @@ test("a queue receiver dispatches non-expired messages with valid destination na
 test("a queue receiver doesn't dispatch expired messages and rejects the promise", async () => {
     const queue = new JsmsQueue("/some/queue");
     const connection = new FakeConnection();
-    const queueReceiver = new JsmsQueueReceiver(connection, queue);
+    const queueReceiver = new JsmsQueueReceiver(queue);
     let actualMessage: JsmsMessage | null = null;
 
     // given message that expires really soon
@@ -86,8 +86,7 @@ test("a queue receiver doesn't dispatch expired messages and rejects the promise
 
 test("a queue receiver doesn't dispatch messages with a different destination name", async () => {
     const queue = new JsmsQueue("/some/queue");
-    const connection = new FakeConnection();
-    const queueReceiver = new JsmsQueueReceiver(connection, queue);
+    const queueReceiver = new JsmsQueueReceiver(queue);
     let actualMessage: JsmsMessage | null = null;
 
     // given a running queue receiver

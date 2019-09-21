@@ -1,4 +1,4 @@
-import { checkArgument, checkState } from "../src/internal/preconditions";
+import { checkArgument, checkState } from "../src/preconditions";
 
 // --------------------------------------------------------------------------------------------------------------------
 

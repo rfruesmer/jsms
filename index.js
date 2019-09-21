@@ -1,5 +1,4 @@
-export { JsConnection } from "./dist/src/internal/js-connection";
-export { checkArgument, checkState } from "./dist/src/internal/preconditions";
+export { JsConnection } from "./dist/src/js-connection";
 export { JsmsConnection } from "./dist/src/jsms-connection";
 export { JsmsDeferred } from "./dist/src/jsms-deferred";
 export { JsmsDestination } from "./dist/src/jsms-destination";
@@ -14,6 +13,7 @@ export { JsmsService } from "./dist/src/jsms-service";
 export { JsmsTopic } from "./dist/src/jsms-topic";
 export { JsmsTopicPublisher } from "./dist/src/jsms-topic-publisher";
 export { JsmsTopicSubscriber } from "./dist/src/jsms-topic-subscriber";
+export { checkArgument, checkState } from "./dist/src/preconditions";
 
 
 

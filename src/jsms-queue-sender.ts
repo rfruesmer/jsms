@@ -5,21 +5,19 @@ import { JsmsMessage } from "./jsms-message";
 import { JsmsMessageProducer } from "./jsms-message-producer";
 
 export class JsmsQueueSender extends JsmsMessageProducer {
+    private _connection: JsmsConnection;
+
     constructor(connection: JsmsConnection, destination: JsmsDestination) {
-        super(connection, destination);
+        super(destination);
+
+        this._connection = connection;
     }
 
     public send(message: JsmsMessage): JsmsDeferred<JsmsMessage> {
-        return this.getConnection().send(message);
+        return this._connection.send(message);
     }
 
-    /**
-     *  Only used for JS-/in-process transport.
-     */
-    public dispatchInProcess(message: JsmsMessage): JsmsDeferred<JsmsMessage> {
-        const destination = this.getDestination();
-        const consumer = this.getConnection().getConsumer(destination);
-
-        return consumer.onMessage(message);
+    public get connection(): JsmsConnection {
+        return this._connection;
     }
 }

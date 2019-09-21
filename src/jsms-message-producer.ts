@@ -1,22 +1,15 @@
-import { JsmsConnection } from "./jsms-connection";
+import { JsmsDeferred } from "./jsms-deferred";
 import { JsmsDestination } from "./jsms-destination";
 import { JsmsMessage } from "./jsms-message";
-import { JsmsDeferred } from "./jsms-deferred";
 
 /**
  *  A client uses a MessageProducer object to send messages to a destination.
  */
 export abstract class JsmsMessageProducer {
-    private connection: JsmsConnection;
     private destination: JsmsDestination;
 
-    constructor(connection: JsmsConnection, destination: JsmsDestination) {
-        this.connection = connection;
+    constructor(destination: JsmsDestination) {
         this.destination = destination;
-    }
-
-    protected getConnection(): JsmsConnection {
-        return this.connection;
     }
 
     protected getDestination(): JsmsDestination {

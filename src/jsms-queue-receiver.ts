@@ -1,4 +1,3 @@
-import { JsmsConnection } from "./jsms-connection";
 import { JsmsDeferred } from "./jsms-deferred";
 import { JsmsDestination } from "./jsms-destination";
 import { JsmsMessage } from "./jsms-message";
@@ -10,8 +9,8 @@ export class JsmsQueueReceiver extends JsmsMessageConsumer {
     private deferredDeliveries = new Array<JsmsDeferred<JsmsMessage>>();
     private deferredResponses = new Map<string, JsmsDeferred<JsmsMessage>>();
 
-    constructor(connection: JsmsConnection, destination: JsmsDestination) {
-        super(connection, destination);
+    constructor(destination: JsmsDestination) {
+        super(destination);
         
         this.queue.addMessageExpiredListener((message: JsmsMessage) => {
             const deferredResponse = this.dequeueResponseFor(message);
