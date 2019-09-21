@@ -3,6 +3,12 @@ import { createServer, IncomingMessage, request as createRequest, RequestOptions
 import { JsmsConnection } from "../../src/jsms-connection";
 import { JsmsDeferred } from "../../src/jsms-deferred";
 import { JsmsMessage } from "../../src/jsms-message";
+import { JsmsQueue } from "../../src/jsms-queue";
+import { JsmsQueueReceiver } from "../../src/jsms-queue-receiver";
+import { JsmsQueueSender } from "../../src/jsms-queue-sender";
+import { JsmsTopic } from "../../src/jsms-topic";
+import { JsmsTopicPublisher } from "../../src/jsms-topic-publisher";
+import { JsmsTopicSubscriber } from "../../src/jsms-topic-subscriber";
 
 const logger = getLogger("HttpConnection");
 logger.level = "debug";
@@ -71,6 +77,18 @@ export class HttpConnection extends JsmsConnection {
         return consumer.onMessage(message);
     }
 
+    public createQueue(queueName: string): JsmsQueue {
+        const queue = new JsmsQueue(queueName);
+        this.addQueue(queue, new JsmsQueueSender(this, queue), new JsmsQueueReceiver(queue));
+        return queue;
+    }
+
+    public createTopic(topicName: string): JsmsTopic {
+        const topic = new JsmsTopic(topicName);
+        this.addTopic(topic, new JsmsTopicPublisher(topic), new JsmsTopicSubscriber(topic));
+        return topic;
+    }
+
     public send(message: JsmsMessage): JsmsDeferred<JsmsMessage> {
         const deferredResponse = this.sendRequest(message);
 
@@ -107,7 +125,8 @@ export class HttpConnection extends JsmsConnection {
                 chunks.push(chunk);
             })
             .on("end", () => {
-                const result = JSON.parse(Buffer.concat(chunks).toString());
+                const responseString = Buffer.concat(chunks).toString();
+                const result = JSON.parse(responseString);
                 deferredResponse.resolve(result);
                 this.deferredResponses.delete(message.header.id);
             });
