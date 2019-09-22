@@ -206,7 +206,7 @@ messageService.publish("/some/topic", {xyz: "abc"});
 
 ## Contributing
 
-Please keep in mind that this project is still in alpha state, but if you find something important missing or not working right in your use case, don't hesitate and feel free to open an issue or to send me a pull request.
+Please keep in mind that this project is still in beta state, but if you find something important missing or not working right in your use case, don't hesitate and feel free to open an issue or to send me a pull request.
 
 ## Credits
 
