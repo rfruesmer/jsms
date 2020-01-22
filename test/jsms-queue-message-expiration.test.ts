@@ -21,27 +21,33 @@ afterEach(() => {
 
 test("a queue doesn't deliver messages that expire inbetween sending and receiving", async () => {
     const queueName = "/some/queue";
-    const messageBody = { test: "foo" };
+    const messageBody = { id: "valid" };
+    const expiredMessageBody = { id: "expired" };
     let receivedExpiredMessage = false;
 
-    // given the message is sent before the receiver is running and not expired yet 
+    // given the message is sent before the receiver is running and not expired yet
     const timeToLiveMillis = 100;
-    const deferredResponse = messageService.send(queueName, messageBody, timeToLiveMillis);
+    const deferredResponse1 = messageService.send(queueName, expiredMessageBody, timeToLiveMillis);
+    messageService.send(queueName, messageBody, 60000);
+    const deferredResponse2 = messageService.send(queueName, expiredMessageBody, timeToLiveMillis);
 
     // and the message expires
     const expiration = new Promise((resolve, reject) => {
         setTimeout(() => { resolve(); }, 150);
     });
     await expiration;
-    
+
     // when receiving the next message
     messageService.receive(queueName)
         .then((message: JsmsMessage) => {
-            receivedExpiredMessage = true;
+            if (message.body.id === "expired") {
+                receivedExpiredMessage = true;
+            }
         });
 
     // then the delivery should be rejected
-    await expect(deferredResponse.promise).rejects.toEqual("message expired");
+    await expect(deferredResponse1.promise).rejects.toEqual("message expired");
+    await expect(deferredResponse2.promise).rejects.toEqual("message expired");
 
     // and the message shouldn't be delivered
     expect(receivedExpiredMessage).toBeFalsy();
@@ -56,7 +62,7 @@ test("a queue doesn't deliver messages that are expired before being send", asyn
     const producer = connection.getProducer(queue);
     let receivedExpiredMessage = false;
 
-    // given a receiver is already running 
+    // given a receiver is already running
     messageService.receive(queueName)
         .then((message: JsmsMessage) => {
             receivedExpiredMessage = true;
@@ -72,7 +78,7 @@ test("a queue doesn't deliver messages that are expired before being send", asyn
 
     // when trying to send the message
     const deferredResponse = producer.send(expiredMessage);
-        
+
     // then the delivery should be rejected
     await expect(deferredResponse.promise).rejects.toEqual("message expired");
 

@@ -14,8 +14,8 @@ type MessageExpiredListener = (message: JsmsMessage) => void;
  *    The receiver can fetch the message whether or not it was running
  *    when the client sent the message.
  *
- *  * Queues retain all (up to maxSize) messages sent to them until 
- *    the messages are consumed, the message expires or the queue is 
+ *  * Queues retain all (up to maxSize) messages sent to them until
+ *    the messages are consumed, the message expires or the queue is
  *    closed - messages aren't persisted.
  *
  *  Use PTP messaging when every message you send must be processed
@@ -36,8 +36,8 @@ export class JsmsQueue extends JsmsDestination {
         const currentTimeMillis = new Date().getTime();
         this.entries
             .filter((message: JsmsMessage) => message.header.expiration > 0 && currentTimeMillis > message.header.expiration)
-            .map((message: JsmsMessage) => this.entries.indexOf(message))
-            .forEach((index: number) => {
+            .forEach((expiredMessage: JsmsMessage) => {
+                const index = this.entries.indexOf(expiredMessage);
                 const removedMessages = this.entries.splice(index, 1);
                 this.expiredListeners.forEach((listener) => listener(removedMessages[0]));
             });
