@@ -33,7 +33,7 @@ export class JsmsService {
      *  JsConnection will be created.
      * 
      *  @param queueName the name of the destination queue
-     *  @param messageBody user-defined message data (payload)
+     *  @param messageBody optional user-defined message data (payload)
      *  @param timeToLive time in milliseconds before the message expires
      * 
      *  @returns a deferred promise that represents the response. If the 
@@ -42,11 +42,16 @@ export class JsmsService {
      *           rejected.
      */
     public send(queueName: string, messageBody: object = {}, timeToLive: number = -1): JsmsDeferred<JsmsMessage> {
-        const queue = this.getQueue(queueName);
+        const message = JsmsMessage.create(queueName, messageBody, timeToLive);
+
+        return this.sendInternal(message);
+    }
+
+    private sendInternal(message: JsmsMessage): JsmsDeferred<JsmsMessage> {
+        const queue = this.getQueue(message.header.destination);
         const connection = this.getConnection(queue);
         const producer = connection.getProducer(queue);
-        const message = JsmsMessage.create(queueName, messageBody, timeToLive);
-        
+
         try {
             return producer.send(message);
         }
@@ -80,6 +85,12 @@ export class JsmsService {
         }, JsmsService.RETRY_INTERVAL);
 
         return deferredRetry;
+    }
+
+    public reply(request: JsmsMessage, messageBody: object = {}, timeToLive: number = -1): JsmsDeferred<JsmsMessage> {
+        const replyMessage = JsmsMessage.createResponse(request, { response: "PONG" }, timeToLive);
+
+        return this.sendInternal(replyMessage);
     }
 
     /** NO public API - only public visible for testing */

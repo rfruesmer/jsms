@@ -33,10 +33,9 @@ export class JsmsMessage {
     /**
      * Convenience factory method for creating a response.
      *
-     * @param destination The topic or queue name.
-     * @param body The message's payload.
+     * @param originalMessage The message to create a response for.
+     * @param responseBody The responses's payload.
      * @param timeToLive The time in milliseconds (from now) until this message will be discarded.
-     * @param correlationID Used for matching replies/responses to original message.
      */
     public static createResponse(originalMessage: JsmsMessage, 
                                  responseBody: any = {}, 
