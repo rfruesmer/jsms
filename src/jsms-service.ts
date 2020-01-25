@@ -28,29 +28,24 @@ export class JsmsService {
 
     /**
      *  Sends a message to the specified queue.
-     * 
-     *  Note: if the queue doesn't exist yet, a new queue using the default 
+     *
+     *  Note: if the queue doesn't exist yet, a new queue using the default
      *  JsConnection will be created.
-     * 
+     *
      *  @param queueName the name of the destination queue
      *  @param messageBody optional user-defined message data (payload)
      *  @param timeToLive time in milliseconds before the message expires
-     * 
-     *  @returns a deferred promise that represents the response. If the 
+     *
+     *  @returns a deferred promise that represents the response. If the
      *           listener doen't reply, the response body will be empty.
-     *           If the message is invalid (e.g. expired) the promise will be 
+     *           If the message is invalid (e.g. expired) the promise will be
      *           rejected.
      */
     public send(queueName: string, messageBody: object = {}, timeToLive: number = -1): JsmsDeferred<JsmsMessage> {
-        const message = JsmsMessage.create(queueName, messageBody, timeToLive);
-
-        return this.sendInternal(message);
-    }
-
-    private sendInternal(message: JsmsMessage): JsmsDeferred<JsmsMessage> {
-        const queue = this.getQueue(message.header.destination);
+        const queue = this.getQueue(queueName);
         const connection = this.getConnection(queue);
         const producer = connection.getProducer(queue);
+        const message = JsmsMessage.create(queueName, messageBody, timeToLive);
 
         try {
             return producer.send(message);
@@ -59,7 +54,7 @@ export class JsmsService {
             return this.retry(message, producer);
         }
     }
-    
+
     private retry(message: JsmsMessage, 
                   producer: JsmsMessageProducer, 
                   deferredRetry: JsmsDeferred<JsmsMessage> = new JsmsDeferred<JsmsMessage>(),
