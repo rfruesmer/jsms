@@ -14,7 +14,7 @@ export class JsmsQueueReceiver extends JsmsMessageConsumer {
         
         this.queue.addMessageExpiredListener((message: JsmsMessage) => {
             const deferredResponse = this.dequeueResponseFor(message);
-            deferredResponse.reject("message expired");
+            deferredResponse.reject(message.createExpirationMessage());
         });
     }
 
@@ -98,7 +98,7 @@ export class JsmsQueueReceiver extends JsmsMessageConsumer {
         }
         
         if (message.isExpired()) {
-            deferredResponse.reject("message expired");
+            deferredResponse.reject(message.createExpirationMessage());
             return false;
         }
 
