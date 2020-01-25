@@ -26,7 +26,7 @@ export class ChromiumConnection extends JsmsConnection {
 
     private readonly logger = getLogger("[CHROMIUM]");
     private responseDeferreds = new Map<string, JsmsDeferred<JsmsMessage>>();
-    private sendHandshakeRetryCount: number = 0;
+    private currentHandshakeRetries: number = 0;
 
     /**
      * @param defaultTimeToLive will be used to calculate expiration time when no
@@ -146,7 +146,7 @@ export class ChromiumConnection extends JsmsConnection {
     }
 
     public sendHandshake(): JsmsDeferred<JsmsMessage> {
-        this.sendHandshakeRetryCount = 0;
+        this.currentHandshakeRetries = 0;
         const outerDeferred = new JsmsDeferred<JsmsMessage>();
         this.sendHandshakeInternal(outerDeferred);
         return outerDeferred;
@@ -216,7 +216,7 @@ export class ChromiumConnection extends JsmsConnection {
     }
 
     private retryHandshake(outerDeferred: JsmsDeferred<JsmsMessage>, error: Error): void {
-        if (this.sendHandshakeRetryCount++ < this.maxHandshakeRetries) {
+        if (this.currentHandshakeRetries++ < this.maxHandshakeRetries) {
             this.logger.error("HANDSHAKE FAILED, retrying ...");
             setTimeout(() => {
                 this.sendHandshakeInternal(outerDeferred);
