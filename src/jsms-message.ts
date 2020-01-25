@@ -76,4 +76,11 @@ export class JsmsMessage {
                 ? new Date().getTime() > this.header.expiration 
                 : false;
     }
+
+    public createExpirationMessage(): string {
+        return "message expired: \""
+            + this.header.destination + "\" ["
+            + this.header.correlationID + "]:\n"
+            + JSON.stringify(this.body);
+    }
 }

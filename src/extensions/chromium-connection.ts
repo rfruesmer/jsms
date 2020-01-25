@@ -9,23 +9,44 @@ import { JsmsQueueReceiver } from "../jsms-queue-receiver";
 import { JsmsTopic } from "../jsms-topic";
 import { JsmsTopicPublisher } from "../jsms-topic-publisher";
 import { JsmsTopicSubscriber } from "../jsms-topic-subscriber";
+import { getLogger } from "@log4js-node/log4js-api";
 
-const DEBUG = true;
+
+function currentTimeMillis(): number {
+    return new Date().getTime();
+}
 
 export class ChromiumConnection extends JsmsConnection {
-    private globalNS: any;
+    public static readonly CEF_HANDSHAKE_INIT = "/cef/handshake/init";
+    public static readonly CEF_HANDSHAKE_SERVER_READY = "/cef/handshake/server/ready";
+    public static readonly CEF_HANDSHAKE_CLIENT_READY = "/cef/handshake/client/ready";
+    public static readonly DEFAULT_TIME_TO_LIVE: number = 1000;
+    public static readonly DEFAULT_HANDSHAKE_RETRY_COUNT: number = 60;
+    public static readonly DEFAULT_HANDSHAKE_RETRY_DELAY: number = 100;
+
+    private readonly logger = getLogger("[CHROMIUM]");
     private responseDeferreds = new Map<string, JsmsDeferred<JsmsMessage>>();
+    private sendHandshakeRetryCount: number = 0;
 
     /**
+     * @param defaultTimeToLive will be used to calculate expiration time when no
+     *        custom value is provided to the send function
+     * @param maxHandshakeRetries specifies how often the handshake will be retried
      * @param globalNS is only used by unit tests -
      *        in production code you should ignore it and just leave it undefined
      */
-    constructor(globalNS?: any) {
+    constructor(private defaultTimeToLive: number = ChromiumConnection.DEFAULT_TIME_TO_LIVE,
+                private maxHandshakeRetries: number = ChromiumConnection.DEFAULT_HANDSHAKE_RETRY_COUNT,
+                private globalNS: any = window) {
         super();
 
-        this.globalNS = globalNS ? globalNS : window;
         this.globalNS.onMessage = (json: any) => {
-            this.onMessage(JsmsMessage.fromJSON(json));
+            try {
+                this.onMessage(JsmsMessage.fromJSON(json));
+            }
+            catch (e) {
+                this.logger.error(e);
+            }
         };
     }
 
@@ -43,8 +64,8 @@ export class ChromiumConnection extends JsmsConnection {
     }
 
     private handleResponse(response: JsmsMessage, responseDeferred: JsmsDeferred<JsmsMessage>): void {
-        if (DEBUG) {
-            console.log("[CHROMIUM] Receiving response: \""
+        if (this.logger.isDebugEnabled()) {
+            this.logger.debug("Receiving response: \""
                 + response.header.destination + "\" ["
                 + response.header.correlationID + "]:\n"
                 + JSON.stringify(response.body));
@@ -68,10 +89,10 @@ export class ChromiumConnection extends JsmsConnection {
 
     public send(message: JsmsMessage): JsmsDeferred<JsmsMessage> {
         checkState(typeof this.globalNS.cefQuery === "function",
-            "cef message router is not available!");
+            "\"CEF message router isn't available!");
 
-        if (DEBUG) {
-            console.log("[CHROMIUM] Sending request: \""
+        if (this.logger.isDebugEnabled()) {
+            this.logger.debug("Sending request: \""
                 + message.header.destination + "\" ["
                 + message.header.correlationID + "]:\n"
                 + JSON.stringify(message.body));
@@ -95,11 +116,10 @@ export class ChromiumConnection extends JsmsConnection {
                 this.responseDeferreds.delete(message.header.correlationID);
             },
             onFailure: (errorCode: number, errorMessage: string) => {
-                console.error("[CHROMIUM] cefQuery call failed for: "
-                    + "\ntopic: " + message.header.destination
+                this.logger.error("cefQuery call failed for: "
+                    + "\ndestination: " + message.header.destination
                     + "\nerror-code: " + errorCode
                     + "\nerror-message: " + errorMessage);
-
 
                 deferredResponse.reject(errorMessage);
                 this.responseDeferreds.delete(message.header.correlationID);
@@ -114,19 +134,97 @@ export class ChromiumConnection extends JsmsConnection {
             return;
         }
 
-        let timeToLive = message.header.expiration - new Date().getTime();
+        let timeToLive = message.header.expiration - currentTimeMillis();
         timeToLive = Math.max(0, timeToLive);
 
         setTimeout(() => {
-            this.responseDeferreds.delete(message.header.correlationID);
-            deferredResponse.reject("message expired");
+            if (this.responseDeferreds.has(message.header.correlationID)) {
+                this.responseDeferreds.delete(message.header.correlationID);
+                deferredResponse.reject(message.createExpirationMessage());
+            }
         }, timeToLive);
     }
 
-    public sendReady(): JsmsDeferred<JsmsMessage> {
-        const deferredResponse = new JsmsDeferred<JsmsMessage>();
-        deferredResponse.resolve(JsmsMessage.create("bla"));
-        // deferredResponse.reject("blubb");
-        return deferredResponse;
+    public sendHandshake(): JsmsDeferred<JsmsMessage> {
+        this.sendHandshakeRetryCount = 0;
+        const outerDeferred = new JsmsDeferred<JsmsMessage>();
+        this.sendHandshakeInternal(outerDeferred);
+        return outerDeferred;
+    }
+
+    private sendHandshakeInternal(outerDeferred: JsmsDeferred<JsmsMessage>): JsmsDeferred<JsmsMessage> {
+        this.logger.info("Beginning HANDSHAKE @" + currentTimeMillis() + "...");
+
+        // first pass: check if client receives messages
+        const deferred = this.sendHandshakeInit();
+        deferred.then(response => {
+            // second pass: let the client know that we are able to receive messages
+            this.sendServerReady(response)
+                .then(ack => {
+                    // client acknowledged - connection successfully established
+                    this.resolveHandshake(outerDeferred, ack);
+                })
+                .catch(reason => {
+                    this.retryHandshake(outerDeferred, reason);
+                });
+        })
+        .catch(error => {
+            this.retryHandshake(outerDeferred, error);
+        });
+
+        return deferred;
+    }
+
+    private sendHandshakeInit(): JsmsDeferred<JsmsMessage> {
+        const initMessage = JsmsMessage.create(
+            ChromiumConnection.CEF_HANDSHAKE_INIT,
+            {},
+            this.defaultTimeToLive);
+
+        const deferred = this.send(initMessage);
+        deferred.catch(() => {
+            this.logger.error("HANDSHAKE INIT TIMEOUT: "
+                + initMessage.header.correlationID
+                + ' @' + currentTimeMillis());
+        });
+
+        return deferred;
+    }
+
+    private sendServerReady(clientReadyMessage: JsmsMessage): JsmsDeferred<JsmsMessage> {
+        checkState(clientReadyMessage.header.destination
+                === ChromiumConnection.CEF_HANDSHAKE_CLIENT_READY);
+
+        const serverReadyMessage = JsmsMessage.create(
+            ChromiumConnection.CEF_HANDSHAKE_SERVER_READY,
+            {},
+            this.defaultTimeToLive);
+
+        const deferred = this.send(serverReadyMessage);
+        deferred.catch(() => {
+            this.logger.error("SERVER READY TIMEOUT: "
+                + serverReadyMessage.header.correlationID
+                + ' @' + currentTimeMillis());
+        });
+
+        return deferred;
+    }
+
+    private resolveHandshake(outerDeferred: JsmsDeferred<JsmsMessage>, ack: JsmsMessage): void {
+        this.logger.info("HANDSHAKE SUCCESSFUL @" + currentTimeMillis());
+        outerDeferred.resolve(ack);
+    }
+
+    private retryHandshake(outerDeferred: JsmsDeferred<JsmsMessage>, error: Error): void {
+        if (this.sendHandshakeRetryCount++ < this.maxHandshakeRetries) {
+            this.logger.error("HANDSHAKE FAILED, retrying ...");
+            setTimeout(() => {
+                this.sendHandshakeInternal(outerDeferred);
+            }, ChromiumConnection.DEFAULT_HANDSHAKE_RETRY_DELAY);
+        }
+        else {
+            this.logger.error("HANDSHAKE FAILED @" + currentTimeMillis());
+            outerDeferred.reject(error);
+        }
     }
 }

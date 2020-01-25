@@ -87,12 +87,6 @@ export class JsmsService {
         return deferredRetry;
     }
 
-    public reply(request: JsmsMessage, messageBody: object = {}, timeToLive: number = -1): JsmsDeferred<JsmsMessage> {
-        const replyMessage = JsmsMessage.createResponse(request, { response: "PONG" }, timeToLive);
-
-        return this.sendInternal(replyMessage);
-    }
-
     /** NO public API - only public visible for testing */
     public getQueue(queueName: string): JsmsQueue {
         let queue = this.queues.get(queueName);
