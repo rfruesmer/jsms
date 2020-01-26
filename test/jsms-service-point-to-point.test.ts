@@ -4,6 +4,7 @@ import { JsmsQueueReceiver } from "../src/jsms-queue-receiver";
 import { JsmsService } from "../src/jsms-service";
 import { FakeConnection } from "./fake-connection";
 import { FakeCustomMessage } from "./fake-custom-message";
+import { getLogger } from "@log4js-node/log4js-api";
 
 
 let messageService: JsmsService;
@@ -424,7 +425,30 @@ test("message service stops retrying to deliver a message when the message expir
     const deferredResponse = messageService.send(queueName, messageBody, 3000);
 
     // then the request should be rejected
-    await expect(deferredResponse.promise).rejects.toEqual("message expired");
+    await expect(deferredResponse.promise).rejects.toBeDefined();
+
+    messageService.close();
+}, 10000);
+
+// --------------------------------------------------------------------------------------------------------------------
+
+test("message service stops retrying to deliver a message when the message expires with debug logging activated", async () => {
+    const queueName = "/some/queue";
+    const messageBody = { request: "PING" };
+
+    // given logging is set to debug level
+    getLogger("jsms").level = "debug";
+
+    // given custom connection which will become available only after 5 seconds
+    const connection = new FakeConnection();
+    connection.simulateDelayedAvailability(5000);
+    messageService.createQueue(queueName, connection);
+
+    // when sending a message that expires after 3 seconds and awaiting a response
+    const deferredResponse = messageService.send(queueName, messageBody, 3000);
+
+    // then the request should be rejected
+    await expect(deferredResponse.promise).rejects.toBeDefined();
 
     messageService.close();
 }, 10000);
@@ -444,7 +468,7 @@ test("message service stops retrying to deliver a message when max retry count i
     const deferredResponse = messageService.send(queueName, messageBody);
 
     // then the request should be rejected
-    await expect(deferredResponse.promise).rejects.toEqual("exceeded max retries");
+    await expect(deferredResponse.promise).rejects.toBeDefined();
 
     messageService.close();
 }, 60000);
