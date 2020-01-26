@@ -78,14 +78,16 @@ export class JsmsService {
             }
             catch (e) {
                 if (message.isExpired()) {
-                    deferredRetry.reject(message.createExpirationMessage());
+                    const errorMessage = message.createExpirationMessage();
+                    this.logger.error(errorMessage);
+                    deferredRetry.reject(errorMessage);
                 }
                 else if (retryCount > JsmsService.MAX_RETRIES) {
                     const errorMessage = "exceeded max retries: \""
                         + message.header.destination + "\" ["
                         + message.header.correlationID + "]:\n"
                         + JSON.stringify(message.body);
-
+                    this.logger.error(errorMessage);
                     deferredRetry.reject(errorMessage);
                 }
                 else {
