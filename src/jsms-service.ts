@@ -7,6 +7,7 @@ import { JsmsMessageProducer } from "./jsms-message-producer";
 import { JsmsQueue } from "./jsms-queue";
 import { JsmsTopic, MessageListenerCallback } from "./jsms-topic";
 import { checkState } from "./preconditions";
+import { getLogger } from "@log4js-node/log4js-api";
 
 /**
  *  Convenience facade for simple interaction with the message system.
@@ -21,6 +22,7 @@ export class JsmsService {
     private static readonly MAX_RETRIES = 60;
     private static readonly RETRY_INTERVAL = 100;
 
+    private readonly logger = getLogger("jsms");
     private defaultConnection = new JsConnection();
     private connections = new Map<JsmsDestination, JsmsConnection>();
     private queues = new Map<string, JsmsQueue>();
@@ -59,6 +61,14 @@ export class JsmsService {
                   producer: JsmsMessageProducer, 
                   deferredRetry: JsmsDeferred<JsmsMessage> = new JsmsDeferred<JsmsMessage>(),
                   retryCount: number = 0): JsmsDeferred<JsmsMessage> {
+
+        if (this.logger.isDebugEnabled()) {
+            this.logger.debug("Retrying to deliver message: "
+                + message.header.destination + "\" ["
+                + message.header.correlationID + "]:\n"
+                + JSON.stringify(message.body));
+        }
+
         setTimeout(() => {
             try {
                 const deferredResponse = producer.send(message);
@@ -68,10 +78,15 @@ export class JsmsService {
             }
             catch (e) {
                 if (message.isExpired()) {
-                    deferredRetry.reject("message expired");
+                    deferredRetry.reject(message.createExpirationMessage());
                 }
                 else if (retryCount > JsmsService.MAX_RETRIES) {
-                    deferredRetry.reject("exceeded max retries");
+                    const errorMessage = "exceeded max retries: \""
+                        + message.header.destination + "\" ["
+                        + message.header.correlationID + "]:\n"
+                        + JSON.stringify(message.body);
+
+                    deferredRetry.reject(errorMessage);
                 }
                 else {
                     this.retry(message, producer, deferredRetry, retryCount + 1);
