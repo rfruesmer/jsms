@@ -1,3 +1,4 @@
+export { ChromiumConnection } from "./dist/src/chromium-connection";
 export { JsConnection } from "./dist/src/js-connection";
 export { JsmsConnection } from "./dist/src/jsms-connection";
 export { JsmsDeferred } from "./dist/src/jsms-deferred";
