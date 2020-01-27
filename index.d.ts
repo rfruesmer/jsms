@@ -1,4 +1,3 @@
-export * from "./types/chromium-connection";
 export * from "./types/jsms-connection";
 export * from "./types/jsms-deferred";
 export * from "./types/jsms-destination";
