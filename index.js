@@ -10,6 +10,7 @@ export { JsmsQueue } from "./dist/src/jsms-queue";
 export { JsmsQueueReceiver } from "./dist/src/jsms-queue-receiver";
 export { JsmsQueueSender } from "./dist/src/jsms-queue-sender";
 export { JsmsService } from "./dist/src/jsms-service";
+export { JsmsServiceLocator } from "./dist/src/jsms-service-locator";
 export { JsmsTopic } from "./dist/src/jsms-topic";
 export { JsmsTopicPublisher } from "./dist/src/jsms-topic-publisher";
 export { JsmsTopicSubscriber } from "./dist/src/jsms-topic-subscriber";
