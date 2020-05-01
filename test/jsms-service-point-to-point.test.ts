@@ -60,7 +60,7 @@ test("a queue receiver can fetch a message even when it wasn't running when the 
     // given the message was sent before the receiver is running
     messageService.send(queueName, expectedMessageBody);
 
-    // when the message is fetched 
+    // when the message is fetched
     const deferredDelivery = messageService.receive(queueName);
 
     // then the message should be received
@@ -94,7 +94,7 @@ test("multiple queue receivers can fetch messages in correct order when they are
     const thirdMessage = await thirdMessagePromise;
     expect(thirdMessage.body).toEqual(thirdExpectedMessageBody);
 });
-    
+
 // --------------------------------------------------------------------------------------------------------------------
 
 test("multiple queue receivers can fetch messages in correct order even when they weren't running before the client sends the messages", async () => {
@@ -108,7 +108,7 @@ test("multiple queue receivers can fetch messages in correct order even when the
     messageService.send(queueName, secondExpectedMessageBody);
     messageService.send(queueName, thirdExpectedMessageBody);
 
-    // when the message are fetched 
+    // when the message are fetched
     const firstMessage = await messageService.receive(queueName).promise;
     const secondMessage = await messageService.receive(queueName).promise;
     const thirdMessage = await messageService.receive(queueName).promise;
@@ -149,7 +149,7 @@ test("a queue delivers any messages in correct order if one or more receivers ar
     const firstMessage = await firstMessagePromise;
     expect(firstMessage.body).toEqual(firstExpectedMessageBody);
 });
-    
+
 // --------------------------------------------------------------------------------------------------------------------
 
 test("message service creates a default body to queue messages if none was specified", async () => {
@@ -261,14 +261,14 @@ test("JsMessageProducer catches errors thrown by message listeners that run only
     const messageBody = { test: "foo" };
     const expectedError = new Error("which should be caught");
     let actualError;
-    
+
     // given the message is sent before the receiver is running
     const deferredResponse = messageService.send(queueName, messageBody);
     deferredResponse.catch((reason: any) => {
         actualError = reason;
     });
 
-    // when the receiver connects 
+    // when the receiver connects
     messageService.receive(queueName)
         .then((message: JsmsMessage) => {
             throw expectedError;
@@ -306,7 +306,7 @@ test("queue is open for extension via custom queue receiver", async () => {
 });
 
 // --------------------------------------------------------------------------------------------------------------------
-    
+
 test("message service integrates with custom queue receiver", async () => {
     const queueName = "/some/queue";
     const expectedMessageBody = { test: "foo" };
@@ -340,11 +340,11 @@ test("message service integrates with custom queue sender", async () => {
 
     // and the connection didn't receive anything yet
     expect(connection.getLastSentMessage()).toBeUndefined();
-    
+
     // when the message is send over the message service facade
     messageService.send(queueName, expectedMessageBody);
 
-    // and a receiver connects (this is mainly done for this test to pass the remaining references check in afterEach) 
+    // and a receiver connects (this is mainly done for this test to pass the remaining references check in afterEach)
     const deferredDelivery = messageService.receive(queueName);
     const actualMessage = await deferredDelivery.promise;
     expect(actualMessage.body).toEqual(expectedMessageBody);
@@ -508,7 +508,7 @@ test("message queue supports reply/request chaining of deferreds", async () => {
                 receivedRequests.push(actualRequest.body);
                 return {response: "PONG5"};
             });
-        
+
         messageService.send(queueName, {request: "PING1"})
             .then(actualResponse => {
                 expect(actualResponse.body).toEqual({response: "PONG1"});
@@ -554,8 +554,6 @@ test("message queue supports reply/request chaining of deferreds", async () => {
         {response: "PONG4"},
         {response: "PONG5"}
     ]);
-
-    messageService.close();
 });
 
 // --------------------------------------------------------------------------------------------------------------------

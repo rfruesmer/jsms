@@ -11,12 +11,12 @@ import { getLogger } from "@log4js-node/log4js-api";
 
 /**
  *  Convenience facade for simple interaction with the message system.
- * 
+ *
  *  Current limitations:
- * 
- * * Queue- and topic names must be unique, meaning that a queue 
+ *
+ * * Queue- and topic names must be unique, meaning that a queue
  *   cannot share the same name with a topic and vice versa.
- * 
+ *
  */
 export class JsmsService {
     private static readonly MAX_RETRIES = 60;
@@ -57,8 +57,8 @@ export class JsmsService {
         }
     }
 
-    private retry(message: JsmsMessage, 
-                  producer: JsmsMessageProducer, 
+    private retry(message: JsmsMessage,
+                  producer: JsmsMessageProducer,
                   deferredRetry: JsmsDeferred<JsmsMessage> = new JsmsDeferred<JsmsMessage>(),
                   retryCount: number = 0): JsmsDeferred<JsmsMessage> {
 
@@ -142,8 +142,8 @@ export class JsmsService {
 
     /**
      *  Registers a callback function on the given topic.
-     * 
-     *  Note: if the topic doesn't exist yet, a new topic using the default 
+     *
+     *  Note: if the topic doesn't exist yet, a new topic using the default
      *  JsConnection will be created.
      */
     public subscribe(topicName: string, subscriber: MessageListenerCallback): void {
@@ -175,12 +175,12 @@ export class JsmsService {
 
     /**
      *  Publishes a message to the given topic.
-     * 
-     *  Note: if the topic doesn't exist yet, a new topic using the default 
+     *
+     *  Note: if the topic doesn't exist yet, a new topic using the default
      *  JsConnection will be created.
-     * 
-     *  @returns a deferred promise that represents the original message - it 
-     *           will be resolved as soon as the message has been sent to all 
+     *
+     *  @returns a deferred promise that represents the original message - it
+     *           will be resolved as soon as the message has been sent to all
      *           subscribers.
      */
     public publish(topicName: string, messageBody: object = {}): void {
@@ -199,7 +199,7 @@ export class JsmsService {
         const topic = this.topics.get(topicName);
         if (topic) {
             topic.unsubscribe(subscriber);
-        }        
+        }
     }
 
     /**
@@ -207,5 +207,12 @@ export class JsmsService {
      */
     public close(): void {
         this.connections.forEach((connection: JsmsConnection) => connection.close());
+        this.connections.clear();
+
+        this.queues.forEach(queue => queue.close());
+        this.queues.clear();
+
+        this.topics.forEach(topic => topic.close());
+        this.topics.clear();
     }
 }
