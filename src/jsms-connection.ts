@@ -28,7 +28,7 @@ export abstract class JsmsConnection {
 
     /**
      *  Override to implement provider-specific transport.
-     * 
+     *
      *  @param message the message to send
      */
     public abstract send(message: JsmsMessage): JsmsDeferred<JsmsMessage>;
@@ -79,13 +79,16 @@ export abstract class JsmsConnection {
 
     /**
      *  Closes the connection.
-     * 
-     *  Since a provider typically allocates significant resources on behalf 
-     *  of a connection, clients should close these resources when they are 
+     *
+     *  Since a provider typically allocates significant resources on behalf
+     *  of a connection, clients should close these resources when they are
      *  not needed.
      */
     public close(): void {
         this.queues.forEach((queue) => queue.close());
+        this.queues.clear();
+
         this.topics.forEach((topic) => topic.close());
+        this.topics.clear();
     }
 }
