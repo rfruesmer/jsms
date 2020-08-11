@@ -21,6 +21,7 @@ export class JsmsTopicPublisher extends JsmsMessageProducer {
     }
 
     private sendToTopic(message: JsmsMessage, deferred: JsmsDeferred<JsmsMessage>): void {
+        const errors: any = [];
         const topic = this.getDestination() as JsmsTopic;
         topic.getSubscribers().forEach(subscriber => {
             try {
@@ -28,9 +29,15 @@ export class JsmsTopicPublisher extends JsmsMessageProducer {
             } 
             catch (error) {
                 this.logger.error(error);
+                errors.push(error);
             }
         });
-        
-        deferred.resolve(message);
+
+        if (errors.length === 0) {
+            deferred.resolve(message);
+        }
+        else {
+            deferred.reject(errors);
+        }
     }
 }

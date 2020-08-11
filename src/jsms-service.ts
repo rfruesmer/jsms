@@ -183,13 +183,13 @@ export class JsmsService {
      *           will be resolved as soon as the message has been sent to all
      *           subscribers.
      */
-    public publish(topicName: string, messageBody: object = {}): void {
+    public publish(topicName: string, messageBody: object = {}): JsmsDeferred<JsmsMessage> {
         const topic = this.getTopic(topicName);
         const connection = this.getConnection(topic);
         const producer = connection.getProducer(topic);
         const message = JsmsMessage.create(topicName, messageBody);
 
-        producer.send(message);
+        return producer.send(message);
     }
 
     /**

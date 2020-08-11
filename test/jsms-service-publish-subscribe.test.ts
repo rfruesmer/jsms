@@ -5,6 +5,7 @@ import { JsmsTopicSubscriber } from "../src/jsms-topic-subscriber";
 import { FakeConnection } from "./fake-connection";
 import { FakeCustomMessage } from "./fake-custom-message";
 import { FakeTopicPublisher } from "./fake-topic-publisher";
+import { JsmsDeferred } from "../src/jsms-deferred";
 
 
 let messageService: JsmsService;
@@ -190,16 +191,20 @@ test("message service creates default body to topic messages if none was specifi
 
 test("errors thrown by topic subsciber listeners are caught", async () => {
     const topicName = "/some/topic";
-    const expectedMessageBody = {};
+    const expectedError = new Error("which should be caught");
+    const expectedErrors = [expectedError];
+    let deferred: JsmsDeferred<JsmsMessage>|undefined;
 
     const executionOfTopicListener = () => {
         messageService.subscribe(topicName, (message: JsmsMessage) => { 
-            throw new Error("which should be caught");
+            throw expectedError;
         });
-        messageService.publish(topicName);
+        deferred = messageService.publish(topicName);
     };
 
     expect(executionOfTopicListener).not.toThrow();
+    expect(deferred).toBeDefined();
+    await expect(deferred?.promise).rejects.toEqual(expectedErrors);
 });
 
 // --------------------------------------------------------------------------------------------------------------------
