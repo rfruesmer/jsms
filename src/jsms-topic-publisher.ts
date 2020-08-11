@@ -7,7 +7,7 @@ import { JsmsTopic } from "./jsms-topic";
 
 export class JsmsTopicPublisher extends JsmsMessageProducer {
     private logger = getLogger("jsms");
-    
+
     constructor(destination: JsmsDestination) {
         super(destination);
     }
@@ -23,10 +23,11 @@ export class JsmsTopicPublisher extends JsmsMessageProducer {
     private sendToTopic(message: JsmsMessage, deferred: JsmsDeferred<JsmsMessage>): void {
         const errors: any = [];
         const topic = this.getDestination() as JsmsTopic;
+
         topic.getSubscribers().forEach(subscriber => {
             try {
                 subscriber(message);
-            } 
+            }
             catch (error) {
                 this.logger.error(error);
                 errors.push(error);
@@ -37,7 +38,7 @@ export class JsmsTopicPublisher extends JsmsMessageProducer {
             deferred.resolve(message);
         }
         else {
-            deferred.reject(errors);
+            throw errors;
         }
     }
 }

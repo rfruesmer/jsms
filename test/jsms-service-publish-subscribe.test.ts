@@ -67,7 +67,7 @@ test("errors thrown by topic subscribers are caught by JsMessageConsumer", async
     // when receiving a custom message
     const customMessage = new FakeCustomMessage(topicName, expectedMessageBody);
     const result = await connection.onCustomMessageReceived(customMessage).promise;
-    
+
     // then the dispatch should have caught the exception and resolved the promise
     expect(result.header.destination).toEqual(customMessage.id);
     expect(result.body).toEqual(customMessage.data);
@@ -86,7 +86,7 @@ test("message service integrates with custom topic subscriber", async () => {
     const connection = new FakeConnection();
     const topic = messageService.createTopic(topicName, connection);
 
-    // given subscriber for topic 
+    // given subscriber for topic
     const promise = messageService.subscribe(topicName, (message: JsmsMessage) => {
         actualMessageBody = message.body;
     });
@@ -130,14 +130,14 @@ test("a topic message is published to all subscribers exactly once", () => {
     const expectedMessageBody = { test: "foo" };
     let receivedCount = 0;
 
-    messageService.subscribe(topicName, (actualMessage: JsmsMessage) => { 
+    messageService.subscribe(topicName, (actualMessage: JsmsMessage) => {
         expect(actualMessage.body).toEqual(expectedMessageBody);
-        receivedCount++; 
+        receivedCount++;
     });
 
-    messageService.subscribe(topicName, (actualMessage: JsmsMessage) => { 
+    messageService.subscribe(topicName, (actualMessage: JsmsMessage) => {
         expect(actualMessage.body).toEqual(expectedMessageBody);
-        receivedCount++; 
+        receivedCount++;
     });
 
     messageService.publish(topicName, expectedMessageBody);
@@ -171,7 +171,7 @@ test("a message is only published to it's topic subscribers", () => {
 
     expect(received).toBeFalsy();
 });
-   
+
 // --------------------------------------------------------------------------------------------------------------------
 
 test("message service creates default body to topic messages if none was specified", async () => {
@@ -179,7 +179,7 @@ test("message service creates default body to topic messages if none was specifi
     const expectedMessageBody = {};
     let actualMessageBody = null;
 
-    messageService.subscribe(topicName, (message: JsmsMessage) => { 
+    messageService.subscribe(topicName, (message: JsmsMessage) => {
         actualMessageBody = message.body;
     });
     messageService.publish(topicName);
@@ -189,22 +189,27 @@ test("message service creates default body to topic messages if none was specifi
 
 // --------------------------------------------------------------------------------------------------------------------
 
-test("errors thrown by topic subsciber listeners are caught", async () => {
+test("errors thrown by topic subscribers are rethrown", async () => {
     const topicName = "/some/topic";
     const expectedError = new Error("which should be caught");
-    const expectedErrors = [expectedError];
-    let deferred: JsmsDeferred<JsmsMessage>|undefined;
+    const anotherExpectedError = new Error("another one which should be caught");
+    const expectedErrors = [expectedError, anotherExpectedError];
+    let actualErrors = [];
 
-    const executionOfTopicListener = () => {
-        messageService.subscribe(topicName, (message: JsmsMessage) => { 
+    try {
+        messageService.subscribe(topicName, (message: JsmsMessage) => {
             throw expectedError;
         });
-        deferred = messageService.publish(topicName);
-    };
+        messageService.subscribe(topicName, (message: JsmsMessage) => {
+            throw anotherExpectedError;
+        });
+        messageService.publish(topicName);
+    }
+    catch (errors) {
+        actualErrors = errors;
+    }
 
-    expect(executionOfTopicListener).not.toThrow();
-    expect(deferred).toBeDefined();
-    await expect(deferred?.promise).rejects.toEqual(expectedErrors);
+    expect(actualErrors).toEqual(expectedErrors);
 });
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -216,15 +221,15 @@ test("a topic listener can be unsubscribed", async () => {
     let subsciberTwoWasCalled = false;
     let subsciberThreeWasCalled = false;
 
-    const subscriberOne = (message: JsmsMessage) => { 
+    const subscriberOne = (message: JsmsMessage) => {
         subsciberOneWasCalled = true;
     };
 
-    const subscriberTwo = (message: JsmsMessage) => { 
+    const subscriberTwo = (message: JsmsMessage) => {
         subsciberTwoWasCalled = true;
     };
 
-    const subscriberThree = (message: JsmsMessage) => { 
+    const subscriberThree = (message: JsmsMessage) => {
         subsciberThreeWasCalled = true;
     };
 
@@ -250,15 +255,15 @@ test("unsubscribing doesn't have any side effect if the listener isn't registere
     let subsciberTwoWasCalled = false;
     let subsciberThreeWasCalled = false;
 
-    const subscriberOne = (message: JsmsMessage) => { 
+    const subscriberOne = (message: JsmsMessage) => {
         subsciberOneWasCalled = true;
     };
 
-    const subscriberTwo = (message: JsmsMessage) => { 
+    const subscriberTwo = (message: JsmsMessage) => {
         subsciberTwoWasCalled = true;
     };
 
-    const subscriberThree = (message: JsmsMessage) => { 
+    const subscriberThree = (message: JsmsMessage) => {
         subsciberThreeWasCalled = true;
     };
 
@@ -282,22 +287,22 @@ test("unsubscribing doesn't have any side effect if the topic doesn't exist", as
     let subsciberTwoWasCalled = false;
     let subsciberThreeWasCalled = false;
 
-    const subscriberOne = (message: JsmsMessage) => { 
+    const subscriberOne = (message: JsmsMessage) => {
         subsciberOneWasCalled = true;
     };
 
-    const subscriberTwo = (message: JsmsMessage) => { 
+    const subscriberTwo = (message: JsmsMessage) => {
         subsciberTwoWasCalled = true;
     };
 
-    const subscriberThree = (message: JsmsMessage) => { 
+    const subscriberThree = (message: JsmsMessage) => {
         subsciberThreeWasCalled = true;
     };
 
     messageService.subscribe(topicName, subscriberOne);
     messageService.subscribe(topicName, subscriberTwo);
     messageService.subscribe(topicName, subscriberThree);
-    
+
     expect(() => {
         messageService.unsubscribe("/non-existing/topic", subscriberTwo);
     }).not.toThrow();
