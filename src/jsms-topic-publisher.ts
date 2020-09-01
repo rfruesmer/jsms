@@ -21,24 +21,16 @@ export class JsmsTopicPublisher extends JsmsMessageProducer {
     }
 
     private sendToTopic(message: JsmsMessage, deferred: JsmsDeferred<JsmsMessage>): void {
-        const errors: any = [];
         const topic = this.getDestination() as JsmsTopic;
-
         topic.getSubscribers().forEach(subscriber => {
             try {
                 subscriber(message);
             }
             catch (error) {
                 this.logger.error(error);
-                errors.push(error);
             }
         });
 
-        if (errors.length === 0) {
-            deferred.resolve(message);
-        }
-        else {
-            throw errors;
-        }
+        deferred.resolve(message);
     }
 }
